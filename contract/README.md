@@ -53,8 +53,8 @@ is the vision prompt in `backend/memepedia/llm.py`; this paragraph mirrors it.)
   `nsfw !== false` that slips through anyway, unless the viewer has the sensitive toggle on.
 - **Nodes** are never removed (that would break family trees). The frontend blurs a node's image
   with a click-to-reveal overlay whenever `nsfw` is `true` or `null`, and only shows it plainly
-  once a human or the backfill has set it `false`. A header-level "Sensitive: hidden/shown" toggle
-  (default hidden, persisted in `localStorage`) lets a viewer un-blur node images globally and,
+  once a human or the backfill has set it `false`. A header-level SFW/NSFW toggle
+  (default SFW, persisted in `localStorage`) lets a viewer un-blur node images globally and,
   on the wall and in a meme's Sightings tab, also requests and shows nsfw sightings; it does not
   affect the other endpoints' filtering above.
 

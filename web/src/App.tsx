@@ -23,15 +23,15 @@ function SensitiveToggle() {
     <button
       type="button"
       aria-pressed={showSensitive}
-      aria-label={showSensitive ? 'Hide sensitive memes' : 'Show sensitive memes'}
-      title={showSensitive ? 'Hide sensitive memes' : 'Show sensitive memes'}
+      aria-label={showSensitive ? 'NSFW is on: switch to SFW' : 'SFW is on: switch to NSFW'}
+      title={showSensitive ? 'Showing NSFW. Click to go back to SFW' : 'SFW only. Click to show NSFW'}
       onClick={toggle}
-      className="font-type ml-auto flex shrink-0 items-center gap-1.5 border border-ink px-2 py-1 text-sm uppercase tracking-widest hover:bg-paper-deep"
+      className="font-type ml-auto flex min-w-[5.5rem] shrink-0 items-center justify-center gap-1.5 border border-ink px-2 py-1 text-sm uppercase tracking-widest hover:bg-paper-deep"
     >
       <span aria-hidden className={wiggling ? 'animate-emoji-wiggle inline-block' : 'inline-block'}>
         {showSensitive ? '👀' : '🙈'}
       </span>
-      Sensitive
+      {showSensitive ? 'NSFW' : 'SFW'}
     </button>
   )
 }
