@@ -1085,6 +1085,282 @@
       "summary": "A reaction image of director Martin Scorsese raising both hands (from a 2020 New York Times interview photo), captioned 'Absolute Cinema' to praise something as a masterpiece; X user @YashChillinn paired the image with an anime clip in December 2022, and the captioned version spread widely through 2023.",
       "uncertain": false,
       "check_note": null
+    },
+    {
+      "id": "italian-brainrot",
+      "name": "Italian Brainrot",
+      "aliases": ["Italian Brain Rot"],
+      "kind": "character",
+      "latin_name": "Bestiarium italicum artificiale",
+      "first_seen": "2025-01-01",
+      "date_precision": "month",
+      "summary": "A 2025 TikTok wave of AI-generated animal-and-object hybrid creatures, each with a sing-song pseudo-Italian name and fake-Italian text-to-speech narration; Tralalero Tralala is widely considered its first example.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "tung-tung-tung-sahur",
+      "name": "Tung Tung Tung Sahur",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Truncus pulsans nocturnus",
+      "first_seen": "2025-01-01",
+      "date_precision": "year",
+      "summary": "An AI-generated wooden log figure holding a bat, named after the drum calls that wake people for sahur, the pre-dawn Ramadan meal; of Indonesian origin, it was absorbed into the Italian Brainrot cast in 2025.",
+      "uncertain": true,
+      "check_note": "Sources give no single creation date; the Indonesian origin and the Ramadan reference agree across sources."
+    },
+    {
+      "id": "ballerina-cappuccina",
+      "name": "Ballerina Cappuccina",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Saltatrix cappuccina",
+      "first_seen": "2025-03-19",
+      "date_precision": "day",
+      "summary": "An AI-generated ballerina with a cappuccino cup for a head, posted by TikTok account @aironic.fun on March 19, 2025, and quickly adopted as an Italian Brainrot character.",
+      "uncertain": true,
+      "check_note": "The date comes from a single meme-aggregator source."
+    },
+    {
+      "id": "chimpanzini-bananini",
+      "name": "Chimpanzini Bananini",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Simia bananina",
+      "first_seen": "2025-01-01",
+      "date_precision": "year",
+      "summary": "An AI-generated chimpanzee inside a banana peel, one of the Italian Brainrot characters that spread on TikTok in 2025.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "brr-brr-patapim",
+      "name": "Brr Brr Patapim",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Arbor nasuta",
+      "first_seen": "2025-01-01",
+      "date_precision": "year",
+      "summary": "An AI-generated tree-trunk creature with a long nose and big bare feet, part of the 2025 Italian Brainrot cast.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "skibidi-slang",
+      "name": "Skibidi",
+      "aliases": ["Skibidi Rizz", "What the Skibidi"],
+      "kind": "phrase",
+      "latin_name": "Verbum latrinae",
+      "first_seen": "2023-01-01",
+      "date_precision": "year",
+      "summary": "A Gen Alpha slang word taken from the Skibidi Toilet theme song and used as an all-purpose nonsense intensifier ('skibidi rizz', 'what the skibidi'), part of the 'brainrot' vocabulary.",
+      "uncertain": true,
+      "check_note": "The word spread as slang through 2023 and 2024; no first-use date was found."
+    },
+    {
+      "id": "skibidi-cameraman",
+      "name": "Cameraman",
+      "aliases": ["Cameramen", "Titan Cameraman"],
+      "kind": "character",
+      "latin_name": "Homo camerocephalus",
+      "first_seen": "2023-01-01",
+      "date_precision": "year",
+      "summary": "The camera-headed humanoids who fight the singing toilets in Skibidi Toilet; their giant 'Titan Cameraman' became a fan-favourite hero of edits and fan art.",
+      "uncertain": true,
+      "check_note": "Fan sources disagree on which 2023 episode introduced this character; only the year is used."
+    },
+    {
+      "id": "skibidi-tv-man",
+      "name": "TV Man",
+      "aliases": ["TV Men", "Titan TV Man"],
+      "kind": "character",
+      "latin_name": "Homo televisificus",
+      "first_seen": "2023-01-01",
+      "date_precision": "year",
+      "summary": "TV-headed humanoid allies of the Cameramen in Skibidi Toilet who stun toilets with their screens; Titan TV Man became one of the series' most-edited characters.",
+      "uncertain": true,
+      "check_note": "Fan sources disagree on which 2023 episode introduced this character; only the year is used."
+    },
+    {
+      "id": "grimace",
+      "name": "Grimace",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Monstrum purpureum",
+      "first_seen": "1971-01-01",
+      "date_precision": "year",
+      "summary": "A purple, blob-shaped McDonald's mascot from the McDonaldland ads, introduced in 1971 and never clearly defined, which made him an easy target for internet jokes.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "not-cinema",
+      "name": "That's Not Cinema",
+      "aliases": ["Marvel Is Not Cinema", "Theme Parks"],
+      "kind": "phrase",
+      "latin_name": "Non cinema",
+      "first_seen": "2019-10-01",
+      "date_precision": "month",
+      "summary": "Martin Scorsese's remark to Empire in early October 2019, while promoting 'The Irishman', that Marvel films are 'not cinema' and closer to 'theme parks'; it became a running internet joke about what counts as real cinema.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "haggis-the-hippo",
+      "name": "Haggis",
+      "aliases": ["Scotland's Moo Deng", "Haggis the Hippo"],
+      "kind": "character",
+      "latin_name": "Hippopotamus scoticus",
+      "first_seen": "2024-10-30",
+      "date_precision": "day",
+      "summary": "A female pygmy hippo calf born at Edinburgh Zoo on October 30, 2024; the zoo introduced her with 'Moo Deng? Who deng?', and the press dubbed her 'Scotland's Moo Deng'.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "despicable-me",
+      "name": "Despicable Me",
+      "aliases": ["Minions"],
+      "kind": "character",
+      "latin_name": "Malefactor despicabilis",
+      "first_seen": "2010-07-09",
+      "date_precision": "day",
+      "summary": "Illumination's 2010 animated film about the supervillain Gru and his yellow Minions, whose characters went on to supply several meme families.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "gru-s-plan",
+      "name": "Gru's Plan",
+      "aliases": ["Gru's Presentation", "Gru 4-Panel"],
+      "kind": "template",
+      "latin_name": "Consilium Gruis",
+      "first_seen": "2018-03-01",
+      "date_precision": "month",
+      "summary": "A four-panel exploitable template where Gru presents a sequential plan on an easel before doing a shocked double-take at the final step.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "minion-memes",
+      "name": "Minion Memes",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Minio facebookensis",
+      "first_seen": "2015-01-01",
+      "date_precision": "year",
+      "summary": "Captioned images of the Minions delivering jokes, relationship advice and inspirational sayings, ubiquitous on Facebook around the 2015 'Minions' film and widely mocked as the humour of older relatives.",
+      "uncertain": true,
+      "check_note": "The 2015 peak is from memory, not from a fetched source."
+    },
+    {
+      "id": "gentleminions",
+      "name": "Gentleminions",
+      "aliases": ["#Gentleminions"],
+      "kind": "template",
+      "latin_name": "Minio vestitus",
+      "first_seen": "2022-07-01",
+      "date_precision": "month",
+      "summary": "A July 2022 TikTok trend in which teenagers wore suits to screenings of 'Minions: The Rise of Gru', often to Yeat's 'Rich Minion'; some cinemas turned away suited groups after rowdy showings.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "baby-yoda",
+      "name": "Baby Yoda",
+      "aliases": ["Grogu", "The Child"],
+      "kind": "character",
+      "latin_name": "Yoda infans",
+      "first_seen": "2019-11-12",
+      "date_precision": "day",
+      "summary": "The infant alien from Disney+'s 'The Mandalorian', revealed in the November 12, 2019 premiere; stills of him became one of the most-shared reaction images of late 2019.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "sad-baby-yoda",
+      "name": "Sad Baby Yoda",
+      "aliases": ["Crying Baby Yoda", "Baby Yoda Crying", "Sad Grogu"],
+      "kind": "template",
+      "latin_name": "Yodula tristis",
+      "first_seen": "2019-12-01",
+      "date_precision": "month",
+      "summary": "A reaction image depicting the Star Wars character Grogu looking dejected or edited with teary eyes, used to express sadness, vulnerability, or disappointment.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "baby-yoda-soup",
+      "name": "Baby Yoda Drinking Soup",
+      "aliases": ["Baby Yoda Sipping Soup"],
+      "kind": "template",
+      "latin_name": "Yoda sorbens",
+      "first_seen": "2019-11-01",
+      "date_precision": "month",
+      "summary": "A GIF from 'The Mandalorian' episode 'Sanctuary' (late November 2019) of Baby Yoda slurping broth, used like Kermit sipping tea as a smug 'not my business' reaction.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "duckroll",
+      "name": "Duckroll",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Anas rotata",
+      "first_seen": "2006-01-01",
+      "date_precision": "year",
+      "summary": "A 4chan bait-and-switch prank from late 2006: a promising link led instead to a picture of a duck on wheels. It was named after a word filter that turned 'egg' into 'duck', so 'eggroll' became 'duckroll'.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "rickroll",
+      "name": "Rickroll",
+      "aliases": ["Rickrolling", "Rick Roll", "Never Gonna Give You Up"],
+      "kind": "template",
+      "latin_name": "Astleyus deceptivus",
+      "first_seen": "2007-03-29",
+      "date_precision": "day",
+      "summary": "A bait-and-switch prank in which an enticing or misleading link unexpectedly directs the viewer to Rick Astley's 1987 music video for 'Never Gonna Give You Up'.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "iq-bell-curve",
+      "name": "IQ Bell Curve",
+      "aliases": ["Midwit Meme", "Bell Curve", "Midwit"],
+      "kind": "template",
+      "latin_name": "Curva midwittensis",
+      "first_seen": "2020-01-01",
+      "date_precision": "year",
+      "summary": "A meme template depicting an IQ distribution curve where individuals at the low and high extremes reach the same simple conclusion while the average-IQ midwit overcomplicates it.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "labubu",
+      "name": "Labubu",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Daemonium dentatum",
+      "first_seen": "2015-01-01",
+      "date_precision": "year",
+      "summary": "A toothy, rabbit-eared elf from Kasing Lung's 2015 picture-book series 'The Monsters', sold as Pop Mart blind-box toys from 2019; after BLACKPINK's Lisa was seen with one in April 2024 it became a global collecting craze and, in 2025, a meme.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "lafufu",
+      "name": "Lafufu",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Daemonium simulatum",
+      "first_seen": "2025-01-01",
+      "date_precision": "year",
+      "summary": "The nickname for counterfeit Labubu dolls, whose off-model faces and wonky teeth made them a joke of their own in 2025.",
+      "uncertain": false,
+      "check_note": null
     }
   ],
   "links": [
@@ -1567,6 +1843,264 @@
       "parent_id": "reaction-image",
       "axis": "format",
       "basis": "A still photo of a person's expression/gesture, reposted as a stock reply to express a reaction."
+    },
+    {
+      "child_id": "italian-brainrot",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "A fixed recipe (AI hybrid creature, pseudo-Italian name, text-to-speech voiceover) that anyone refills with a new creature."
+    },
+    {
+      "child_id": "tralalero-tralala",
+      "parent_id": "italian-brainrot",
+      "axis": "character",
+      "basis": "Tralalero Tralala is widely considered the first Italian Brainrot character."
+    },
+    {
+      "child_id": "bombardiro-crocodilo",
+      "parent_id": "italian-brainrot",
+      "axis": "character",
+      "basis": "Bombardiro Crocodilo is one of the core characters of the Italian Brainrot wave."
+    },
+    {
+      "child_id": "tung-tung-tung-sahur",
+      "parent_id": "italian-brainrot",
+      "axis": "character",
+      "basis": "Though Indonesian in origin, it is counted among the Italian Brainrot characters."
+    },
+    {
+      "child_id": "ballerina-cappuccina",
+      "parent_id": "italian-brainrot",
+      "axis": "character",
+      "basis": "An AI hybrid with a pseudo-Italian name, adopted into the Italian Brainrot cast."
+    },
+    {
+      "child_id": "chimpanzini-bananini",
+      "parent_id": "italian-brainrot",
+      "axis": "character",
+      "basis": "An AI hybrid with a pseudo-Italian name, part of the Italian Brainrot cast."
+    },
+    {
+      "child_id": "brr-brr-patapim",
+      "parent_id": "italian-brainrot",
+      "axis": "character",
+      "basis": "An AI hybrid with a pseudo-Italian name, part of the Italian Brainrot cast."
+    },
+    {
+      "child_id": "tung-tung-tung-sahur",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "Same AI-hybrid-plus-fake-Italian-narration template as the rest of the Italian Brainrot wave."
+    },
+    {
+      "child_id": "ballerina-cappuccina",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "Same AI-hybrid-plus-fake-Italian-narration template as the rest of the Italian Brainrot wave."
+    },
+    {
+      "child_id": "chimpanzini-bananini",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "Same AI-hybrid-plus-fake-Italian-narration template as the rest of the Italian Brainrot wave."
+    },
+    {
+      "child_id": "brr-brr-patapim",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "Same AI-hybrid-plus-fake-Italian-narration template as the rest of the Italian Brainrot wave."
+    },
+    {
+      "child_id": "skibidi-slang",
+      "parent_id": "skibidi-toilet",
+      "axis": "character",
+      "basis": "The word comes from the Skibidi Toilet theme song."
+    },
+    {
+      "child_id": "skibidi-cameraman",
+      "parent_id": "skibidi-toilet",
+      "axis": "character",
+      "basis": "The Cameramen are the main faction fighting the toilets in Skibidi Toilet."
+    },
+    {
+      "child_id": "skibidi-tv-man",
+      "parent_id": "skibidi-toilet",
+      "axis": "character",
+      "basis": "The TV Men are allies of the Cameramen in Skibidi Toilet."
+    },
+    {
+      "child_id": "skibidi-slang",
+      "parent_id": "catchphrase",
+      "axis": "format",
+      "basis": "A short word attached to any situation as a nonsense intensifier."
+    },
+    {
+      "child_id": "skibidi-cameraman",
+      "parent_id": "video-remix",
+      "axis": "format",
+      "basis": "Clips of the Cameramen are cut into fan compilations, edits and fan-made continuations."
+    },
+    {
+      "child_id": "skibidi-tv-man",
+      "parent_id": "video-remix",
+      "axis": "format",
+      "basis": "Clips of the TV Men are cut into fan compilations, edits and fan-made continuations."
+    },
+    {
+      "child_id": "grimace-shake",
+      "parent_id": "grimace",
+      "axis": "character",
+      "basis": "The shake was released for Grimace's birthday and is named after him."
+    },
+    {
+      "child_id": "grimace",
+      "parent_id": "drawn-character",
+      "axis": "format",
+      "basis": "A cartoon mascot whose shapeless purple figure is redrawn and edited by others."
+    },
+    {
+      "child_id": "absolute-cinema",
+      "parent_id": "not-cinema",
+      "axis": "character",
+      "basis": "'Absolute Cinema' plays on Scorsese's verdict on what counts as cinema, using a photo of Scorsese himself."
+    },
+    {
+      "child_id": "not-cinema",
+      "parent_id": "catchphrase",
+      "axis": "format",
+      "basis": "A short quoted verdict reused as a punchline about any film or show."
+    },
+    {
+      "child_id": "haggis-the-hippo",
+      "parent_id": "moo-deng",
+      "axis": "character",
+      "basis": "Edinburgh Zoo introduced Haggis as a rival to Moo Deng ('Moo Deng? Who deng?')."
+    },
+    {
+      "child_id": "haggis-the-hippo",
+      "parent_id": "reaction-image",
+      "axis": "format",
+      "basis": "Photos of the calf are shared as cute reaction images, as with Moo Deng."
+    },
+    {
+      "child_id": "despicable-me",
+      "parent_id": "image-macro",
+      "axis": "format",
+      "basis": "Its Minions became a staple of captioned Facebook image macros."
+    },
+    {
+      "child_id": "gru-s-plan",
+      "parent_id": "despicable-me",
+      "axis": "character",
+      "basis": "The template is cut from a scene of Gru, the film's protagonist."
+    },
+    {
+      "child_id": "gru-s-plan",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "Copied from the production archive."
+    },
+    {
+      "child_id": "minion-memes",
+      "parent_id": "despicable-me",
+      "axis": "character",
+      "basis": "The Minions are Gru's henchmen in Despicable Me."
+    },
+    {
+      "child_id": "minion-memes",
+      "parent_id": "image-macro",
+      "axis": "format",
+      "basis": "A picture of Minions with a caption laid over it."
+    },
+    {
+      "child_id": "gentleminions",
+      "parent_id": "despicable-me",
+      "axis": "character",
+      "basis": "The trend centred on screenings of 'Minions: The Rise of Gru'."
+    },
+    {
+      "child_id": "gentleminions",
+      "parent_id": "video-remix",
+      "axis": "format",
+      "basis": "TikTok clips of suited groups at screenings, cut to the same soundtrack."
+    },
+    {
+      "child_id": "baby-yoda",
+      "parent_id": "reaction-image",
+      "axis": "format",
+      "basis": "Stills of his expressions are posted as replies to show a mood."
+    },
+    {
+      "child_id": "sad-baby-yoda",
+      "parent_id": "baby-yoda",
+      "axis": "character",
+      "basis": "A sad-looking still of Baby Yoda (Grogu)."
+    },
+    {
+      "child_id": "sad-baby-yoda",
+      "parent_id": "reaction-image",
+      "axis": "format",
+      "basis": "Copied from the production archive."
+    },
+    {
+      "child_id": "baby-yoda-soup",
+      "parent_id": "baby-yoda",
+      "axis": "character",
+      "basis": "A GIF of Baby Yoda from 'The Mandalorian'."
+    },
+    {
+      "child_id": "baby-yoda-soup",
+      "parent_id": "reaction-image",
+      "axis": "format",
+      "basis": "Posted as a smug 'not my business' reply, like Kermit sipping tea."
+    },
+    {
+      "child_id": "duckroll",
+      "parent_id": "reaction-image",
+      "axis": "format",
+      "basis": "A single stock picture posted in place of the promised content."
+    },
+    {
+      "child_id": "rickroll",
+      "parent_id": "duckroll",
+      "axis": "character",
+      "basis": "Rickrolling reused the duckroll's bait-and-switch, swapping the duck picture for Rick Astley's video (May 2007)."
+    },
+    {
+      "child_id": "rickroll",
+      "parent_id": "video-remix",
+      "axis": "format",
+      "basis": "Copied from the production archive."
+    },
+    {
+      "child_id": "iq-bell-curve",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "Its figures are Wojak variants: a simple Wojak at the low end, a crying Wojak in the middle and a hooded Wojak at the high end."
+    },
+    {
+      "child_id": "iq-bell-curve",
+      "parent_id": "comparison",
+      "axis": "format",
+      "basis": "Copied from the production archive."
+    },
+    {
+      "child_id": "labubu",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "Pasted next to other trending products to satirise hype-driven consumerism."
+    },
+    {
+      "child_id": "lafufu",
+      "parent_id": "labubu",
+      "axis": "character",
+      "basis": "Lafufus are counterfeit Labubu dolls."
+    },
+    {
+      "child_id": "lafufu",
+      "parent_id": "reaction-image",
+      "axis": "format",
+      "basis": "Photos of misshapen fakes are shared as joke reaction images."
     }
   ]
 }
