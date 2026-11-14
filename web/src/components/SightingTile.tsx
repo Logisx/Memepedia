@@ -12,17 +12,26 @@ const PLATFORM_NAME: Record<Platform, string> = {
   x: 'X',
 }
 
+/** Scraped titles carry site boilerplate; drop it. */
+function cleanTitle(title: string): string {
+  return title
+    .replace(/\s*\|\s*made w\/\s*imgflip meme maker/i, '')
+    .replace(/^image tagged in\s+/i, 'tagged: ')
+    .replace(/;\s*/g, ' · ')
+    .trim()
+}
+
 function Stamp({ sighting }: { sighting: Sighting }) {
   if (sighting.state === 'resolved') {
     return (
-      <span className="font-type absolute left-2 top-2 -rotate-3 border-2 border-stamp bg-paper px-2 py-0.5 text-lg uppercase text-stamp">
+      <span className="font-type absolute bottom-0 left-2 z-10 translate-y-1/2 -rotate-2 border-2 border-stamp bg-paper px-2 py-0.5 text-lg uppercase text-stamp">
         family: {sighting.node_name ?? sighting.node_id}
       </span>
     )
   }
   if (sighting.state === 'pending') {
     return (
-      <span className="font-type absolute left-2 top-2 -rotate-3 border-2 border-dashed border-ink bg-paper px-2 py-0.5 text-lg uppercase">
+      <span className="font-type absolute bottom-0 left-2 z-10 translate-y-1/2 -rotate-2 border-2 border-dashed border-ink bg-paper px-2 py-0.5 text-lg uppercase">
         unidentified
       </span>
     )
@@ -43,8 +52,8 @@ export function SightingTile({ sighting, now, arriving }: Props) {
   const resolved = sighting.state === 'resolved' && sighting.node_id !== null
 
   const picture = broken ? (
-    <div className="font-type flex aspect-[4/3] items-center justify-center bg-paper-deep p-3 text-center text-lg">
-      image unavailable
+    <div className="font-type flex h-16 items-center justify-center bg-paper-deep p-3 text-center text-base text-ink-soft">
+      specimen missing
     </div>
   ) : (
     <img
@@ -73,14 +82,14 @@ export function SightingTile({ sighting, now, arriving }: Props) {
         )}
         <Stamp sighting={sighting} />
       </div>
-      <div className="p-3">
+      <div className={`p-3 ${sighting.state === 'resolved' || sighting.state === 'pending' ? 'pt-5' : ''}`}>
         <a
           href={sighting.post_url}
           target="_blank"
           rel="noopener noreferrer"
           className="line-clamp-3 text-xl font-bold leading-tight no-underline hover:underline"
         >
-          {sighting.title}
+          {cleanTitle(sighting.title)}
         </a>
         <div className="font-type mt-1 text-base">
           spotted {timeAgo(sighting.posted_at, now)} on {PLATFORM_NAME[sighting.platform]}

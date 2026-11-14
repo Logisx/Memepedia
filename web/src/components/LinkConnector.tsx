@@ -7,7 +7,7 @@ import type { Link } from '@contract/types'
 export function LinkConnector({ link, checking = false }: { link: Link | undefined; checking?: boolean }) {
   const cited = link?.status === 'cited'
   return (
-    <div className="flex h-full w-60 shrink-0 flex-col justify-center gap-2 px-2">
+    <div className="flex h-full w-60 shrink-0 flex-col justify-end gap-2 px-2 pb-6">
       {link && cited && (
         <>
           <span className="font-type text-sm uppercase tracking-widest text-cited">cited</span>
@@ -19,7 +19,7 @@ export function LinkConnector({ link, checking = false }: { link: Link | undefin
               rel="noopener noreferrer"
               className="font-type text-sm underline"
             >
-              {link.source_title ?? link.source_url}
+              {(link.source_title ?? link.source_url).split(/\s*\|\s*/).filter((v, i, a) => a.indexOf(v) === i).join(' | ')}
             </a>
           )}
         </>

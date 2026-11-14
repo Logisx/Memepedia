@@ -31,7 +31,8 @@ export function WeekStrip() {
       {week && !empty && (
         <div className="flex flex-wrap gap-x-8 gap-y-3">
           {week.rising.length > 0 && (
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="font-type text-sm uppercase">Rising today</span>
               {week.rising.map(({ node, count_24h, daily_mean_prior }) => (
                 <RouterLink
                   key={node.id}
@@ -42,7 +43,9 @@ export function WeekStrip() {
                   <span>
                     <span className="block text-xl font-extrabold leading-tight">▲ {node.name}</span>
                     <span className="font-type block text-sm">
-                      {count_24h} today · usually {Math.round(daily_mean_prior * 10) / 10}/day
+                      {daily_mean_prior < 1
+                        ? `${count_24h} today · first sightings`
+                        : `${count_24h} today · usually ${Math.round(daily_mean_prior * 10) / 10}/day`}
                     </span>
                   </span>
                 </RouterLink>

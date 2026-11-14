@@ -40,6 +40,17 @@ Status: **open** (needs a decision or fix on the contract side), **handled** (fr
 - **Frontend handling:** works as specified; it is a mock-only effect and the real backend will not do it.
 - **Suggested fix:** add small tree fixtures for these three ids, so the demo path through the mock lands on the right meme.
 
+### 6. Format-class names differ in casing between fixtures and the live backend — open
+
+- **What:** the fixtures call the node `Drawn Character`; the live backend returned `Drawn character` for Pepega's format class. The UI prints `node.name` as given.
+- **Suggested fix:** pick one casing in the backend seed data. The frontend does not rewrite names, because that would also change proper names such as `NPC Wojak`.
+
+### 7. Contract does not say whether `/api/wall?since=` re-sends reclassified sightings — open
+
+- **What:** a sighting can be `pending` when first seen and `resolved` later. The contract does not say whether the wall endpoint returns it again once its state changes.
+- **Frontend handling:** the wall now replaces an existing tile when its `state`, `node_id` or `node_name` changes, so it works if the backend does re-send it. If the backend never does, tiles stay `UNIDENTIFIED` until reload.
+- **Suggested fix:** state the rule in `contract/README.md`.
+
 ## Tooling notes (not contract bugs)
 
 - **TypeScript 7 rejects `baseUrl`.** The scaffold's `create-vite` pulls TypeScript 7; `tsconfig.app.json` therefore uses only `paths` for the `@contract` alias.
