@@ -37,6 +37,7 @@ All commands from `backend/`, with uv.
 | Live-check one tick on one feed | `uv run python scripts/smoke_live.py --feed <key>` |
 | Build the real archive: curated families, Imgflip templates, images, link verification | `uv run python scripts/seed.py [--reset] [--steps families,templates,images,verify] [--limit N] [--workers N] [--families wojak,doge]` (`--families` narrows the verify step to those families, in that order) |
 | Backfill a week of Lemmy history as sightings | `uv run python scripts/backfill.py [--max-images 120]` |
+| Re-match pending sightings against the archive as it is now, from their saved vision labels. Dry run unless `--apply`; no Gemini call unless `--llm`, then at most `--max-llm` (default 50). Prints its target database first | `uv run python scripts/rematch.py [--apply] [--hours N] [--llm] [--max-llm 50]` |
 | Run the laptop clock (visits feeds in rotation until there is a public URL) | `uv run python scripts/run_loop.py [--every 45] [--once] [--platform lemmy\|reddit\|imgflip]` |
 | Manage Context.dev page monitors (one per feed) | `uv run python scripts/monitors.py create\|list\|delete [--dry-run]` |
 | Deploy the API and the website to Modal (one URL; both are live in production as of 2026-11-14 at `https://aleksandr-shishkov-work--memepedia-web.us-east.modal.run`) | `.\backend\deploy.ps1` builds `web/` with an empty `VITE_API_BASE`, then runs `modal deploy`. On Linux/WSL (no `deploy.ps1`): from `web/`, `VITE_API_BASE= npm run build`, then from `backend/`, `uv run --with modal modal deploy deploy.py`. `.env` lives at the repo root. Prefix `MEMEPEDIA_APP=memepedia-staging` first for a throwaway copy (no warm container, no clock); remove it with `modal app stop memepedia-staging`. `modal deploy` replaces the whole app, so deploy only from an up-to-date `main` |
@@ -102,6 +103,7 @@ The database is a local PostgreSQL 16 that starts itself on first use (the `pgse
 - Clock schedule (owner, option 3, 2026-11-14): the Modal clock is switchable via `MEMEPEDIA_CLOCK` and is currently paused rather than running every minute; turn it on deliberately when wanted.
 - NSFW policy (owner, 2026-11-14): strict and demo-safe. NSFW sightings are removed from the wall; nodes with an NSFW or unlabelled image are hidden/blurred until a person reveals them by clicking.
 - Modern memes shortlist (owner, 2026-11-14): approved — see "In progress".
+- Stamping more sightings (owner, 2026-11-14; plan in `claude_docs/plans/2026-11-14_identification-recall_plan.md`): a guess that exactly equals an archive name or alias is stamped from confidence 0.7 (`VISION_EXACT_MIN_CONFIDENCE`); any other guess still needs 0.85 (`VISION_MIN_CONFIDENCE`). A post with no usable guess is stamped by the one *character* node its `subjects` name exactly (no fuzzy match, no LLM; two characters or a template means no stamp; a few generic one-word names such as Walter and Cameraman are skipped). `VISION_MATCH_SUBJECTS=0` turns that off. Code in `live.match_label` and `resolver.Matcher`. Written and unit-tested, **not yet deployed**; the database-backed tests have not been run on the code (see "Still open").
 - Cloudinary (owner, 2026-11-14): was only an optional idea in the original plan (an image host plus a side challenge); never implemented, and now dropped. Images stay hotlinked from their original sources (nodes mostly `i.imgflip.com`; sightings from Lemmy CDNs and `i.redd.it`).
 - Priorities (owner, 2026-11-14): fix only important breaking bugs for now; speed is not a priority (a trace taking a few minutes is acceptable). Next step after the work in progress is for the owner to check the app end to end and prepare the demo.
 
@@ -161,6 +163,7 @@ The database is a local PostgreSQL 16 that starts itself on first use (the `pgse
 
 ## Still open
 
+- Run the full test suite (`uv run pytest -q`) on Linux/WSL before deploying the stamping change. It was written on Windows, where the database guard refuses the local test database (it accepts only a unix-socket server), so only the pure tests ran there (`test_resolver.py`, the `classify`/`match_label` tests in `test_live.py`). Not yet run: the tick and identify tests in `test_live.py` (their stubs moved from `resolver.resolve` to `resolver._resolve_in`) and the new `tests/test_rematch.py`. `tests/test_db_guard.py` also fails on Windows for the same reason; that is not new.
 - Context.dev monitors and the webhook signing secret (not created; owner asked for an explanation first — see "Decisions waiting on the owner").
 - The week backfill (`scripts/backfill.py` not run).
 - The Imgflip top-100 templates step of the seed.
