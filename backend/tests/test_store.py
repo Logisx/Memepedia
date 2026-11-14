@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+import pytest
 from fastapi.testclient import TestClient
 
 from memepedia import db, store
@@ -106,10 +107,13 @@ def test_cite_link_returns_none_for_unknown_link(client: TestClient) -> None:
     assert store.cite_link("no-such-node", "character", evidence) is None
 
 
-def test_rising_maths_only_includes_spiking_nodes(client: TestClient) -> None:
+_RISING_NODE = "rising-test-node"
+
+
+def _rising_node() -> None:
     store.upsert_node(
         MemeNode(
-            id="rising-test-node",
+            id=_RISING_NODE,
             name="Rising Test Node",
             aliases=[],
             kind="character",
@@ -125,34 +129,94 @@ def test_rising_maths_only_includes_spiking_nodes(client: TestClient) -> None:
             nsfw=None,
         )
     )
-    now = datetime.now(UTC)
-    for i in range(5):
-        post = Post(
-            platform="lemmy",
-            source="test",
-            post_url=f"https://example.test/rising-recent-{i}",
-            image_url="https://example.test/img.jpg",
-            title="recent",
-            author="tester",
-            posted_at=now - timedelta(hours=1, minutes=i),
-        )
-        store.insert_sighting(post, None, "rising-test-node", "resolved", nsfw=False)
-    for i in range(6):
-        post = Post(
-            platform="lemmy",
-            source="test",
-            post_url=f"https://example.test/rising-prior-{i}",
-            image_url="https://example.test/img.jpg",
-            title="prior",
-            author="tester",
-            posted_at=now - timedelta(days=2, hours=i),
-        )
-        store.insert_sighting(post, None, "rising-test-node", "resolved", nsfw=False)
-    rising = {rf.node.id: rf for rf in store.rising(limit=50)}
-    assert "rising-test-node" in rising
-    entry = rising["rising-test-node"]
-    assert entry.count_24h == 5
-    assert entry.daily_mean_prior == 1.0
+
+
+def _rising_sighting(key: str, title: str, age: timedelta) -> None:
+    posted_at = datetime.now(UTC) - age
+    post = Post(
+        platform="lemmy",
+        source="test",
+        post_url=f"https://example.test/rising-{key}",
+        image_url="https://example.test/img.jpg",
+        title=title,
+        author="tester",
+        posted_at=posted_at,
+    )
+    store.insert_sighting(post, None, _RISING_NODE, "resolved", seen_at=posted_at, nsfw=False)
+
+
+def _rising_cleanup() -> None:
+    db.execute("DELETE FROM sightings WHERE post_url LIKE 'https://example.test/rising-%%'")
+    db.execute("DELETE FROM nodes WHERE id = %s", (_RISING_NODE,))
+
+
+def _rising_ids() -> set[str]:
+    return {rf.node.id for rf in store.rising(limit=50)}
+
+
+def test_rising_maths_only_includes_spiking_nodes(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(store, "_observed_days", lambda: 5.0)
+    _rising_node()
+    try:
+        for i in range(5):
+            _rising_sighting(f"recent-{i}", f"recent {i}", timedelta(hours=1, minutes=i))
+        for i in range(6):
+            _rising_sighting(f"prior-{i}", f"prior {i}", timedelta(days=2, hours=i))
+        entry = {rf.node.id: rf for rf in store.rising(limit=50)}[_RISING_NODE]
+        assert entry.count_24h == 5
+        assert entry.daily_mean_prior == 1.5  # 6 prior posts over the 4 days it was observed
+    finally:
+        _rising_cleanup()
+
+
+def test_rising_counts_a_cross_posted_title_once(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(store, "_observed_days", lambda: 5.0)
+    _rising_node()
+    try:
+        _rising_sighting("cross-1", "The Same Post", timedelta(hours=1))
+        _rising_sighting("cross-2", "the same post", timedelta(hours=2))  # another community
+        _rising_sighting("cross-3", "A Second Post", timedelta(hours=3))
+        assert _RISING_NODE not in _rising_ids()  # two distinct posts is not enough
+        _rising_sighting("cross-4", "A Third Post", timedelta(hours=4))
+        entry = {rf.node.id: rf for rf in store.rising(limit=50)}[_RISING_NODE]
+        assert entry.count_24h == 3  # four sightings, three posts
+    finally:
+        _rising_cleanup()
+
+
+def test_rising_waits_for_a_baseline(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    _rising_node()
+    try:
+        for i in range(6):
+            _rising_sighting(f"young-{i}", f"young {i}", timedelta(hours=1, minutes=i))
+        monkeypatch.setattr(store, "_observed_days", lambda: 1.0)
+        assert store.rising(limit=50) == []  # collecting for a day is no history to spike against
+        monkeypatch.setattr(store, "_observed_days", lambda: 5.0)
+        assert _RISING_NODE in _rising_ids()
+    finally:
+        _rising_cleanup()
+
+
+@pytest.mark.parametrize(
+    ("count_24h", "prior_count", "observed_days", "expected"),
+    [
+        (2, 0, 6.0, None),  # too few posts, whatever the history
+        (3, 0, 2.0, None),  # not observed long enough
+        (3, 0, 3.0, 0.0),  # three new posts after a quiet stretch
+        (5, 6, 5.0, 1.5),  # the usual rate is over the 4 prior days observed
+        (5, 12, 5.0, None),  # 3/day usual: 5 is not twice that
+        (6, 12, 5.0, 3.0),  # exactly twice the usual rate counts
+        (10, 30, 10.0, 5.0),  # the prior window is capped at six days
+    ],
+)
+def test_spike_baseline(
+    count_24h: int, prior_count: int, observed_days: float, expected: float | None
+) -> None:
+    assert store.spike_baseline(count_24h, prior_count, observed_days) == expected
 
 
 def test_expire_specimens_removes_only_stale_ones(client: TestClient) -> None:

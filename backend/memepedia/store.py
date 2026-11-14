@@ -539,12 +539,49 @@ def history_for(node_ids: Sequence[str], limit: int = 30) -> list[HistoryItem]:
     return [_row_to_history(r) for r in rows]
 
 
+# A meme counts as rising only on real evidence: enough distinct posts today, well above its usual
+# rate, and a baseline the archive actually observed. Two posts against an empty history is noise.
+RISING_MIN_POSTS = 3
+RISING_MIN_RATIO = 2.0
+RISING_MIN_OBSERVED_DAYS = 3.0
+_PRIOR_WINDOW_DAYS = 6.0
+
+
+def spike_baseline(count_24h: int, prior_count: int, observed_days: float) -> float | None:
+    """The usual posts per day, if today's count is a real spike over it; otherwise None.
+
+    `observed_days` is how long the archive has been collecting. The usual rate is taken over
+    the days of the prior window that were actually observed, never over days with no data, and
+    nothing counts as rising until at least RISING_MIN_OBSERVED_DAYS have been observed.
+    """
+    if observed_days < RISING_MIN_OBSERVED_DAYS or count_24h < RISING_MIN_POSTS:
+        return None
+    prior_days = min(_PRIOR_WINDOW_DAYS, observed_days - 1.0)
+    mean = prior_count / prior_days
+    if count_24h < RISING_MIN_RATIO * mean:
+        return None
+    return round(mean, 1)
+
+
+def _observed_days() -> float:
+    """How many days ago the first sighting was recorded; 0 for an empty archive."""
+    row = db.fetch_one(
+        "SELECT extract(epoch FROM now() - min(seen_at)) / 86400 AS days FROM sightings"
+    )
+    return float(row["days"]) if row is not None and row["days"] is not None else 0.0
+
+
 def _rising_candidates() -> list[tuple[str, int, float]]:
+    observed_days = _observed_days()
+    if observed_days < RISING_MIN_OBSERVED_DAYS:
+        return []
+    # Distinct titles, so one post cross-posted to several communities counts once.
     rows = db.fetch_all(
         """
         SELECT node_id,
-            count(*) FILTER (WHERE posted_at >= now() - interval '24 hours') AS count_24h,
-            count(*) FILTER (
+            count(DISTINCT lower(title))
+                FILTER (WHERE posted_at >= now() - interval '24 hours') AS count_24h,
+            count(DISTINCT lower(title)) FILTER (
                 WHERE posted_at < now() - interval '24 hours'
                   AND posted_at >= now() - interval '7 days'
             ) AS prior_count
@@ -555,9 +592,9 @@ def _rising_candidates() -> list[tuple[str, int, float]]:
     )
     candidates = []
     for row in rows:
-        count_24h, daily_mean_prior = row["count_24h"], round(row["prior_count"] / 6, 1)
-        if count_24h >= 2 and count_24h > daily_mean_prior:
-            candidates.append((row["node_id"], count_24h, daily_mean_prior))
+        baseline = spike_baseline(row["count_24h"], row["prior_count"], observed_days)
+        if baseline is not None:
+            candidates.append((row["node_id"], row["count_24h"], baseline))
     candidates.sort(key=lambda c: c[1] - c[2], reverse=True)
     return candidates
 
