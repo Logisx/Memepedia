@@ -1,6 +1,6 @@
 # Memepedia — current status
 
-Last updated: 2026-11-14 16:37 EET. Read this first when picking the project up in a new session.
+Last updated: 2026-11-14 16:55 EET. Read this first when picking the project up in a new session.
 
 ## In one paragraph
 
@@ -33,7 +33,7 @@ All commands from `backend/`, with uv.
 | Check the sources, image lookup, Gemini live | `uv run python scripts/smoke_sources.py [--platform lemmy\|reddit\|imgflip]`, `smoke_images.py`, `smoke_llm.py` |
 | Live-check one trace, printing each event | `uv run python scripts/smoke_trace.py --query "Doomer" [--context "..."] [--specimen]` |
 | Live-check one tick on one feed | `uv run python scripts/smoke_live.py --feed <key>` |
-| Build the real archive: curated families, Imgflip templates, images, link verification | `uv run python scripts/seed.py [--reset] [--steps families,templates,images,verify] [--limit N] [--workers N]` |
+| Build the real archive: curated families, Imgflip templates, images, link verification | `uv run python scripts/seed.py [--reset] [--steps families,templates,images,verify] [--limit N] [--workers N] [--families wojak,doge]` (`--families` narrows the verify step to those families, in that order) |
 | Backfill a week of Lemmy history as sightings | `uv run python scripts/backfill.py [--max-images 120]` |
 | Run the laptop clock (visits feeds in rotation until there is a public URL) | `uv run python scripts/run_loop.py [--every 45] [--once] [--platform lemmy\|reddit\|imgflip]` |
 | Manage Context.dev page monitors (one per feed) | `uv run python scripts/monitors.py create\|list\|delete [--dry-run]` |
@@ -67,7 +67,8 @@ Nothing is half-written right now. The backend code is complete for the planned 
 
 ## Not done
 
-- The full seed run (Imgflip top 100 and verification of every link, roughly 900 credits) and the week backfill: `scripts/seed.py` has not been run in full (partial quote-verification runs have happened); `scripts/backfill.py` has not been run.
+- The Imgflip top 100 step of the seed (`--steps templates`, then `verify` for the new links). The curated part of the seed is done, see "State of the data". Verifying a link costs 6 to 7 credits, so 100 templates with one or two links each come to roughly 600 to 1300 credits: check the credit balance with the owner first.
+- The week backfill: `scripts/backfill.py` has not been run.
 - The live loop is not running (no `run_loop.py` rotation and no monitors in place).
 - Deployment: `backend/deploy.py` (Modal: the API kept warm plus a one-minute clock for the live loop) is written but untested; there is no Modal login on this machine.
 - Monitors as the clock, once there is a public URL.
@@ -129,5 +130,9 @@ Nothing is half-written right now. The backend code is complete for the planned 
 
 - `contract/fixtures/` is mock data: 31 nodes, illustrative dates and quotes, some source URLs on Know Your Meme. It is for the frontend to build against and is not loaded into the real archive.
 - `backend/memepedia/data/seed.json` is the real seed. Its dates and relations come from the model's own knowledge and have not been checked against a source by a person (for example Wojak 2009, Pepe 2005, Doge 2010); each is stored with a precision of year, month or day. Every link starts as "inferred"; the seed script's verify step turns it "cited" when it finds a quote.
-- The local database (`memepedia`) currently holds the mock fixtures (31 nodes, 19 links, 47 sightings) loaded by `load_fixtures.py`, not the real curated seed. `scripts/seed.py` has not been run in full; only partial quote-verification runs have happened. The week backfill has not been run. The live loop is not running.
-- Context.dev credits: the backend ledger `backend/.data/credits.jsonl` shows 84 credits since 15:59 on 2026-11-14 (71 on quote verification, 13 on Reddit and Imgflip fetches), on top of roughly 55 from the feasibility tests.
+- The local database (`memepedia`) holds the real curated seed since 2026-11-14 16:45: 72 nodes and 70 links, no sightings yet. Images were found automatically for 59 of 62 memes (none for Consoomer, Foul Bachelor Frog, Ridiculously Photogenic Guy); nobody has looked at them.
+- Link verification of the curated seed: 41 of 70 links are "cited". By family: Wojak 17 of 23, Doge 4 of 9, Pepe 11 of 13, everything else 9 of 25. Advice Animals did worst: most of their format links found no quote.
+- Quality of the citations is uneven. 16 of the 41 come from meme.com and several from small aggregator sites; only a handful come from Wikipedia, Daily Dot, Dictionary.com or MEL. Some quotes carry footnote digits glued to the text ("September 20183"). Neither has been fixed.
+- A backup of this verified archive is in `backend/.data/archive_curated_verified.dump` (git-ignored, `pg_dump -Fc`). Do not run `seed.py --reset` without it: the citations cost about 510 credits to produce.
+- The week backfill has not been run. The live loop is not running.
+- Context.dev credits: the backend ledger `backend/.data/credits.jsonl` shows 598 credits since 15:59 on 2026-11-14 (585 on quote verification, 13 on Reddit and Imgflip fetches), on top of roughly 55 from the feasibility tests. About 85 of those were wasted by re-checking 13 demo-family links that had already failed once.
