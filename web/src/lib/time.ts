@@ -11,6 +11,11 @@ export function timeAgo(iso: string, now: number = Date.now()): string {
   return `${Math.round(hours / 24)} d ago`
 }
 
+/** The year a meme was first recorded, e.g. "2018", or null when unknown. */
+export function firstSeenYear(node: Pick<MemeNode, 'first_seen'>): string | null {
+  return node.first_seen ? (node.first_seen.split('-')[0] ?? null) : null
+}
+
 /** Show a first-seen date only as precisely as `date_precision` allows. */
 export function formatFirstSeen(node: Pick<MemeNode, 'first_seen' | 'date_precision'>): string | null {
   if (!node.first_seen) return null
