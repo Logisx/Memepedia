@@ -22,10 +22,10 @@ function MemeBox({ data }: NodeProps<MemeFlowNode>) {
       style={{ width: NODE_W, height: NODE_H }}
     >
       <Handle type="target" position={Position.Top} style={hiddenHandle} />
-      <NodeThumb node={node} className="h-[60px] w-[60px]" />
+      <NodeThumb node={node} className="h-[68px] w-[68px]" />
       <div className="min-w-0">
-        <div className="line-clamp-2 text-lg font-extrabold leading-tight">{node.name}</div>
-        {node.latin_name && <div className="truncate text-sm italic">{node.latin_name}</div>}
+        <div className="line-clamp-2 text-xl font-extrabold leading-tight">{node.name}</div>
+        {node.latin_name && <div className="truncate text-base italic">{node.latin_name}</div>}
       </div>
       <Handle type="source" position={Position.Bottom} style={hiddenHandle} />
     </div>
@@ -80,7 +80,7 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
       edges={edges}
       nodeTypes={nodeTypes}
       fitView
-      fitViewOptions={{ padding: 0.1, maxZoom: 1.1 }}
+      fitViewOptions={{ padding: 0.05, maxZoom: 1.1 }}
       minZoom={0.15}
       nodesDraggable={false}
       nodesConnectable={false}

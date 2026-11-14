@@ -2,8 +2,8 @@ import dagre from '@dagrejs/dagre'
 import type { Link, MemeNode, TreeResponse } from '@contract/types'
 
 export const MAX_CHILDREN = 8
-export const NODE_W = 210
-export const NODE_H = 78
+export const NODE_W = 196
+export const NODE_H = 88
 
 export type FamilyNode =
   | { id: string; kind: 'meme'; x: number; y: number; node: MemeNode; selected: boolean; onPath: boolean }
@@ -75,7 +75,7 @@ export function layoutFamily(tree: TreeResponse, expanded: ReadonlySet<string>):
   }
 
   const graph = new dagre.graphlib.Graph()
-  graph.setGraph({ rankdir: 'TB', nodesep: 28, ranksep: 70, marginx: 20, marginy: 20 })
+  graph.setGraph({ rankdir: 'TB', nodesep: 14, ranksep: 64, marginx: 20, marginy: 20 })
   graph.setDefaultEdgeLabel(() => ({}))
 
   const visible = new Set<string>()

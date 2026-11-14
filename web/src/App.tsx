@@ -1,5 +1,6 @@
 import { BrowserRouter, Link, Route, Routes } from 'react-router'
 import Lineage from './screens/Lineage'
+import NotFound from './screens/NotFound'
 import Related from './screens/Related'
 import Trace from './screens/Trace'
 import Wall from './screens/Wall'
@@ -11,11 +12,9 @@ export default function App() {
         <Link to="/" className="text-3xl font-extrabold no-underline">
           Memepedia
         </Link>
-        <nav className="font-type flex gap-4 text-lg">
+        <nav className="font-type flex gap-6 text-xl">
           <Link to="/">Wall</Link>
-          <Link to="/meme/doomer">Lineage</Link>
-          <Link to="/trace?q=grug%20wojak">Trace</Link>
-          <Link to="/related?a=doomer&b=yes-chad">Related</Link>
+          <Link to="/related">Compare two memes</Link>
         </nav>
       </header>
       <main>
@@ -24,6 +23,7 @@ export default function App() {
           <Route path="/meme/:id" element={<Lineage />} />
           <Route path="/trace" element={<Trace />} />
           <Route path="/related" element={<Related />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
     </BrowserRouter>
