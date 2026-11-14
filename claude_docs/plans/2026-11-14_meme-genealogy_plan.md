@@ -1,6 +1,6 @@
 # Memepedia — hackathon plan (Junction 2026)
 
-Status: draft v3, 2026-11-14. About 19 build hours left, team of two, built mostly with Claude.
+Status: draft v3.1, 2026-11-14. This is the product and logic reference; the two per-person plans next to it are the build order. About 19 build hours left, team of two, built mostly with Claude.
 
 Changes in v3 (after live-source tests and a two-round adversarial review): the archive now tracks live posts from social sources as **sightings**; lineage is drafted by an LLM and then verified against the web, instead of being mined from prose; a vision model is core; the home screen is a live wall; the tree view is a descent strip plus a family map. Cut: time-axis layout, time scrubber, physics pit, news search, culture-news monitors.
 
@@ -23,7 +23,7 @@ Changes in v3 (after live-source tests and a two-round adversarial review): the 
 | Live social sources, plain curl | Lemmy JSON API works (titles, timestamps, image URLs, scores, `sort=TopWeek`). Imgflip hot page works but is partly JS-rendered. trends24.in (X trends) and Mastodon trends respond. Reddit RSS and old.reddit answered once, then 429. Reddit JSON, Bluesky public search, 9GAG, Memedroid return 403. |
 | Reddit | Only reachable through a provider with proxies. To be tested through Context.dev scrape in P0. Exa's Reddit coverage is unconfirmed and can only be checked with a key. |
 | Context.dev | Scrape with JSON-schema extraction on any URL; search; research answers; monitors on page, sitemap, extract or search targets with a 10-minute minimum interval and on-demand runs; webhooks `change.detected` and `run.completed`. Costs: scrape 1 credit plus 1 to 4 for extraction, search 1 per 10 results, page-monitor run 1, extract-monitor run 10. Budget 50,000. |
-| Hosting | Vercel hobby cron is daily only (from memory, check in P0), so Context.dev monitors are the scheduler. |
+| Hosting | The backend needs a public URL for Context.dev webhooks and for judges. Modal (a Junction sponsor) provides that plus scheduled functions; Context.dev monitors remain the primary clock. |
 
 ## 3. The logic
 
@@ -51,7 +51,7 @@ A family is everything connected on the character line. Format links are shown o
 
 ## 4. Architecture
 
-**Stack:** one Next.js (App Router) app in TypeScript on Vercel; Postgres on Aiven; Gemini Flash for vision and text; `context.dev` SDK; `@xyflow/react` with dagre for the family map; `motion` for animation; Tailwind.
+**Stack:** two independent halves that meet at `contract/`. Backend: Python (uv, FastAPI) on Modal, Postgres on Aiven, Gemini Flash for vision and text, Context.dev over HTTP. Frontend: a static React app (Vite, TypeScript, Tailwind, `@xyflow/react` with dagre, `motion`) that runs on fixtures until the merge. Build order for each half: `2026-11-14_backend-pipeline_plan.md` and `2026-11-14_frontend-experience_plan.md`.
 
 ```
  SOURCES                      PIPELINE (server)                      STORE          SCREENS
