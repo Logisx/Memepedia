@@ -161,7 +161,7 @@
       "date_precision": "year",
       "summary": "A red-faced Wojak with tears and clenched teeth, used to depict someone furious or upset at an outcome.",
       "uncertain": true,
-      "check_note": "Earliest known use is an unsourced comic believed to date from 2014; year is soft."
+      "check_note": "Earliest known use is an unsourced comic believed to date from 2014; year is soft. Looked for a non-Know-Your-Meme source for this 2014 date; the Daily Dot's own Wojak coverage cites Know Your Meme for it rather than confirming it independently, so it is left unconfirmed."
     },
     {
       "id": "wojak-mask",
@@ -200,7 +200,7 @@
       "date_precision": "year",
       "summary": "A Wojak drawn with a shrunken head or tiny brain, used to mock a take as unintelligent.",
       "uncertain": true,
-      "check_note": "The term 'brainlet' is first archived on 4chan /sci/ in December 2015; the Wojak image may only date from 2016."
+      "check_note": "The term 'brainlet' is first archived on 4chan /sci/ in December 2015; the Wojak image may only date from 2016. Looked for a non-Know-Your-Meme source confirming either date; found none, so this is left unconfirmed."
     },
     {
       "id": "big-brain-wojak",
@@ -306,11 +306,11 @@
       "aliases": [],
       "kind": "character",
       "latin_name": "Wojakus compulsivus",
-      "first_seen": "2019-01-01",
-      "date_precision": "year",
+      "first_seen": "2018-12-01",
+      "date_precision": "month",
       "summary": "A dishevelled, hollow-eyed Wojak used to mock someone ruled by compulsive habits, originally pornography.",
-      "uncertain": true,
-      "check_note": "Wikipedia dates its rise to November 2019 (No Nut November); earliest drawings may be earlier."
+      "uncertain": false,
+      "check_note": "Dictionary.com dates the first Coomer image to a 4chan thread in December 2018."
     },
     {
       "id": "consoomer",
@@ -370,7 +370,7 @@
       "date_precision": "year",
       "summary": "A calm, bearded blond figure who answers a mocking question with a flat 'Yes.', used to show unashamed confidence.",
       "uncertain": true,
-      "check_note": "Character parent Wojak follows the fixture; Chad is a credible alternative. Format parent Virgin vs. Chad is by analogy (insecure vs confident archetypes): the documented origin (Aug 2019) combines the Grayons meme with a 4chan Nordic/Mediterranean exploitable. Fallback format parent: comparison."
+      "check_note": "Character parent Wojak follows the fixture; Chad is a credible alternative. Format parent Virgin vs. Chad is by analogy (insecure vs confident archetypes): the documented origin (Aug 2019) combines the Grayons meme with a 4chan Nordic/Mediterranean exploitable. Fallback format parent: comparison. MEL Magazine confirms the character grew out of 2016 4chan /pol/ Nordic-vs-Mediterranean discussions and had reached its 'Yes' format 'by 2019', but does not give an August 2019 posting date, so that specific date is unconfirmed."
     },
     {
       "id": "trad-girl",
@@ -400,7 +400,7 @@
       "date_precision": "year",
       "summary": "A caveman Wojak who speaks in broken, simple sentences, used to argue for blunt common sense over sophistication.",
       "uncertain": true,
-      "check_note": "Earliest illustration reported October 2017; first widely seen upload February 2019. The fixtures call this node 'grug-early-man'."
+      "check_note": "Earliest illustration reported October 2017; first widely seen upload February 2019. The fixtures call this node 'grug-early-man'. Looked for a non-Know-Your-Meme source for the October 2017 illustration date; found none, so it is left unconfirmed."
     },
     {
       "id": "doge",
@@ -414,8 +414,8 @@
       "first_seen": "2010-01-01",
       "date_precision": "year",
       "summary": "A photo of the Shiba Inu Kabosu glancing sideways, surrounded by multicoloured Comic Sans phrases in broken English such as 'such wow'.",
-      "uncertain": true,
-      "check_note": "Kabosu photo and the 'doge' spelling both date to 2010, but the Comic Sans 'such wow' format mostly spread in 2012-2013. Root changed from reaction-image to image-macro."
+      "uncertain": false,
+      "check_note": "Wikipedia confirms both the Kabosu photo and the earliest dog-photo use of the misspelling 'doge' (an October 2010 Reddit post) date to 2010, while the Comic Sans 'such wow' caption format spread mainly in 2012-2013. Root changed from reaction-image to image-macro."
     },
     {
       "id": "cheems",
@@ -460,7 +460,7 @@
       "date_precision": "year",
       "summary": "A two-panel image pitting muscular Swole Doge against small, weak Cheems to contrast a strong past with a feeble present.",
       "uncertain": true,
-      "check_note": "Format parent Virgin vs. Chad is by analogy (strong vs weak contrast) and not documented as a direct derivation; fallback format parent: comparison."
+      "check_note": "Format parent Virgin vs. Chad is by analogy (strong vs weak contrast) and not documented as a direct derivation; fallback format parent: comparison. The Daily Dot dates the component characters to 2019 (Cheems June 8, Swole Doge July 7) but gives no date for when the two were first paired, so the reported February 2020 date for the comparison format remains unconfirmed."
     },
     {
       "id": "dogelore",
@@ -488,8 +488,8 @@
       "first_seen": "2018-09-01",
       "date_precision": "month",
       "summary": "A close-up of a white bull terrier staring into the camera, captioned as loving fire trucks and 'moster trucks'.",
-      "uncertain": true,
-      "check_note": "Walter is Nelson, a bull terrier, not a Shiba; he spread separately (Sept 2018) and was later absorbed into the Dogelore cast. The character link records cast membership, not descent; alternatives are a parent of Dogelore or a standalone family under reaction-image."
+      "uncertain": false,
+      "check_note": "Film Daily confirms the Nelson/Walter photo was first posted to Twitter in September 2018, independently of Know Your Meme. He is Nelson, a bull terrier, not a Shiba; the character link to Doge records cast membership in Dogelore, not descent, and alternatives are a parent of Dogelore or a standalone family under reaction-image."
     },
     {
       "id": "doge-bonk",
@@ -544,11 +544,11 @@
       ],
       "kind": "character",
       "latin_name": "Rana pepeus tristis",
-      "first_seen": "2012-01-01",
+      "first_seen": "2009-01-01",
       "date_precision": "year",
       "summary": "A dejected, teary Pepe posted to express disappointment, often captioned 'feels bad man'.",
-      "uncertain": true,
-      "check_note": "Wikipedia only says it was in use on Tumblr 'by 2012'; 4chan use is probably earlier (often cited as 2009)."
+      "uncertain": false,
+      "check_note": "The University of Luxembourg's HIVI project dates the sad 'Feels bad man' Pepe variant to 2009, earlier than Wikipedia's 'by 2012' Tumblr-usage date."
     },
     {
       "id": "smug-frog",
@@ -561,8 +561,8 @@
       "first_seen": "2012-01-01",
       "date_precision": "year",
       "summary": "A self-satisfied Pepe with a knowing smirk, posted to gloat or feign superiority.",
-      "uncertain": true,
-      "check_note": "Wikipedia gives 2012; a 4chan /tv/ post from June 2011 is reported as the earliest instance."
+      "uncertain": false,
+      "check_note": "Wikipedia's Pepe the Frog article dates the Smug Pepe variant to 2012; a claimed June 2011 4chan /tv/ post could not be confirmed on any non-Know-Your-Meme source."
     },
     {
       "id": "angry-pepe",
@@ -667,11 +667,11 @@
       "aliases": [],
       "kind": "character",
       "latin_name": "Rana pepeus tristis minor",
-      "first_seen": "2019-01-01",
-      "date_precision": "year",
+      "first_seen": "2020-01-01",
+      "date_precision": "month",
       "summary": "A simplified, downcast Pepe emote used in Twitch chat for mild disappointment.",
-      "uncertain": true,
-      "check_note": "Reported as created around 2019 and released as an emote in January 2020; year is soft."
+      "uncertain": false,
+      "check_note": "Streamscheme dates the Sadge emote's upload to BetterTTV and FrankerFaceZ to January 2020."
     },
     {
       "id": "chad",
@@ -685,7 +685,7 @@
       "date_precision": "year",
       "summary": "An idealised, effortlessly confident alpha male archetype, drawn as a tall square-jawed figure.",
       "uncertain": true,
-      "check_note": "Date is for the drawn Chad figure of Virgin vs. Chad (2017); the slang 'Chad'/'Chad Thundercock' is older (mid-2010s) and may move this date earlier."
+      "check_note": "Date is for the drawn Chad figure of Virgin vs. Chad (2017); the slang 'Chad'/'Chad Thundercock' is older (mid-2010s) and may move this date earlier. The Daily Dot's Virgin vs. Chad coverage attributes the 2017 /r9k/ origin to Know Your Meme without independently confirming it, so this remains unconfirmed."
     },
     {
       "id": "virgin-vs-chad",
@@ -729,7 +729,7 @@
       "date_precision": "year",
       "summary": "A comparison pairing an anxious, sweaty 'fan' with a calm Gigachad 'enjoyer' of the same thing.",
       "uncertain": true,
-      "check_note": "Year from the March 2021 video spike; still-image versions may be slightly earlier."
+      "check_note": "Year from the March 2021 video spike; still-image versions may be slightly earlier. Looked for a non-Know-Your-Meme source confirming the proposed September 2019 tweet; found none, so that correction is left unconfirmed."
     },
     {
       "id": "advice-dog",
@@ -825,7 +825,7 @@
       "date_precision": "year",
       "summary": "A startled parrot captioned with irrational everyday fears and suspicions.",
       "uncertain": true,
-      "check_note": "Became popular in August 2010; first use may be earlier."
+      "check_note": "Became popular in August 2010; first use may be earlier. Could not open a non-Know-Your-Meme source confirming that August 2010 Tumblr date, so the date is left at year precision, matching the lead's own caution that this is a popularisation date."
     },
     {
       "id": "success-kid",
@@ -835,11 +835,11 @@
       ],
       "kind": "template",
       "latin_name": "Consiliarius victor",
-      "first_seen": "2008-01-01",
+      "first_seen": "2011-01-01",
       "date_precision": "year",
       "summary": "A toddler on a beach clenching a fistful of sand, captioned with small personal victories.",
-      "uncertain": true,
-      "check_note": "Photo taken August 2007; the earlier 'I Hate Sandcastles' captions are dated 2008 by some sources and 2011 by others, and the 'Success Kid' reading spread around 2010-2011."
+      "uncertain": false,
+      "check_note": "Wikipedia dates the photo itself to August 2007 but the first captioned meme variant, 'I Hate Sandcastles', to 2011; by the first_seen rule it is the meme, not the photo, that is dated here."
     },
     {
       "id": "scumbag-steve",
@@ -960,11 +960,11 @@
       ],
       "kind": "template",
       "latin_name": "Vir reiciens et probans",
-      "first_seen": "2015-01-01",
-      "date_precision": "year",
+      "first_seen": "2015-10-01",
+      "date_precision": "month",
       "summary": "Two stacked stills of Drake from the 'Hotline Bling' video, waving away the top caption and approving the bottom one.",
-      "uncertain": true,
-      "check_note": "Video released October 2015; the two-panel approve/reject format reportedly circulated on 4chan in late 2015 and spread widely in early 2016."
+      "uncertain": false,
+      "check_note": "Wikipedia dates the 'Hotline Bling' video, source of the Drakeposting format, to its October 19, 2015 release."
     }
   ],
   "links": [
