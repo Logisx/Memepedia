@@ -226,3 +226,37 @@ def test_related_sentence_no_shared_ancestor() -> None:
     a = node("swole-doge-vs-cheems", kind="template")
     b = node("yes-chad")
     assert graph.related_sentence(a, b, None, None) == "No shared ancestor on either line."
+
+
+def test_lineage_prefers_the_character_parent() -> None:
+    links = [
+        link("sdvc", "swole-doge"),
+        link("sdvc", "virgin-vs-chad", "format"),
+        link("swole-doge", "doge"),
+        link("doge", "image-macro"),
+    ]
+    assert graph.lineage(links, "sdvc") == ["sdvc", "swole-doge", "doge", "image-macro"]
+
+
+def test_lineage_falls_through_to_the_format_parent() -> None:
+    links = [
+        link("awesome-penguin", "awkward-penguin"),
+        link("awkward-penguin", "advice-dog", "format"),
+        link("advice-dog", "image-macro", "format"),
+    ]
+    assert graph.lineage(links, "awesome-penguin") == [
+        "awesome-penguin",
+        "awkward-penguin",
+        "advice-dog",
+        "image-macro",
+    ]
+    assert graph.descent(links, "awesome-penguin", "character") == [
+        "awesome-penguin",
+        "awkward-penguin",
+    ]
+
+
+def test_lineage_of_an_orphan_and_of_a_cycle() -> None:
+    assert graph.lineage([], "orphan") == ["orphan"]
+    looped = [link("a", "b"), link("b", "a", "format")]
+    assert graph.lineage(looped, "a") == ["a", "b"]

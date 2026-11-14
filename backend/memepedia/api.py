@@ -97,7 +97,7 @@ def get_random_node() -> RandomResponse:
 def _tree_node_ids(
     links: list[Link], kinds: dict[str, Kind], node_id: str, family_ids: list[str]
 ) -> tuple[set[str], list[str], list[str], set[str]]:
-    char_descent = graph.descent(links, node_id, "character")
+    char_descent = graph.lineage(links, node_id)
     format_descent = graph.descent(links, node_id, "format")
     direct_children = {link.child_id for link in links if link.parent_id == node_id}
     node_ids = {node_id, *family_ids, *char_descent, *format_descent}

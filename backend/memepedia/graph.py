@@ -41,6 +41,21 @@ def descent(links: Sequence[Link], node_id: str, axis: Axis) -> list[str]:
     return chain
 
 
+def lineage(links: Sequence[Link], node_id: str) -> list[str]:
+    """The main line from node_id back to its root, stopping on a cycle.
+
+    Each step takes the character parent where there is one and the format parent
+    otherwise, so a template (format parent only) and a character whose family head
+    is a template still end at a format-class root instead of a dead end.
+    """
+    character, fmt = _parent_map(links, "character"), _parent_map(links, "format")
+    chain, seen = [node_id], {node_id}
+    while (parent := character.get(chain[-1]) or fmt.get(chain[-1])) and parent not in seen:
+        chain.append(parent)
+        seen.add(parent)
+    return chain
+
+
 def _family_head(parent_of: Mapping[str, str], kinds: Mapping[str, Kind], node_id: str) -> str:
     head = node_id
     seen = {head}
