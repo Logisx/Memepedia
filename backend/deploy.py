@@ -11,6 +11,7 @@ hosted one (`DATABASE_URL`), because the local development database does not exi
 
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -45,6 +46,20 @@ def _secret() -> modal.Secret:
     return modal.Secret.from_dict({name: values[name] for name in SENT if values.get(name)})
 
 
+def _clock_enabled() -> bool:
+    """Whether the live-loop clock is scheduled on Modal. Off unless MEMEPEDIA_CLOCK is truthy.
+
+    Checked at deploy time only (a schedule is set when the app is deployed, not per-container),
+    first from the shell environment, then from `.env`.
+    """
+    if not modal.is_local():
+        return False
+    value = os.environ.get("MEMEPEDIA_CLOCK")
+    if value is None:
+        value = _dotenv(Path(__file__).resolve().parent.parent / ".env").get("MEMEPEDIA_CLOCK")
+    return (value or "").strip().lower() in {"1", "true", "on", "yes"}
+
+
 app = modal.App("memepedia")
 image = (
     modal.Image.debian_slim(python_version="3.12")
@@ -52,6 +67,7 @@ image = (
     .add_local_python_source("memepedia", ignore=["**/__pycache__/**", "**/*.pyc"])
 )
 secret = _secret()
+clock_schedule = modal.Period(minutes=CLOCK_MINUTES) if _clock_enabled() else None
 
 
 @app.function(image=image, secrets=[secret], min_containers=1, scaledown_window=300, timeout=600)
@@ -64,11 +80,14 @@ def web() -> Any:
     return api
 
 
-@app.function(
-    image=image, secrets=[secret], schedule=modal.Period(minutes=CLOCK_MINUTES), timeout=240
-)
+@app.function(image=image, secrets=[secret], schedule=clock_schedule, timeout=240)
 def clock() -> None:
-    """Visit one feed per run, in rotation; after the last feed, look for emerging memes."""
+    """Visit one feed per run, in rotation; after the last feed, look for emerging memes.
+
+    Paused by default: deploy with `MEMEPEDIA_CLOCK=1` (env var or `.env`) to schedule it, and
+    with that unset or falsy to redeploy it unscheduled (the function stays callable by hand,
+    it just does not run on a timer).
+    """
     from memepedia import live, store
     from memepedia.sources import FEEDS
 
