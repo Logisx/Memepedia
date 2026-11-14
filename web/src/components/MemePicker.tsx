@@ -51,6 +51,15 @@ export function MemePicker({ label, value, onPick }: Props) {
             setOpen(true)
           }}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
+          onKeyDown={(e) => {
+            // Enter takes the top suggestion rather than submitting the form half-filled.
+            if (e.key === 'Enter' && open && suggestions[0]) {
+              e.preventDefault()
+              onPick(suggestions[0])
+              setText(suggestions[0].name)
+              setOpen(false)
+            }
+          }}
           placeholder="Pick a meme…"
           className="mt-1 block w-full border-2 border-ink bg-paper px-3 py-2 text-xl normal-case tracking-normal"
         />
