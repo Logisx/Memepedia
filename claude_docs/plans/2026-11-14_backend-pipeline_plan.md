@@ -104,7 +104,7 @@ Sources for the live loop, in build order: Lemmy (direct JSON), Reddit RSS throu
 2. **Hosting.** Recommended: Modal for the backend. It needs a free account and `modal token new` on this machine. Alternative: run the backend on this laptop behind a tunnel for the hackathon, which is quicker to start but dies if the laptop sleeps.
 3. **Database.** Recommended: Aiven free Postgres (sign up, create the service, put the connection string in `.env` as `DATABASE_URL`).
 4. **Code standards for the weekend.** Your global rules ask for strict mypy, tests first and functions under 20 lines. Proposed for this project: keep typing, Ruff and short functions; write tests for the pure logic (resolver, invariants, common ancestor, clustering rules, contract shapes) and smoke scripts for anything that calls an external service. Say if you want the full rules applied.
-5. **Sharing with your partner.** The contract and both plans are committed on `pipeline` locally. Your partner needs them on GitHub. Options: merge `pipeline` into `main` and push, or push `pipeline` and have them branch from it.
+5. **Sharing with your partner.** `pipeline` is pushed to GitHub (`origin/pipeline`). Open question: merge `pipeline` into `main` and have your partner branch from `main`, or have them branch `web` from `pipeline` directly and merge everything into `main` later.
 
 ## 8. Credit and quota budget
 
