@@ -73,3 +73,15 @@ Both failures involve Context.dev, and identify, which uses Gemini only, worked.
 - **Archive size:** the deployed database still looks like the mock archive (35 nodes), not the 62-meme curated seed. Pepe's lineage shows a single card and a single map node.
 - **Wall timestamps:** the mock sightings are hours old, so the wall reads "spotted 30 min ago" and older, not "just now".
 - **Credits:** the three paid calls spent a small amount of Context.dev and Gemini quota; the backend's ledger (`backend/.data/credits.jsonl`) has the exact figure.
+
+## 5. Real-data edge cases found and handled in the frontend
+
+The real archive grew to 88 nodes while this was being checked, so these come from a scan of all of them.
+
+| Finding | Handling in `web/` | For the backend owner |
+|---|---|---|
+| For many memes `descent.character` equals `descent.format` (33 of the 73 non-root memes, for example every Advice Animal and every object-labelling template). | The line toggle is hidden when the two lines are the same chain. | Probably intended, as the owner noted for Advice Animals. If not, the character line should stop at the character-line root. |
+| `descent.character` can include a parent that is joined to the child only by a link on the `format` axis (Undertaker Standing Behind AJ Styles → Object labelling; the response lists one link, axis `format`, status inferred). `types.ts` does not say whether a line may cross axes. | The strip looks for a link on the chosen axis first, then any link between the two cards, so the connector still shows "citation needed" or the quote. | Decide whether a line may use links of the other axis, and write it in `contract/README.md`. |
+| 33 memes are alone in their character-line family, so the family map is one node. | A caption under the map says no relatives are on record yet. | None; matches the parked "Advice Animals" decision. |
+| 12 nodes have no `first_seen`, 15 have no image, the longest name is 36 characters. | Cards show "date unknown" and the typeset specimen card. Long names wrap on cards and use a smaller font and a tooltip in the map. | None. |
+| Three Reddit and Imgflip image URLs now return 404. | The tile shows "image unavailable". | Optional: drop sightings whose image no longer loads. |
