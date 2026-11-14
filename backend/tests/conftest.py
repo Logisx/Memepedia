@@ -18,8 +18,14 @@ from scripts.load_fixtures import load  # noqa: E402
 
 @pytest.fixture(scope="session", autouse=True)
 def local_test_database() -> None:
-    """Every test talks to the local test database, never to the one in DATABASE_URL."""
+    """Every test talks to the local test database, never to the one in DATABASE_URL.
+
+    The cost guards read the database on every mocked paid call, so their tables must exist,
+    and start empty so spend left over from earlier runs never trips a cap.
+    """
     db.configure(db.local_url("memepedia_test"))
+    db.init_schema()
+    db.execute("TRUNCATE spend, app_state, webhook_monitors, webhook_events")
 
 
 @pytest.fixture(scope="session")

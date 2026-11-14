@@ -89,6 +89,15 @@ def database_url() -> str:
     return str(_state["url"])
 
 
+def describe_target() -> str:
+    """Where the active database is, without its credentials."""
+    url = database_url()
+    if is_local_url(url):
+        return "the local development database"
+    params = conninfo_to_dict(url)
+    return f"{params.get('dbname', '?')} on {params.get('host', '?')} (NOT local)"
+
+
 def require_local(action: str) -> None:
     """Refuse `action` unless the active database is the local dev server; never connects."""
     if not is_local_url(database_url()):
@@ -133,7 +142,7 @@ def connection() -> Iterator[psycopg.Connection[DictRow]]:
 
 
 def init_schema() -> None:
-    """Create the four tables if they do not exist."""
+    """Create the tables if they do not exist."""
     with connection() as conn:
         conn.execute(_SCHEMA.read_text())
 
@@ -142,7 +151,10 @@ def reset_schema() -> None:
     """Drop every table and recreate the schema; only ever on the local dev server."""
     require_local("Resetting the schema")
     with connection() as conn:
-        conn.execute("DROP TABLE IF EXISTS history, sightings, links, nodes CASCADE")
+        conn.execute(
+            "DROP TABLE IF EXISTS history, sightings, links, nodes, "
+            "spend, app_state, webhook_monitors, webhook_events CASCADE"
+        )
     init_schema()
 
 

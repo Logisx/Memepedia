@@ -15,8 +15,6 @@ import argparse
 from collections import Counter
 from dataclasses import dataclass, field
 
-from psycopg.conninfo import conninfo_to_dict
-
 from memepedia import db, llm, resolver, store
 from memepedia.config import get_settings
 from memepedia.live import LabelMatch, Thresholds, match_label
@@ -45,15 +43,6 @@ class RematchReport:
     llm_used: int = 0
     llm_skipped: int = 0
     applied: int = 0
-
-
-def describe_target() -> str:
-    """Where the active database is, without its credentials."""
-    url = db.database_url()
-    if db.is_local_url(url):
-        return "the local development database"
-    params = conninfo_to_dict(url)
-    return f"{params.get('dbname', '?')} on {params.get('host', '?')} (NOT local)"
 
 
 def _needs_llm(label: VisionLabel, thresholds: Thresholds, matcher: Matcher) -> bool:
@@ -134,7 +123,7 @@ def main() -> None:
     parser.add_argument("--max-llm", type=int, default=DEFAULT_MAX_LLM)
     args = parser.parse_args()
 
-    print(f"database: {describe_target()}")
+    print(f"database: {db.describe_target()}")
     db.init_schema()
     report = rematch(args.apply, args.hours, args.llm, args.max_llm)
     _print_report(report, args.apply, args.llm)

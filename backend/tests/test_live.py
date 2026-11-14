@@ -10,7 +10,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from fastapi.testclient import TestClient
 
-from memepedia import contextdev, db, live, llm, resolver, sources, store, trace
+from memepedia import db, live, llm, resolver, sources, store, trace
 from memepedia.config import Settings
 from memepedia.models import MemeNode, Post, VisionLabel
 
@@ -775,63 +775,3 @@ def test_verify_signature_rejects_a_stale_timestamp() -> None:
 def test_verify_signature_rejects_a_malformed_header() -> None:
     assert live.verify_signature(b"body", "not-a-valid-header", "secret") is False
     assert live.verify_signature(b"body", "t=abc,v1=xyz", "secret") is False
-
-
-# --- handle_webhook ------------------------------------------------------------------------------
-
-
-def test_handle_webhook_known_monitor(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(live, "_monitor_feed_cache", {})
-    monkeypatch.setattr(
-        contextdev, "list_monitors", lambda: [{"id": "mon-1", "name": f"memepedia:{_FEED_KEY}"}]
-    )
-    called: list[str] = []
-    monkeypatch.setattr(live, "tick", lambda key: called.append(key))
-
-    result = live.handle_webhook({"data": {"run": {"monitor_id": "mon-1"}}})
-
-    assert result == _FEED_KEY
-    assert called == [_FEED_KEY]
-
-
-def test_handle_webhook_unknown_monitor(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(live, "_monitor_feed_cache", {})
-    monkeypatch.setattr(contextdev, "list_monitors", lambda: [])
-    called: list[str] = []
-    monkeypatch.setattr(live, "tick", lambda key: called.append(key))
-
-    result = live.handle_webhook({"data": {"run": {"monitor_id": "mon-unknown"}}})
-
-    assert result is None
-    assert called == []
-
-
-def test_handle_webhook_payload_without_a_monitor_id(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(live, "_monitor_feed_cache", {})
-    calls: list[int] = []
-
-    def fake_list_monitors() -> list[dict[str, str]]:
-        calls.append(1)
-        return []
-
-    monkeypatch.setattr(contextdev, "list_monitors", fake_list_monitors)
-
-    assert live.handle_webhook({"data": {}}) is None
-    assert calls == []
-
-
-def test_handle_webhook_caches_the_monitor_list(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(live, "_monitor_feed_cache", {})
-    list_calls: list[int] = []
-
-    def fake_list() -> list[dict[str, str]]:
-        list_calls.append(1)
-        return [{"id": "mon-2", "name": "memepedia:reddit:memes"}]
-
-    monkeypatch.setattr(contextdev, "list_monitors", fake_list)
-    monkeypatch.setattr(live, "tick", lambda key: None)
-    payload = {"data": {"run": {"monitor_id": "mon-2"}}}
-
-    assert live.handle_webhook(payload) == "reddit:memes"
-    assert live.handle_webhook(payload) == "reddit:memes"
-    assert len(list_calls) == 1

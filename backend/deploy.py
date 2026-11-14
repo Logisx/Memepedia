@@ -9,10 +9,15 @@ it first. `deploy.ps1` in this folder does both steps; by hand, from the repo ro
 The empty `VITE_API_BASE` matters: it overrides web/.env.local, so the site calls the API on its
 own origin instead of a hardcoded URL. `deploy.ps1` sets it for you.
 
-To try a change without touching the live app, deploy under another name (it gets its own URL, no
-warm container and no clock), then delete it with `modal app stop memepedia-staging`:
+Any other app name deploys the frozen staging copy (its own URL, no warm container, no clock);
+delete it with `modal app stop memepedia-staging`:
 
     $env:MEMEPEDIA_APP = "memepedia-staging"
+
+The staging copy is read-only by construction: its secret holds only its own database
+(STAGING_DATABASE_URL, else the `memepedia_staging` database next to DATABASE_URL; refused if it
+is production's) and MEMEPEDIA_READ_ONLY=1, and no Context.dev or Gemini key at all. Fill that
+database with `scripts/clone_db.py` first; see claude_docs/plans/2026-11-14_staging-backup_plan.md.
 
 The values the backend needs are read from the repo's `.env` on this machine at deploy time and
 sent to Modal as a Secret. Only the names in `SENT` leave the machine; the database must be a
@@ -38,6 +43,14 @@ SENT = (
     "VISION_MIN_CONFIDENCE",
     "VISION_EXACT_MIN_CONFIDENCE",
     "VISION_MATCH_SUBJECTS",
+    # Cost guards and the clock fallback (memepedia/budget.py, live.clock_tick).
+    "VISION_PER_TICK",
+    "AUTO_TRACES_PER_TICK",
+    "MEMEPEDIA_PAID_OFF",
+    "MEMEPEDIA_CAP_CONTEXTDEV",
+    "MEMEPEDIA_CAP_GEMINI",
+    "MEMEPEDIA_CAP_TRACES",
+    "MEMEPEDIA_CLOCK_FALLBACK_MINUTES",
 )
 REQUIRED = ("DATABASE_URL", "CONTEXTDOTDEV_KEY", "GEMINI_KEY")
 CLOCK_MINUTES = 1
@@ -57,10 +70,26 @@ def _secret() -> modal.Secret:
     if not modal.is_local():
         return modal.Secret.from_dict({})
     values = _dotenv(Path(__file__).resolve().parent.parent / ".env")
+    if not LIVE:
+        return modal.Secret.from_dict(_staging_values(values))
     missing = [name for name in REQUIRED if not values.get(name)]
     if missing:
         raise SystemExit(f"Add {', '.join(missing)} to .env before deploying.")
     return modal.Secret.from_dict({name: values[name] for name in SENT if values.get(name)})
+
+
+def _staging_values(values: dict[str, str]) -> dict[str, str]:
+    """The staging copy's whole secret: its own database, read-only, and no paid API key."""
+    from memepedia.staging import describe, resolve_staging_url, same_database
+
+    merged = {**values, **os.environ}
+    url = resolve_staging_url(merged)
+    if not url:
+        raise SystemExit("Set DATABASE_URL or STAGING_DATABASE_URL in .env first.")
+    if any(same_database(url, env.get("DATABASE_URL")) for env in (values, merged)):
+        raise SystemExit("The staging database is production's; refusing to deploy over it.")
+    print(f"Staging copy reads {describe(url)}, read-only, with no Context.dev or Gemini key.")
+    return {"DATABASE_URL": url, "MEMEPEDIA_READ_ONLY": "1"}
 
 
 def _clock_enabled() -> bool:
@@ -122,17 +151,15 @@ def web() -> Any:
 
 @app.function(image=image, secrets=[secret], schedule=clock_schedule, timeout=240)
 def clock() -> None:
-    """Visit one feed per run, in rotation; after the last feed, look for emerging memes.
+    """Visit one feed per run, in rotation, as the fallback to the Context.dev monitor webhooks.
 
     Paused by default: deploy with `MEMEPEDIA_CLOCK=1` (env var or `.env`) to schedule it, and
     with that unset or falsy to redeploy it unscheduled (the function stays callable by hand,
-    it just does not run on a timer).
+    it just does not run on a timer). When scheduled it stays idle while monitor webhooks keep
+    arriving, and goes through the same cost guards as they do (`live.clock_tick`).
     """
-    from memepedia import live, store
+    from memepedia import live
     from memepedia.sources import FEEDS
 
     turn = int(time.time() // (60 * CLOCK_MINUTES)) % len(FEEDS)
-    print(live.tick(FEEDS[turn].key))
-    if turn == len(FEEDS) - 1:
-        print("specimens:", live.detect_specimens())
-        store.expire_specimens()
+    print(live.clock_tick(FEEDS[turn].key))
