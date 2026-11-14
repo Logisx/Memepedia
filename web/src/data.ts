@@ -19,8 +19,13 @@ import type {
   WeekResponse,
 } from '@contract/types'
 
-const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') || ''
-export const usingFixtures = API_BASE === ''
+/*
+ * Production builds are served by the backend itself, so they call the API on the same origin
+ * (an empty base). Development builds fall back to fixtures unless VITE_API_BASE points at a backend.
+ */
+const configuredBase = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') || undefined
+const API_BASE = configuredBase ?? ''
+export const usingFixtures = configuredBase === undefined && !import.meta.env.PROD
 
 /* ---------- fixtures ---------- */
 

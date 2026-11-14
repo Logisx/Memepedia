@@ -115,6 +115,6 @@ The backend teammate provides one thing: a public base URL. Then:
 1. Set `VITE_API_BASE` and reload. Check each screen in this order: nodes search, tree, wall, week, trace, identify, related, proposals.
 2. For any screen that breaks, compare the real response with the fixture. A mismatch with `contract/types.ts` is a backend bug; report it, do not adapt the UI to it.
 3. Real data will be messier than fixtures: longer names, missing dates, more missing images, families with one node. Fix what looks broken.
-4. Build the static site and deploy it (any static host; the backend can also serve the built files).
+4. Build the static site and deploy it. Done by serving the built files from the backend on the same Modal URL: `backend/memepedia/static.py` serves `web/dist` with a fallback to `index.html` for client routes, and `backend/deploy.ps1` builds and deploys.
 
 An optional early check at about hour 8: point `VITE_API_BASE` at the backend for five minutes to catch contract mismatches early. Neither half waits on this.
