@@ -23,8 +23,12 @@ function MemeBox({ data }: NodeProps<MemeFlowNode>) {
     >
       <Handle type="target" position={Position.Top} style={hiddenHandle} />
       <NodeThumb node={node} className="h-[68px] w-[68px]" />
-      <div className="min-w-0">
-        <div className="line-clamp-2 text-xl font-extrabold leading-tight">{node.name}</div>
+      <div className="min-w-0" title={node.name}>
+        <div
+          className={`line-clamp-2 font-extrabold leading-tight [overflow-wrap:anywhere] ${node.name.length > 16 ? 'text-base' : 'text-xl'}`}
+        >
+          {node.name}
+        </div>
         {node.latin_name && <div className="truncate text-base italic">{node.latin_name}</div>}
       </div>
       <Handle type="source" position={Position.Bottom} style={hiddenHandle} />

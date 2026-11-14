@@ -69,24 +69,29 @@ function LineageView({ initial }: { initial: TreeResponse }) {
   }, [])
 
   const mapDelay = flipDuration(tree.descent.character.length) + 0.2
+  // When both lines are the same chain there is nothing to switch between.
+  const linesDiffer = tree.descent.character.join('>') !== tree.descent.format.join('>')
+  const aloneInFamily = tree.family_ids.length <= 1
 
   return (
     <div className="flex h-[calc(100vh-4.25rem)] min-h-[34rem] flex-col">
       <section className="flex h-[45%] min-h-0 flex-col px-6 pt-3">
         <div className="font-type flex flex-wrap items-center gap-x-6 gap-y-1 pb-2 text-lg">
           <span className="text-2xl font-bold">{selected?.name ?? tree.selected_id}</span>
-          <div role="group" aria-label="Line of descent" className="flex border-2 border-ink">
-            {(['character', 'format'] as const).map((a) => (
-              <button
-                key={a}
-                aria-pressed={axis === a}
-                onClick={() => setAxis(a)}
-                className={`cursor-pointer px-3 py-0.5 capitalize ${axis === a ? 'bg-ink text-paper' : 'bg-transparent'}`}
-              >
-                {a} line
-              </button>
-            ))}
-          </div>
+          {linesDiffer && (
+            <div role="group" aria-label="Line of descent" className="flex border-2 border-ink">
+              {(['character', 'format'] as const).map((a) => (
+                <button
+                  key={a}
+                  aria-pressed={axis === a}
+                  onClick={() => setAxis(a)}
+                  className={`cursor-pointer px-3 py-0.5 capitalize ${axis === a ? 'bg-ink text-paper' : 'bg-transparent'}`}
+                >
+                  {a} line
+                </button>
+              ))}
+            </div>
+          )}
           {formatChips.map(({ link, parent }) => (
             <RouterLink
               key={link.parent_id}
@@ -104,12 +109,17 @@ function LineageView({ initial }: { initial: TreeResponse }) {
 
       <section className="flex h-[55%] min-h-0 border-t border-ink">
         <motion.div
-          className="min-w-0 flex-1"
+          className="relative min-w-0 flex-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: mapDelay, duration: 0.6 }}
         >
           <FamilyMap tree={tree} />
+          {aloneInFamily && (
+            <p className="font-type pointer-events-none absolute inset-x-0 bottom-4 m-0 text-center text-lg text-ink-soft">
+              No relatives on record yet: this meme is the only one in its family so far.
+            </p>
+          )}
         </motion.div>
         <SidePanel nodeId={tree.selected_id} sightings={tree.sightings} history={tree.history} onCited={markCited} />
       </section>

@@ -39,9 +39,9 @@ export function DescentStrip({ axis, descent, nodesById, links, checking = false
         const rank = count - 1 - index // 0 = the selected meme, which flips in first
         const delay = rank * FLIP_STEP_S
         const olderId = ordered[index - 1]
-        const link = olderId
-          ? links.find((l) => l.axis === axis && l.child_id === id && l.parent_id === olderId)
-          : undefined
+        // Prefer a link on this axis; the API can list a parent in this line that is joined by a link on the other axis.
+        const between = olderId ? links.filter((l) => l.child_id === id && l.parent_id === olderId) : []
+        const link = between.find((l) => l.axis === axis) ?? between[0]
         return (
           <Fragment key={`${axis}:${id}`}>
             {index > 0 && (
