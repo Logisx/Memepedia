@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import { Link as RouterLink } from 'react-router'
 import type { AncestorPath, MemeNode } from '@contract/types'
+import { abbreviateLatin } from '../lib/latin'
 import { firstSeenYear } from '../lib/time'
 import { NodeThumb } from './SpecimenCard'
 
@@ -14,7 +15,8 @@ function PathNode({ node, ancestor = false }: { node: MemeNode; ancestor?: boole
       <NodeThumb node={node} className="h-14 w-14" />
       <span className="min-w-0">
         <span className="line-clamp-2 block text-lg font-extrabold leading-tight">{node.name}</span>
-        <span className="font-type block text-sm">{year ?? 'date unknown'}</span>
+        {node.latin_name && <span className="block truncate text-base italic leading-tight">{abbreviateLatin(node.latin_name)}</span>}
+        <span className="font-type block text-sm">{year ? `first recorded ${year}` : 'date unknown'}</span>
       </span>
     </RouterLink>
   )
@@ -45,7 +47,7 @@ interface Props {
 export function PathDiagram({ title, path, nodes }: Props) {
   const ancestor = nodes.get(path.ancestor_id)
   return (
-    <section className="border-2 border-ink p-4">
+    <section className="w-fit max-w-full border-2 border-ink p-4">
       <h2 className="font-type m-0 mb-3 text-lg uppercase tracking-widest">{title}</h2>
       <div className="flex items-stretch gap-3 overflow-x-auto pb-2">
         <div className="flex flex-col justify-center gap-6">
