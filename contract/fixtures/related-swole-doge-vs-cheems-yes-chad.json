@@ -15,7 +15,8 @@
       "summary": "Two-or-more-panel formats that juxtapose options, people or outcomes side by side.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 9
+      "sightings_7d": 9,
+      "nsfw": false
     },
     {
       "id": "swole-doge-vs-cheems",
@@ -32,7 +33,8 @@
       "summary": "A two-panel comparison pitting muscular Swole Doge against weak Cheems to mock generational or lifestyle decline.",
       "status": "established",
       "sightings_24h": 4,
-      "sightings_7d": 16
+      "sightings_7d": 16,
+      "nsfw": false
     },
     {
       "id": "virgin-vs-chad",
@@ -47,7 +49,8 @@
       "summary": "A two-column comparison template contrasting an exaggeratedly pathetic 'virgin' with a confident, idealized 'Chad'.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 8
+      "sightings_7d": 8,
+      "nsfw": false
     },
     {
       "id": "yes-chad",
@@ -65,7 +68,8 @@
       "summary": "A square-jawed, confident counterpart to Wojak who answers awkward questions with a flat, proud 'yes'.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 7
+      "sightings_7d": 7,
+      "nsfw": false
     }
   ],
   "character": null,

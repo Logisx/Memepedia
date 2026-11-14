@@ -12,6 +12,9 @@ CREATE TABLE IF NOT EXISTS nodes (
     status           text NOT NULL DEFAULT 'established' CHECK (status IN ('established', 'specimen')),
     created_at       timestamptz NOT NULL DEFAULT now()
 );
+-- Nullable: null = not yet labelled. Idempotent so this file doubles as the migration for an
+-- existing database (it runs on every init_schema() call, e.g. at app startup).
+ALTER TABLE nodes ADD COLUMN IF NOT EXISTS nsfw boolean;
 
 -- One parent per axis: the primary key is the invariant.
 CREATE TABLE IF NOT EXISTS links (
@@ -49,6 +52,8 @@ CREATE TABLE IF NOT EXISTS sightings (
     cluster_id text,
     CHECK (state <> 'resolved' OR node_id IS NOT NULL)
 );
+-- Nullable: null = not yet labelled; the wall and live feed only ever show nsfw = false.
+ALTER TABLE sightings ADD COLUMN IF NOT EXISTS nsfw boolean;
 CREATE INDEX IF NOT EXISTS sightings_seen_idx ON sightings (seen_at DESC);
 CREATE INDEX IF NOT EXISTS sightings_posted_idx ON sightings (posted_at DESC);
 CREATE INDEX IF NOT EXISTS sightings_node_idx ON sightings (node_id, posted_at DESC);

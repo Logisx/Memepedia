@@ -44,6 +44,10 @@ export function SightingTile({ sighting, now, arriving }: Props) {
   const [broken, setBroken] = useState(false)
   const resolved = sighting.state === 'resolved' && sighting.node_id !== null
 
+  // Defensive: the backend should never send a sighting that isn't nsfw === false, but
+  // never render one that slips through anyway.
+  if (sighting.nsfw !== false) return null
+
   const picture = broken ? (
     <div className="font-type flex h-16 items-center justify-center bg-paper-deep p-3 text-center text-base text-ink-soft">
       specimen missing

@@ -74,6 +74,7 @@ def test_add_alias_adds_new_alias(client: TestClient) -> None:
             status="specimen",
             sightings_24h=0,
             sightings_7d=0,
+            nsfw=None,
         )
     )
     store.add_alias("alias-test-node", "ATN")
@@ -121,6 +122,7 @@ def test_rising_maths_only_includes_spiking_nodes(client: TestClient) -> None:
             status="established",
             sightings_24h=0,
             sightings_7d=0,
+            nsfw=None,
         )
     )
     now = datetime.now(UTC)
@@ -134,7 +136,7 @@ def test_rising_maths_only_includes_spiking_nodes(client: TestClient) -> None:
             author="tester",
             posted_at=now - timedelta(hours=1, minutes=i),
         )
-        store.insert_sighting(post, None, "rising-test-node", "resolved")
+        store.insert_sighting(post, None, "rising-test-node", "resolved", nsfw=False)
     for i in range(6):
         post = Post(
             platform="lemmy",
@@ -145,7 +147,7 @@ def test_rising_maths_only_includes_spiking_nodes(client: TestClient) -> None:
             author="tester",
             posted_at=now - timedelta(days=2, hours=i),
         )
-        store.insert_sighting(post, None, "rising-test-node", "resolved")
+        store.insert_sighting(post, None, "rising-test-node", "resolved", nsfw=False)
     rising = {rf.node.id: rf for rf in store.rising(limit=50)}
     assert "rising-test-node" in rising
     entry = rising["rising-test-node"]
@@ -169,6 +171,7 @@ def test_expire_specimens_removes_only_stale_ones(client: TestClient) -> None:
             status="specimen",
             sightings_24h=0,
             sightings_7d=0,
+            nsfw=None,
         )
 
     def post(url: str, age: timedelta) -> Post:
@@ -205,3 +208,100 @@ def test_expire_specimens_removes_only_stale_ones(client: TestClient) -> None:
     assert orphan == {"node_id": None, "state": "unclassified"}
     db.execute("DELETE FROM sightings WHERE post_url LIKE 'https://x.test/%%'")
     db.execute("DELETE FROM nodes WHERE id = ANY(%s)", (["live-specimen", "new-specimen"],))
+
+
+def _post(url: str) -> Post:
+    return Post(
+        platform="lemmy",
+        source="test",
+        post_url=url,
+        image_url=url + ".jpg",
+        title="t",
+        author="a",
+        posted_at=datetime.now(UTC),
+    )
+
+
+def test_wall_hides_nsfw_true_and_unlabelled_sightings(client: TestClient) -> None:
+    sfw = store.insert_sighting(
+        _post("https://x.test/nsfw-wall-sfw"), None, "doomer", "resolved", nsfw=False
+    )
+    nsfw = store.insert_sighting(
+        _post("https://x.test/nsfw-wall-nsfw"), None, "doomer", "resolved", nsfw=True
+    )
+    unlabelled = store.insert_sighting(
+        _post("https://x.test/nsfw-wall-null"), None, "doomer", "resolved"
+    )
+    try:
+        ids = {s.id for s in store.wall(None, limit=500)}
+        assert sfw in ids
+        assert nsfw not in ids
+        assert unlabelled not in ids
+    finally:
+        db.execute("DELETE FROM sightings WHERE post_url LIKE 'https://x.test/nsfw-wall-%%'")
+
+
+def test_sightings_for_node_hides_nsfw_true_and_unlabelled(client: TestClient) -> None:
+    sfw = store.insert_sighting(
+        _post("https://x.test/nsfw-node-sfw"), None, "doomer", "resolved", nsfw=False
+    )
+    nsfw = store.insert_sighting(
+        _post("https://x.test/nsfw-node-nsfw"), None, "doomer", "resolved", nsfw=True
+    )
+    try:
+        ids = {s.id for s in store.sightings_for_node("doomer", limit=500)}
+        assert sfw in ids
+        assert nsfw not in ids
+    finally:
+        db.execute("DELETE FROM sightings WHERE post_url LIKE 'https://x.test/nsfw-node-%%'")
+
+
+def test_set_node_nsfw_and_needing_label(client: TestClient) -> None:
+    store.upsert_node(
+        MemeNode(
+            id="nsfw-test-node",
+            name="Nsfw Test Node",
+            aliases=[],
+            kind="template",
+            latin_name=None,
+            image_url="https://x.test/nsfw-node.png",
+            image_credit_url="https://x.test/credit",
+            first_seen=None,
+            date_precision=None,
+            summary=None,
+            status="established",
+            sightings_24h=0,
+            sightings_7d=0,
+            nsfw=None,
+        )
+    )
+    try:
+        unlabelled_ids = {n.id for n in store.nodes_needing_nsfw_label()}
+        assert "nsfw-test-node" in unlabelled_ids
+
+        store.set_node_nsfw("nsfw-test-node", True)
+        node = store.get_node("nsfw-test-node")
+        assert node is not None
+        assert node.nsfw is True
+        assert "nsfw-test-node" not in {n.id for n in store.nodes_needing_nsfw_label()}
+        assert "nsfw-test-node" in {n.id for n in store.nodes_needing_nsfw_label(relabel=True)}
+    finally:
+        db.execute("DELETE FROM nodes WHERE id = 'nsfw-test-node'")
+
+
+def test_set_sighting_nsfw_and_needing_label(client: TestClient) -> None:
+    sid = store.insert_sighting(
+        _post("https://x.test/nsfw-sighting-needing"), None, "doomer", "resolved"
+    )
+    assert sid is not None
+    try:
+        unlabelled_ids = {r["id"] for r in store.sightings_needing_nsfw_label()}
+        assert sid in unlabelled_ids
+
+        store.set_sighting_nsfw(sid, False)
+        unlabelled_ids_after = {r["id"] for r in store.sightings_needing_nsfw_label()}
+        assert sid not in unlabelled_ids_after
+        relabel_ids = {r["id"] for r in store.sightings_needing_nsfw_label(relabel=True)}
+        assert sid in relabel_ids
+    finally:
+        db.execute("DELETE FROM sightings WHERE id = %s", (sid,))

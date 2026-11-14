@@ -9,18 +9,52 @@ const KIND_LABEL: Record<MemeNode['kind'], string> = {
   format_class: 'Format class',
 }
 
+/** Not yet cleared (true) or not yet labelled (null): blur it until a click reveals it. */
+function isSensitive(node: MemeNode): boolean {
+  return node.nsfw !== false
+}
+
+/** Blurs an image behind a click-to-reveal overlay; stops the click from bubbling to a parent
+ * link or button so revealing a thumbnail never also navigates or fires another action. */
+function RevealOverlay({ onReveal, compact }: { onReveal: () => void; compact?: boolean }) {
+  const reveal = (e: { preventDefault: () => void; stopPropagation: () => void }) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onReveal()
+  }
+  return (
+    <span
+      role="button"
+      tabIndex={0}
+      onClick={reveal}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && reveal(e)}
+      aria-label="Sensitive image — click to show"
+      className={`font-type absolute inset-0 flex cursor-pointer items-center justify-center bg-ink/70 text-center uppercase text-paper ${
+        compact ? 'text-[9px] leading-tight' : 'text-sm'
+      }`}
+    >
+      {compact ? 'Sensitive' : 'Sensitive — click to show'}
+    </span>
+  )
+}
+
 /** Small square thumbnail with a typeset initial when there is no usable image. */
 export function NodeThumb({ node, className = 'h-14 w-14' }: { node: MemeNode; className?: string }) {
   const [broken, setBroken] = useState(false)
+  const [revealed, setRevealed] = useState(false)
+  const sensitive = isSensitive(node) && !revealed
   if (node.image_url && !broken) {
     return (
-      <img
-        src={node.image_url}
-        alt=""
-        loading="lazy"
-        onError={() => setBroken(true)}
-        className={`${className} shrink-0 border border-ink bg-paper-deep object-cover`}
-      />
+      <span className={`${className} relative block shrink-0 overflow-hidden border border-ink bg-paper-deep`}>
+        <img
+          src={node.image_url}
+          alt=""
+          loading="lazy"
+          onError={() => setBroken(true)}
+          className={`h-full w-full object-cover ${sensitive ? 'blur-sm' : ''}`}
+        />
+        {sensitive && <RevealOverlay onReveal={() => setRevealed(true)} compact />}
+      </span>
     )
   }
   return (
@@ -39,6 +73,8 @@ export function NodeThumb({ node, className = 'h-14 w-14' }: { node: MemeNode; c
  */
 export function SpecimenCard({ node, selected = false }: { node: MemeNode; selected?: boolean }) {
   const [broken, setBroken] = useState(false)
+  const [revealed, setRevealed] = useState(false)
+  const sensitive = isSensitive(node) && !revealed
   const hasImage = node.image_url !== null && !broken
   const year = firstSeenYear(node)
   const frame = `flex h-full w-full flex-col border-2 bg-paper p-2 ${
@@ -66,8 +102,9 @@ export function SpecimenCard({ node, selected = false }: { node: MemeNode; selec
           src={node.image_url ?? undefined}
           alt={node.name}
           onError={() => setBroken(true)}
-          className="absolute inset-0 h-full w-full object-contain"
+          className={`absolute inset-0 h-full w-full object-contain ${sensitive ? 'blur-md' : ''}`}
         />
+        {sensitive && <RevealOverlay onReveal={() => setRevealed(true)} />}
         {node.status === 'specimen' && (
           <span className="font-type absolute right-1 top-1 rotate-6 border-2 border-stamp bg-paper px-1 text-sm uppercase text-stamp">
             specimen

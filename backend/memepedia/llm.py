@@ -32,6 +32,10 @@ class LLMUnavailable(LLMError):
     """Raised when no Gemini API key is configured."""
 
 
+class LLMBlockedError(LLMError):
+    """Raised when Gemini returns no text, most likely because its safety filter blocked it."""
+
+
 @dataclass(frozen=True)
 class RootInfo:
     """One format-class root the archive always ends chains at."""
@@ -145,7 +149,7 @@ def _generate(
             last_error = exc
         else:
             if response.text is None:
-                raise LLMError("Gemini returned no text (likely blocked by safety filters)")
+                raise LLMBlockedError("Gemini returned no text (likely blocked by safety filters)")
             return response.text
         if attempt == 0:
             time.sleep(_BACKOFF_SECONDS)
@@ -166,6 +170,18 @@ def _format_candidates(candidates: Sequence[Candidate]) -> str:
     return "\n".join(lines)
 
 
+_NSFW_POLICY = """nsfw: this archive is shown on a big screen in front of a conference audience.
+Judge what THIS image actually shows, not the reputation of the character or template in it.
+Set nsfw=true if the image itself shows any of: nudity or sexual content/innuendo-heavy imagery;
+gore or graphic injury; violence against real people; written slurs; hate symbols drawn in the
+image (swastikas, SS runes, KKK hoods, Nazi salutes and similar); drugs depicted favourably;
+graphic bodily fluids. Well-known meme characters and templates (Pepe the Frog and its variants,
+Wojak and its variants, Chad, Doge, Trollface and similar) are SFW in themselves: flag them only
+when this particular image adds one of the things listed above. Ordinary mild swearing,
+sadness, smugness, anger and dark-but-not-graphic humour are SFW (nsfw=false). nsfw_reason is a
+short (few words) description of what in the image is unsafe when nsfw=true, else null."""
+
+
 _VISION_PROMPT = """You label one meme image with structure, not prose, for a meme genealogy
 archive. Return is_meme=false for a plain photo, a screenshot of text, news, or non-meme art.
 template_guess is the single most widely used name of the meme template or character used in the
@@ -178,6 +194,8 @@ and trimmed (null if none). catchphrase is the reusable spoken phrase if this me
 (null otherwise). subjects lists the depicted characters, people or things. description is one
 neutral sentence describing the reusable visual STRUCTURE of the image (not this post's specific
 joke) — it is used as a search query and to group unidentified memes.
+
+{nsfw_policy}
 
 Format-class roots:
 {roots}
@@ -199,14 +217,34 @@ def vision_label(
 ) -> VisionLabel:
     """Labels one meme image with structure via a single Gemini vision call."""
     prompt = _VISION_PROMPT.format(
+        nsfw_policy=_NSFW_POLICY,
         roots=_format_roots(roots),
         known_names=", ".join(known_names) if known_names else "(none)",
         title=title or "(no title)",
     )
     image_part = types.Part.from_bytes(data=image, mime_type=mime_type)
-    text = _generate([prompt, image_part], response_schema=VisionLabel, temperature=0.1)
+    try:
+        text = _generate([prompt, image_part], response_schema=VisionLabel, temperature=0.1)
+    except LLMBlockedError:
+        return _blocked_vision_label()
     raw = cast(dict[str, Any], json.loads(text))
     return _parse_vision_label(raw, roots)
+
+
+def _blocked_vision_label() -> VisionLabel:
+    """A Gemini safety-filter block is itself strong evidence the image is NSFW."""
+    return VisionLabel(
+        is_meme=False,
+        template_guess=None,
+        confidence=0.0,
+        structure_class=None,
+        subjects=[],
+        overlaid_text=None,
+        catchphrase=None,
+        description="",
+        nsfw=True,
+        nsfw_reason="blocked by Gemini's safety filters",
+    )
 
 
 def _parse_vision_label(raw: dict[str, Any], roots: Sequence[RootInfo]) -> VisionLabel:
@@ -225,7 +263,30 @@ def _parse_vision_label(raw: dict[str, Any], roots: Sequence[RootInfo]) -> Visio
         overlaid_text=raw.get("overlaid_text") or None,
         catchphrase=raw.get("catchphrase") or None,
         description=str(raw.get("description") or ""),
+        nsfw=bool(raw.get("nsfw", False)),
+        nsfw_reason=raw.get("nsfw_reason") or None,
     )
+
+
+class _NsfwOnlyResponse(BaseModel):
+    nsfw: bool
+    nsfw_reason: str | None
+
+
+_NSFW_ONLY_PROMPT = "Decide only whether this image is safe to show.\n\n" + _NSFW_POLICY
+
+
+def label_nsfw_only(image: bytes, mime_type: str) -> tuple[bool, str | None]:
+    """A single small Gemini call that decides only the nsfw flag for one image (the backfill)."""
+    image_part = types.Part.from_bytes(data=image, mime_type=mime_type)
+    try:
+        text = _generate(
+            [_NSFW_ONLY_PROMPT, image_part], response_schema=_NsfwOnlyResponse, temperature=0.0
+        )
+    except LLMBlockedError:
+        return True, "blocked by Gemini's safety filters"
+    raw = cast(dict[str, Any], json.loads(text))
+    return bool(raw.get("nsfw", False)), raw.get("nsfw_reason") or None
 
 
 _DRAFT_CHAIN_PROMPT = """You draft a hypothesised lineage for one meme, to be verified against the

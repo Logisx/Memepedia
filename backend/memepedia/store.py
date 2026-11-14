@@ -32,12 +32,12 @@ SELECT n.*,
 FROM nodes n
 LEFT JOIN (
     SELECT node_id, count(*) AS c FROM sightings
-    WHERE posted_at >= now() - interval '24 hours'
+    WHERE posted_at >= now() - interval '24 hours' AND nsfw = false
     GROUP BY node_id
 ) c24 ON c24.node_id = n.id
 LEFT JOIN (
     SELECT node_id, count(*) AS c FROM sightings
-    WHERE posted_at >= now() - interval '7 days'
+    WHERE posted_at >= now() - interval '7 days' AND nsfw = false
     GROUP BY node_id
 ) c7 ON c7.node_id = n.id
 """
@@ -62,6 +62,7 @@ def _row_to_node(row: db.Row) -> MemeNode:
         status=row["status"],
         sightings_24h=row["sightings_24h"],
         sightings_7d=row["sightings_7d"],
+        nsfw=row["nsfw"],
     )
 
 
@@ -89,6 +90,7 @@ def _row_to_sighting(row: db.Row) -> Sighting:
         node_id=row["node_id"],
         node_name=row.get("node_name"),
         state=row["state"],
+        nsfw=row["nsfw"],
     )
 
 
@@ -258,6 +260,30 @@ def set_node_status(node_id: str, status: NodeStatus) -> None:
     db.execute("UPDATE nodes SET status = %s WHERE id = %s", (status, node_id))
 
 
+def set_node_nsfw(node_id: str, nsfw: bool) -> None:
+    """Set a node's nsfw flag (the backfill and the manual override script)."""
+    db.execute("UPDATE nodes SET nsfw = %s WHERE id = %s", (nsfw, node_id))
+
+
+def set_sighting_nsfw(sid: str, nsfw: bool) -> None:
+    """Set a sighting's nsfw flag (the backfill and the manual override script)."""
+    db.execute("UPDATE sightings SET nsfw = %s WHERE id = %s", (nsfw, sid))
+
+
+def nodes_needing_nsfw_label(relabel: bool = False) -> list[MemeNode]:
+    """Nodes with an image to label: unlabelled only, unless `relabel` asks for every one."""
+    where = "WHERE n.image_url IS NOT NULL"
+    if not relabel:
+        where += " AND n.nsfw IS NULL"
+    return _fetch_nodes(where)
+
+
+def sightings_needing_nsfw_label(relabel: bool = False) -> list[db.Row]:
+    """Raw sighting rows to label: unlabelled only, unless `relabel` asks for every one."""
+    where = "" if relabel else "WHERE nsfw IS NULL"
+    return db.fetch_all(f"SELECT * FROM sightings {where} ORDER BY seen_at")
+
+
 def upsert_link(link: Link) -> None:
     """Insert a link, replacing the parent and evidence if (child_id, axis) already exists."""
     db.execute(
@@ -303,18 +329,20 @@ def insert_sighting(
     node_id: str | None,
     state: SightingState,
     seen_at: datetime | None = None,
+    nsfw: bool | None = None,
 ) -> str | None:
     """Insert a sighting if its post_url is new; returns the id, or None if it already existed.
 
     `seen_at` defaults to now; a backfill passes the post's own time so old posts
-    do not arrive on the wall as if they were new.
+    do not arrive on the wall as if they were new. `nsfw` is used only when `vision`
+    is None (e.g. loading mock fixtures that carry a pre-decided label of their own).
     """
     sid = sighting_id(post.post_url)
     row = db.fetch_one(
         """
         INSERT INTO sightings (id, platform, source, post_url, image_url, title, author, posted_at,
-                                vision, node_id, state, seen_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, COALESCE(%s, now()))
+                                vision, node_id, state, seen_at, nsfw)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, COALESCE(%s, now()), %s)
         ON CONFLICT (post_url) DO NOTHING
         RETURNING id
         """,
@@ -331,16 +359,19 @@ def insert_sighting(
             node_id,
             state,
             seen_at,
+            vision.nsfw if vision else nsfw,
         ),
     )
     return row["id"] if row else None
 
 
 def _wall_query(since: datetime | None, limit: int) -> tuple[str, db.Params]:
+    """Only nsfw = false sightings: null (unlabelled) and true are both kept off the wall."""
     if since is None:
-        return _WALL_SELECT + " ORDER BY s.posted_at DESC LIMIT %s", (limit,)
+        return _WALL_SELECT + " WHERE s.nsfw = false ORDER BY s.posted_at DESC LIMIT %s", (limit,)
     return (
-        _WALL_SELECT + " WHERE s.seen_at > %s ORDER BY s.posted_at DESC LIMIT %s",
+        _WALL_SELECT
+        + " WHERE s.nsfw = false AND s.seen_at > %s ORDER BY s.posted_at DESC LIMIT %s",
         (since, limit),
     )
 
@@ -386,9 +417,10 @@ def counts() -> dict[str, int]:
 
 
 def sightings_for_node(node_id: str, limit: int = 12) -> list[Sighting]:
-    """Sightings of one node, newest first."""
+    """Sightings of one node, newest first; nsfw (true or unlabelled) sightings are excluded."""
     rows = db.fetch_all(
-        _WALL_SELECT + " WHERE s.node_id = %s ORDER BY s.posted_at DESC LIMIT %s",
+        _WALL_SELECT
+        + " WHERE s.node_id = %s AND s.nsfw = false ORDER BY s.posted_at DESC LIMIT %s",
         (node_id, limit),
     )
     return [_row_to_sighting(r) for r in rows]
@@ -461,7 +493,7 @@ def _rising_candidates() -> list[tuple[str, int, float]]:
                   AND posted_at >= now() - interval '7 days'
             ) AS prior_count
         FROM sightings
-        WHERE node_id IS NOT NULL
+        WHERE node_id IS NOT NULL AND nsfw = false
         GROUP BY node_id
         """
     )

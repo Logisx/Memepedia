@@ -59,6 +59,7 @@ def step_families() -> dict[str, int]:
             status="established",
             sightings_24h=0,
             sightings_7d=0,
+            nsfw=existing.nsfw if existing else None,
         )
         store.upsert_node(node)
         node_count += 1

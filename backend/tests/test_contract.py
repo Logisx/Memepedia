@@ -21,6 +21,7 @@ from memepedia.models import (
     RelatedResponse,
     TraceEvent,
     TreeResponse,
+    VisionLabel,
     WallResponse,
     WeekResponse,
 )
@@ -168,7 +169,18 @@ def test_wall_since_semantics(client: TestClient) -> None:
             author="tester",
             posted_at=datetime(2020, 1, 1, tzinfo=UTC),
         ),
-        None,
+        VisionLabel(
+            is_meme=True,
+            template_guess="Doomer",
+            confidence=0.95,
+            structure_class=None,
+            subjects=[],
+            overlaid_text=None,
+            catchphrase=None,
+            description="",
+            nsfw=False,
+            nsfw_reason=None,
+        ),
         "doomer",
         "resolved",
     )
