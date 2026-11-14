@@ -39,11 +39,11 @@ function SensitiveToggle() {
 export default function App() {
   return (
     <BrowserRouter>
-      <header className="flex flex-wrap items-baseline gap-6 border-b border-ink px-6 py-3">
-        <Link to="/" className="text-3xl font-extrabold no-underline">
+      <header className="flex flex-wrap items-baseline gap-x-4 gap-y-2 border-b border-ink px-4 py-3 md:gap-6 md:px-6">
+        <Link to="/" className="text-2xl font-extrabold no-underline md:text-3xl">
           Memepedia
         </Link>
-        <nav className="font-type flex gap-6 text-xl">
+        <nav className="font-type flex gap-4 text-lg md:gap-6 md:text-xl">
           {[
             { to: '/', label: 'Wall', end: true },
             { to: '/related', label: 'Compare two memes', end: false },

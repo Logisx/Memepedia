@@ -73,11 +73,12 @@ function LineageView({ initial }: { initial: TreeResponse }) {
   const linesDiffer = tree.descent.character.join('>') !== tree.descent.format.join('>')
   const aloneInFamily = tree.family_ids.length <= 1
 
+  // Phones and tablets stack the sections and let the page scroll; from lg up it is one screen.
   return (
-    <div className="flex h-[calc(100vh-4.25rem)] min-h-[34rem] flex-col">
-      <section className="flex h-[45%] min-h-0 flex-col px-6 pt-3">
-        <div className="font-type flex flex-wrap items-center gap-x-6 gap-y-1 pb-2 text-lg">
-          <span className="font-display text-3xl font-extrabold">{selected?.name ?? tree.selected_id}</span>
+    <div className="flex flex-col lg:h-[calc(100dvh-4.25rem)] lg:min-h-[34rem]">
+      <section className="flex flex-col px-4 pt-3 lg:h-[45%] lg:min-h-0 lg:px-6">
+        <div className="font-type flex flex-wrap items-center gap-x-4 gap-y-2 pb-2 text-lg lg:gap-x-6 lg:gap-y-1">
+          <span className="font-display min-w-0 break-words text-2xl font-extrabold lg:text-3xl">{selected?.name ?? tree.selected_id}</span>
           {linesDiffer && (
             <div role="group" aria-label="Line of descent" className="flex border-2 border-ink">
               {(['character', 'format'] as const).map((a) => (
@@ -102,21 +103,21 @@ function LineageView({ initial }: { initial: TreeResponse }) {
             </RouterLink>
           ))}
         </div>
-        <div className="min-h-0 flex-1">
+        <div className="h-[24rem] lg:h-auto lg:min-h-0 lg:flex-1">
           <DescentStrip axis={axis} descent={tree.descent[axis]} nodesById={nodesById} links={tree.links} />
         </div>
       </section>
 
-      <section className="flex h-[55%] min-h-0 border-t border-ink">
+      <section className="flex flex-col border-t border-ink lg:h-[55%] lg:min-h-0 lg:flex-row">
         <motion.div
-          className="relative min-w-0 flex-1"
+          className="relative h-[26rem] min-w-0 lg:h-auto lg:flex-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: mapDelay, duration: 0.6 }}
         >
           <FamilyMap tree={tree} />
           {aloneInFamily && (
-            <p className="font-type pointer-events-none absolute inset-x-0 top-[calc(50%+4rem)] m-0 text-center text-lg text-ink-soft">
+            <p className="font-type pointer-events-none absolute inset-x-0 top-[calc(50%+4rem)] m-0 px-4 text-center text-lg text-ink-soft">
               No relatives on record yet: this meme is the only one in its family so far.
             </p>
           )}

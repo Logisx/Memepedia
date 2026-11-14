@@ -30,7 +30,7 @@ interface Props {
 export function SidePanel({ nodeId, sightings, history, onCited }: Props) {
   const [tab, setTab] = useState<Tab>('sightings')
   return (
-    <aside className="flex h-full min-h-0 w-[26rem] shrink-0 flex-col border-l border-ink">
+    <aside className="flex w-full shrink-0 flex-col border-t border-ink lg:h-full lg:min-h-0 lg:w-[26rem] lg:border-l lg:border-t-0">
       <div role="tablist" className="font-type flex border-b border-ink text-lg">
         {TABS.map((t) => (
           <button
@@ -44,7 +44,7 @@ export function SidePanel({ nodeId, sightings, history, onCited }: Props) {
           </button>
         ))}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-3">
+      <div className="min-h-[14rem] p-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
         {tab === 'sightings' && <SightingsList sightings={sightings} />}
         {tab === 'history' && <HistoryList history={history} />}
         {tab === 'suggest' && <SuggestForm nodeId={nodeId} onCited={onCited} />}
