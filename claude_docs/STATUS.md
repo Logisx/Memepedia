@@ -1,6 +1,6 @@
 # Memepedia — current status
 
-Last updated: 2026-11-14 16:55 EET. Read this first when picking the project up in a new session.
+Last updated: 2026-11-14 18:10 EET. Read this first when picking the project up in a new session.
 
 ## In one paragraph
 
@@ -28,7 +28,7 @@ All commands from `backend/`, with uv.
 | To do this | Run |
 |---|---|
 | Tests, lint, types | `uv run pytest -q`, `uv run ruff check .`, `uv run mypy memepedia scripts` |
-| Fill the database with the mock archive | `uv run python scripts/load_fixtures.py [--reset]` |
+| Fill the local dev database with the mock archive (refused on any other database) | `uv run python scripts/load_fixtures.py [--reset]` |
 | Start the API on port 8000 | `uv run uvicorn memepedia.api:app --port 8000` |
 | Check the sources, image lookup, Gemini live | `uv run python scripts/smoke_sources.py [--platform lemmy\|reddit\|imgflip]`, `smoke_images.py`, `smoke_llm.py` |
 | Live-check one trace, printing each event | `uv run python scripts/smoke_trace.py --query "Doomer" [--context "..."] [--specimen]` |
@@ -39,7 +39,7 @@ All commands from `backend/`, with uv.
 | Manage Context.dev page monitors (one per feed) | `uv run python scripts/monitors.py create\|list\|delete [--dry-run]` |
 | Deploy to Modal (live, tested 2026-11-14) | from `backend/`: `uv run --with modal modal deploy deploy.py` |
 
-The database is a local PostgreSQL 16 that starts itself on first use (the `pgserver` package, data in `backend/.pgdata/`). Setting `DATABASE_URL` in `.env` switches to a hosted Postgres with no code change. `MEMEPEDIA_DB` picks the local database name (default `memepedia`; tests use `memepedia_test`). The frontend points at the backend with `VITE_API_BASE=http://localhost:8000`.
+The database is a local PostgreSQL 16 that starts itself on first use (the `pgserver` package, data in `backend/.pgdata/`). Setting `DATABASE_URL` in `.env` switches to a hosted Postgres with no code change. `MEMEPEDIA_DB` picks the local database name (default `memepedia`; tests use `memepedia_test`), and is ignored whenever `DATABASE_URL` is set. The frontend points at the backend with `VITE_API_BASE=http://localhost:8000`.
 
 ## Done
 
@@ -125,6 +125,7 @@ Nothing is half-written right now. The backend code is complete for the planned 
 - A command piped into `tail` hides a failing exit code. Do not chain a commit after a piped test run.
 - On Lemmy, most posts are one-off jokes with no template. Expect many unstamped tiles from that source.
 - Imgflip stream posts have no timestamp and join to a template name for only 4 or 5 posts per fetch.
+- 2026-11-14 ~17:25 EET: an agent ran `load_fixtures.py --reset` expecting `MEMEPEDIA_DB` to point it at a local database. With `DATABASE_URL` set in `.env`, every script targets the hosted Aiven database and `MEMEPEDIA_DB` is ignored, so the hosted tables were dropped and mock data served for about 20 minutes. It was restored from a 17:24 export (see "State of the data"). Since commit 615b285, `db.reset_schema()` and `load_fixtures.py` refuse to run unless the database is the local dev server (a unix socket in `backend/.pgdata`); there is no override.
 
 ## State of the data
 
@@ -134,5 +135,7 @@ Nothing is half-written right now. The backend code is complete for the planned 
 - Link verification of the curated seed: 41 of 70 links are "cited". By family: Wojak 17 of 23, Doge 4 of 9, Pepe 11 of 13, everything else 9 of 25. Advice Animals did worst: most of their format links found no quote.
 - Quality of the citations is uneven. 16 of the 41 come from meme.com and several from small aggregator sites; only a handful come from Wikipedia, Daily Dot, Dictionary.com or MEL. Some quotes carry footnote digits glued to the text ("September 20183"). Neither has been fixed.
 - A backup of this verified archive is in `backend/.data/archive_curated_verified.dump` (git-ignored, `pg_dump -Fc`). Do not run `seed.py --reset` without it: the citations cost about 510 credits to produce.
-- The week backfill has not been run. The live loop is not running.
+- The hosted Aiven database was wiped at ~17:25 and restored at 17:45 EET from `backend/.data/after_templates_trial.json` (17:24 export: 85 nodes, 81 links of which 41 cited, 89 sightings, 52 history). Lost: the clock's sightings and any auto-traced rows between 17:24 and 17:45. Afterwards the orphan node `i-am-once-again-asking-for-your-financial-support` (no links, sightings or history) was deleted, and the monkas -> pepe-the-frog quote had its leading footnote links removed (the clean sentence was checked on the page). At 18:09 the hosted database held 96 nodes, 93 links (44 cited), 316 sightings, 67 history; the clock keeps adding to it.
+- Snapshots in `backend/.data/` (git-ignored): `aiven_before_templates.json` (17:18), `after_templates_trial.json` (17:24, the restore source), `step2_consolidated_repairs.json` (the quote repairs), `aiven_wiped_state.json` (the mock data that was served, kept as a record), `aiven_restored.json` (18:09, after the restore and the two fixes).
+- The week backfill has not been run. On the laptop the live loop is not running; the Modal clock is.
 - Context.dev credits: the backend ledger `backend/.data/credits.jsonl` shows 598 credits since 15:59 on 2026-11-14 (585 on quote verification, 13 on Reddit and Imgflip fetches), on top of roughly 55 from the feasibility tests. About 85 of those were wasted by re-checking 13 demo-family links that had already failed once.
