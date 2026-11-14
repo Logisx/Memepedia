@@ -38,6 +38,14 @@ SENT = (
     "VISION_MIN_CONFIDENCE",
     "VISION_EXACT_MIN_CONFIDENCE",
     "VISION_MATCH_SUBJECTS",
+    # Cost guards and the clock fallback (memepedia/budget.py, live.clock_tick).
+    "VISION_PER_TICK",
+    "AUTO_TRACES_PER_TICK",
+    "MEMEPEDIA_PAID_OFF",
+    "MEMEPEDIA_CAP_CONTEXTDEV",
+    "MEMEPEDIA_CAP_GEMINI",
+    "MEMEPEDIA_CAP_TRACES",
+    "MEMEPEDIA_CLOCK_FALLBACK_MINUTES",
 )
 REQUIRED = ("DATABASE_URL", "CONTEXTDOTDEV_KEY", "GEMINI_KEY")
 CLOCK_MINUTES = 1
@@ -122,17 +130,15 @@ def web() -> Any:
 
 @app.function(image=image, secrets=[secret], schedule=clock_schedule, timeout=240)
 def clock() -> None:
-    """Visit one feed per run, in rotation; after the last feed, look for emerging memes.
+    """Visit one feed per run, in rotation, as the fallback to the Context.dev monitor webhooks.
 
     Paused by default: deploy with `MEMEPEDIA_CLOCK=1` (env var or `.env`) to schedule it, and
     with that unset or falsy to redeploy it unscheduled (the function stays callable by hand,
-    it just does not run on a timer).
+    it just does not run on a timer). When scheduled it stays idle while monitor webhooks keep
+    arriving, and goes through the same cost guards as they do (`live.clock_tick`).
     """
-    from memepedia import live, store
+    from memepedia import live
     from memepedia.sources import FEEDS
 
     turn = int(time.time() // (60 * CLOCK_MINUTES)) % len(FEEDS)
-    print(live.tick(FEEDS[turn].key))
-    if turn == len(FEEDS) - 1:
-        print("specimens:", live.detect_specimens())
-        store.expire_specimens()
+    print(live.clock_tick(FEEDS[turn].key))

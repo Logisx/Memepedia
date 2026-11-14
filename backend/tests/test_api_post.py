@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import dataclasses
+import hashlib
+import hmac
 import json
+import time
 from collections.abc import Iterator, Mapping
 from typing import Any
 
@@ -12,7 +15,7 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
 
-from memepedia import api
+from memepedia import api, db, store
 from memepedia.config import get_settings
 from memepedia.llm import LLMError
 from memepedia.models import (
@@ -28,9 +31,9 @@ PNG = b"\x89PNG\r\n\x1a\n" + b"0" * 32
 
 @pytest.fixture(autouse=True)
 def fresh_budgets(monkeypatch: pytest.MonkeyPatch) -> None:
-    for name in ("_trace_budget", "_identify_budget", "_proposal_budget"):
+    for name in ("_trace_budget", "_identify_budget", "_proposal_budget", "_webhook_budget"):
         monkeypatch.setattr(api, name, api._Budget(100))
-    api._seen_deliveries.clear()
+    db.execute("TRUNCATE webhook_events, webhook_monitors")
 
 
 def _events(body: str) -> list[Any]:
@@ -143,34 +146,77 @@ def webhook_calls(monkeypatch: pytest.MonkeyPatch) -> list[Mapping[str, Any]]:
     return calls
 
 
-def test_webhook_triggers_one_tick_per_event(
+_SECRET = "whsec_monitor_1"
+_RUN = {"id": "evt_1", "data": {"run": {"monitor_id": "mon_1"}, "change": None}}
+
+
+def _signed(body: bytes, secret: str = _SECRET, event_id: str = "evt_1") -> dict[str, str]:
+    ts = int(time.time())
+    digest = hmac.new(secret.encode(), f"{ts}.".encode() + body, hashlib.sha256).hexdigest()
+    return {"X-Context-Signature": f"t={ts},v1={digest}", "X-Context-Id": event_id}
+
+
+def _post(client: TestClient, body: bytes, headers: dict[str, str] | None = None) -> int:
+    return client.post("/api/webhooks/context", content=body, headers=headers or {}).status_code
+
+
+def test_webhook_runs_one_tick_per_event_signed_with_its_monitors_secret(
     client: TestClient, webhook_calls: list[Mapping[str, Any]]
 ) -> None:
-    payload = {"id": "evt_1", "data": {"run": {"monitor_id": "mon_1"}, "change": None}}
-    headers = {"X-Context-Event": "run.completed", "X-Context-Id": "evt_1"}
-    first = client.post("/api/webhooks/context", json=payload, headers=headers)
-    retry = client.post("/api/webhooks/context", json=payload, headers=headers)
-    assert first.status_code == retry.status_code == 200
-    assert webhook_calls == [payload]
+    store.save_monitor("mon_1", "reddit:memes", _SECRET)
+    body = json.dumps(_RUN).encode()
+    assert _post(client, body, _signed(body)) == 200
+    assert _post(client, body, _signed(body)) == 200
+    assert webhook_calls == [_RUN]
+
+
+def test_webhook_refuses_any_unsigned_caller_even_with_no_secret_configured(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch, webhook_calls: list[Mapping[str, Any]]
+) -> None:
+    settings = dataclasses.replace(get_settings(), webhook_secret=None)
+    monkeypatch.setattr(api.live, "get_settings", lambda: settings)
+    body = json.dumps(_RUN).encode()
+    assert _post(client, body, {"X-Context-Id": "evt_1"}) == 401
+    assert _post(client, body, _signed(body)) == 401
+    assert webhook_calls == []
+
+
+def test_webhook_refuses_a_signature_made_with_another_secret(
+    client: TestClient, webhook_calls: list[Mapping[str, Any]]
+) -> None:
+    store.save_monitor("mon_1", "reddit:memes", _SECRET)
+    body = json.dumps(_RUN).encode()
+    assert _post(client, body, _signed(body, secret="whsec_forged")) == 401
+    assert webhook_calls == []
+
+
+def test_webhook_also_accepts_the_configured_env_secret(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch, webhook_calls: list[Mapping[str, Any]]
+) -> None:
+    settings = dataclasses.replace(get_settings(), webhook_secret="whsec_env")
+    monkeypatch.setattr(api.live, "get_settings", lambda: settings)
+    body = json.dumps({"id": "evt_2"}).encode()
+    assert _post(client, body, _signed(body, secret="whsec_env", event_id="evt_2")) == 200
+    assert webhook_calls == [{"id": "evt_2"}]
 
 
 def test_webhook_rejects_a_body_that_is_not_an_object(
     client: TestClient, webhook_calls: list[Mapping[str, Any]]
 ) -> None:
-    response = client.post("/api/webhooks/context", content=b"[1, 2]")
-    assert response.status_code == 400
+    assert _post(client, b"[1, 2]") == 400
     assert webhook_calls == []
 
 
-def test_webhook_checks_the_signature_when_a_secret_is_set(
+def test_webhook_rejects_an_oversized_body(
+    client: TestClient, webhook_calls: list[Mapping[str, Any]]
+) -> None:
+    assert _post(client, b" " * (api.MAX_WEBHOOK_BYTES + 1)) == 413
+    assert webhook_calls == []
+
+
+def test_webhook_is_rate_limited(
     client: TestClient, monkeypatch: pytest.MonkeyPatch, webhook_calls: list[Mapping[str, Any]]
 ) -> None:
-    settings = dataclasses.replace(get_settings(), webhook_secret="whsec_test")
-    monkeypatch.setattr(api, "get_settings", lambda: settings)
-    verdicts = iter([False, True])
-    monkeypatch.setattr(api.live, "verify_signature", lambda raw, header, secret: next(verdicts))
-    body = json.dumps({"id": "evt_2"})
-    refused = client.post("/api/webhooks/context", content=body)
-    accepted = client.post("/api/webhooks/context", content=body)
-    assert (refused.status_code, accepted.status_code) == (401, 200)
-    assert webhook_calls == [{"id": "evt_2"}]
+    monkeypatch.setattr(api, "_webhook_budget", api._Budget(1))
+    body = json.dumps(_RUN).encode()
+    assert [_post(client, body), _post(client, body)] == [401, 429]

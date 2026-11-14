@@ -114,6 +114,8 @@ def test_health_endpoint(client: TestClient) -> None:
     body = response.json()
     assert body["ok"] is True
     assert body["nodes"] > 0
+    assert body["paid_work"] == "allowed"
+    assert "last_webhook_s" in body
 
 
 def test_tree_endpoint_includes_flagged_sightings_only_when_asked(client: TestClient) -> None:

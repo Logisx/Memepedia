@@ -69,3 +69,33 @@ CREATE TABLE IF NOT EXISTS history (
     payload    jsonb
 );
 CREATE INDEX IF NOT EXISTS history_node_idx ON history (node_id, ts DESC);
+
+-- Cost guards (budget.py): paid units spent per hour and kind (Context.dev credits, Gemini calls,
+-- background traces), shared by every container and summed over a rolling window.
+CREATE TABLE IF NOT EXISTS spend (
+    hour   timestamptz NOT NULL,
+    kind   text NOT NULL,
+    amount double precision NOT NULL DEFAULT 0,
+    PRIMARY KEY (hour, kind)
+);
+
+-- Small shared flags: the kill switch, cap overrides, throttles and the webhook heartbeat.
+CREATE TABLE IF NOT EXISTS app_state (
+    key        text PRIMARY KEY,
+    value      text NOT NULL DEFAULT '',
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Context.dev monitors this archive created, each with its own webhook signing secret.
+CREATE TABLE IF NOT EXISTS webhook_monitors (
+    id         text PRIMARY KEY,
+    feed_key   text NOT NULL,
+    secret     text,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Webhook event ids already accepted, so a retried or replayed delivery runs nothing twice.
+CREATE TABLE IF NOT EXISTS webhook_events (
+    id          text PRIMARY KEY,
+    received_at timestamptz NOT NULL DEFAULT now()
+);
