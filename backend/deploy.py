@@ -1,7 +1,6 @@
 """Modal deployment: the public API and a one-minute clock for the live loop.
 
-UNTESTED: written before a Modal account existed, from Modal's documentation. Deploy from
-`backend/` with:
+Deploy from `backend/` with:
 
     uv run --with modal modal deploy deploy.py
 
