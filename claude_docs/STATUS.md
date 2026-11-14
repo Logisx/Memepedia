@@ -37,7 +37,7 @@ All commands from `backend/`, with uv.
 | Backfill a week of Lemmy history as sightings | `uv run python scripts/backfill.py [--max-images 120]` |
 | Run the laptop clock (visits feeds in rotation until there is a public URL) | `uv run python scripts/run_loop.py [--every 45] [--once] [--platform lemmy\|reddit\|imgflip]` |
 | Manage Context.dev page monitors (one per feed) | `uv run python scripts/monitors.py create\|list\|delete [--dry-run]` |
-| Deploy to Modal (untested; no Modal account on this machine yet) | from `backend/`: `uv run --with modal modal deploy deploy.py` |
+| Deploy to Modal (live, tested 2026-11-14) | from `backend/`: `uv run --with modal modal deploy deploy.py` |
 
 The database is a local PostgreSQL 16 that starts itself on first use (the `pgserver` package, data in `backend/.pgdata/`). Setting `DATABASE_URL` in `.env` switches to a hosted Postgres with no code change. `MEMEPEDIA_DB` picks the local database name (default `memepedia`; tests use `memepedia_test`). The frontend points at the backend with `VITE_API_BASE=http://localhost:8000`.
 
@@ -59,7 +59,8 @@ The database is a local PostgreSQL 16 that starts itself on first use (the `pgse
 - Image identification: names the meme in an uploaded image, or says what to trace instead.
 - The clock scripts: `run_loop.py` (a local rotation until there is a public URL) and `monitors.py` (Context.dev page monitors as the clock once there is one).
 - The four `POST` routes, wired in `backend/memepedia/api.py`: `/api/trace` (a server-sent event stream), `/api/identify` (image upload, 5 MB limit), `/api/proposals`, `/api/webhooks/context`. The first three share a per-minute call budget (trace 12, identify 20, proposals 12) that answers 429 once spent, so a looping client cannot drain paid quotas. The webhook answers quickly and runs the feed tick in the background, ignores repeated deliveries of the same event id, and checks the `X-Context-Signature` header only when `CONTEXTDEV_WEBHOOK_SECRET` is set.
-- Tests for the four `POST` routes (`backend/tests/test_api_post.py`). The whole suite is 181 tests, all passing; Ruff and strict mypy are clean.
+- Tests for the four `POST` routes (`backend/tests/test_api_post.py`). The whole suite is 187 tests, all passing; Ruff and strict mypy are clean.
+- Deployed to Modal (2026-11-14 ~17:15 EET): `backend/deploy.py`'s `web` function (kept warm) and `clock` function (every minute, one feed per tick) are both live at `https://aleksandr-shishkov-work--memepedia-web.us-east.modal.run`. All routes respond 200; CORS and the `/api/trace` SSE stream (events arrive incrementally, not buffered) both check out. The clock has already resolved several sightings into the wall.
 
 ## In progress
 
@@ -69,9 +70,7 @@ Nothing is half-written right now. The backend code is complete for the planned 
 
 - The Imgflip top 100 step of the seed (`--steps templates`, then `verify` for the new links). The curated part of the seed is done, see "State of the data". Verifying a link costs 6 to 7 credits, so 100 templates with one or two links each come to roughly 600 to 1300 credits: check the credit balance with the owner first.
 - The week backfill: `scripts/backfill.py` has not been run.
-- The live loop is not running (no `run_loop.py` rotation and no monitors in place).
-- Deployment: `backend/deploy.py` (Modal: the API kept warm plus a one-minute clock for the live loop) is written but untested; there is no Modal login on this machine.
-- Monitors as the clock, once there is a public URL.
+- Context.dev monitors are not set up yet; the one-minute Modal clock is the live loop's source of ticks for now (see "Decisions waiting on the owner").
 - The merge with the frontend.
 
 ## Decisions made
@@ -99,10 +98,11 @@ Nothing is half-written right now. The backend code is complete for the planned 
 
 ## Decisions waiting on the owner
 
-1. **Hosting signups (decided, action needed).** Modal and Aiven are chosen. The owner still has to sign up for both: run `modal token new` on this machine, and put the Aiven connection string in `.env` as `DATABASE_URL`. Until then the backend runs on the laptop and a local script is the clock. Context.dev monitors need a public URL for their webhook.
-2. **When `pipeline` goes into `main`.** The code is pushed on `pipeline` (`origin/pipeline` is level with the local branch); `main` is untouched and equals `origin/main`. Open question: merge `pipeline` into `main` now so the teammate can branch `web` from `main`, or have them branch `web` from `pipeline` directly and merge everything into `main` later. Needs the owner's say.
-3. **Hand-check of seed facts.** Sixteen nodes are flagged `uncertain` in `seed.json` with a note on what to check: crying-wojak, brainlet, coomer, yes-chad, grug, doge, swole-doge-vs-cheems, walter, sad-frog, smug-frog, sadge, chad, average-fan-vs-average-enjoyer, paranoid-parrot, success-kid, drake-hotline-bling. The three demo families (Wojak, Doge, Pepe) matter most.
-4. **Modelling gap (parked).** Advice Animals are related through the format line only, so the character-family map shows each as a single node. The owner chose to leave this for now. If it is picked up later: either the map draws format links, or the strip defaults to the format line for such memes.
+1. **Hosting (done 2026-11-14 ~17:15 EET).** The backend is live on Modal: `https://aleksandr-shishkov-work--memepedia-web.us-east.modal.run` is the public base URL (now also `PUBLIC_BASE_URL` in `.env`). The `web` function stays warm and serves the API; the `clock` function runs every minute, visiting one feed per tick in rotation, and is already producing sightings (first run ~17:16, 99 sightings by 17:25). `CONTEXTDEV_WEBHOOK_SECRET` is still unset, so the webhook accepts any caller for now — set it before turning on Context.dev monitors (see below).
+2. **Context.dev monitors, not yet turned on.** `scripts/monitors.py create --dry-run` (run against the live `PUBLIC_BASE_URL`) shows it would create 16 monitors, one per feed, each polling every 10 minutes and pointing its webhook at `<PUBLIC_BASE_URL>/api/webhooks/context`. Two things needed first: the `whsec_...` webhook signing secret (not found in this repo — `spikes/P0_RESULTS.md` Test 5 created a monitor with no `webhook` key at all, so no secret was ever returned; per `contextdev.py`'s docstring it is either returned when a monitor/webhook is created with one, or copied from the Context.dev dashboard — needs checking there), and a credit-budget decision: `spikes/P0_RESULTS.md` Test 5 shows a monitor's baseline run costs 1 credit (`credits_charged: 1`); an immediately-following on-demand run was skipped as "superseded" at 0 credits, so the real per-run cost in steady state (one run per 10-minute interval, 16 monitors) still wants the owner's go-ahead.
+3. **When `pipeline` goes into `main`.** The code is pushed on `pipeline` (`origin/pipeline` is level with the local branch); `main` is untouched and equals `origin/main`. Open question: merge `pipeline` into `main` now so the teammate can branch `web` from `main`, or have them branch `web` from `pipeline` directly and merge everything into `main` later. Needs the owner's say.
+4. **Hand-check of seed facts.** Sixteen nodes are flagged `uncertain` in `seed.json` with a note on what to check: crying-wojak, brainlet, coomer, yes-chad, grug, doge, swole-doge-vs-cheems, walter, sad-frog, smug-frog, sadge, chad, average-fan-vs-average-enjoyer, paranoid-parrot, success-kid, drake-hotline-bling. The three demo families (Wojak, Doge, Pepe) matter most.
+5. **Modelling gap (parked).** Advice Animals are related through the format line only, so the character-family map shows each as a single node. The owner chose to leave this for now. If it is picked up later: either the map draws format links, or the strip defaults to the format line for such memes.
 
 ## Working agreements
 
