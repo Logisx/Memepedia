@@ -23,6 +23,7 @@ class Settings:
     """Everything the backend reads from its environment."""
 
     database_url: str | None
+    local_db_name: str
     contextdev_key: str | None
     gemini_key: str | None
     gemini_model: str
@@ -42,6 +43,7 @@ def get_settings() -> Settings:
     load_dotenv(REPO_ROOT / ".env")
     return Settings(
         database_url=_first("DATABASE_URL"),
+        local_db_name=_first("MEMEPEDIA_DB") or "memepedia",
         contextdev_key=_first("CONTEXTDOTDEV_KEY"),
         gemini_key=_first("GEMINI_API_KEY", "GEMINI_KEY"),
         gemini_model=_first("GEMINI_MODEL") or DEFAULT_GEMINI_MODEL,

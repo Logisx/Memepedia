@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
 
-from memepedia import store
+from memepedia import db, store
 from memepedia.models import Evidence, MemeNode, Post
 
 
@@ -151,3 +151,58 @@ def test_rising_maths_only_includes_spiking_nodes(client: TestClient) -> None:
     entry = rising["rising-test-node"]
     assert entry.count_24h == 5
     assert entry.daily_mean_prior == 1.0
+
+
+def test_expire_specimens_removes_only_stale_ones(client: TestClient) -> None:
+    def specimen(node_id: str) -> MemeNode:
+        return MemeNode(
+            id=node_id,
+            name=node_id,
+            aliases=[],
+            kind="template",
+            latin_name=None,
+            image_url=None,
+            image_credit_url=None,
+            first_seen=None,
+            date_precision=None,
+            summary=None,
+            status="specimen",
+            sightings_24h=0,
+            sightings_7d=0,
+        )
+
+    def post(url: str, age: timedelta) -> Post:
+        return Post(
+            platform="lemmy",
+            source="test",
+            post_url=url,
+            image_url=url + ".png",
+            title="t",
+            author="a",
+            posted_at=datetime.now(UTC) - age,
+        )
+
+    for node_id in ("stale-specimen", "live-specimen", "new-specimen"):
+        store.upsert_node(specimen(node_id))
+    store.insert_sighting(
+        post("https://x.test/stale", timedelta(days=9)), None, "stale-specimen", "resolved"
+    )
+    store.insert_sighting(
+        post("https://x.test/live", timedelta(days=1)), None, "live-specimen", "resolved"
+    )
+    db.execute(
+        "UPDATE nodes SET created_at = now() - interval '10 days' WHERE id = ANY(%s)",
+        (["stale-specimen", "live-specimen"],),
+    )
+
+    assert store.expire_specimens() == ["stale-specimen"]
+    assert store.get_node("stale-specimen") is None
+    assert store.get_node("live-specimen") is not None
+    assert store.get_node("new-specimen") is not None
+    orphan = db.fetch_one(
+        "SELECT node_id, state FROM sightings WHERE post_url = %s", ("https://x.test/stale",)
+    )
+    assert orphan == {"node_id": None, "state": "unclassified"}
+    for node_id in ("live-specimen", "new-specimen"):
+        db.execute("DELETE FROM nodes WHERE id = %s", (node_id,))
+    db.execute("DELETE FROM sightings WHERE post_url LIKE 'https://x.test/%%'")

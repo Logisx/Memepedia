@@ -1,7 +1,8 @@
 """Postgres access: one connection pool, the schema loader and small query helpers.
 
 With DATABASE_URL set the backend talks to that server (Aiven in production). Without it,
-a local Postgres from the `pgserver` dev dependency is started under backend/.pgdata.
+a local Postgres from the `pgserver` dev dependency is started under backend/.pgdata and
+MEMEPEDIA_DB names the database on it (default "memepedia").
 Tests call `configure(local_url("memepedia_test"))` so they can never touch DATABASE_URL.
 """
 
@@ -54,7 +55,8 @@ def configure(url: str) -> None:
 def database_url() -> str:
     """The configured URL, else DATABASE_URL, else the local dev database."""
     if _state["url"] is None:
-        _state["url"] = get_settings().database_url or local_url()
+        settings = get_settings()
+        _state["url"] = settings.database_url or local_url(settings.local_db_name)
     return str(_state["url"])
 
 

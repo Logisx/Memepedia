@@ -492,3 +492,23 @@ def new_specimens(days: int = 7) -> list[MemeNode]:
         "ORDER BY n.created_at DESC",
         (days,),
     )
+
+
+def expire_specimens(days: int = 7) -> list[str]:
+    """Delete specimens with no sighting in `days`; their sightings become unclassified."""
+    stale = """
+        SELECT n.id FROM nodes n
+        WHERE n.status = 'specimen' AND n.created_at < now() - make_interval(days => %(days)s)
+          AND NOT EXISTS (
+              SELECT 1 FROM sightings s
+              WHERE s.node_id = n.id AND s.posted_at > now() - make_interval(days => %(days)s)
+          )
+    """
+    with db.connection() as conn:
+        ids = [row["id"] for row in conn.execute(stale, {"days": days}).fetchall()]
+        conn.execute(
+            "UPDATE sightings SET node_id = NULL, state = 'unclassified' WHERE node_id = ANY(%s)",
+            (ids,),
+        )
+        conn.execute("DELETE FROM nodes WHERE id = ANY(%s)", (ids,))
+    return ids
