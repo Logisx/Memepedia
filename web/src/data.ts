@@ -155,9 +155,24 @@ export async function randomNode(): Promise<RandomResponse> {
 
 /* ---------- tree, related, week ---------- */
 
+/** Mock only: a meme that has no tree fixture opens on its own, as a family of one. */
+function loneTree(id: string): TreeResponse | undefined {
+  const node = requireFixture<NodesResponse>('nodes').nodes.find((n) => n.id === id)
+  if (!node) return undefined
+  return {
+    selected_id: id,
+    nodes: [node],
+    family_ids: [id],
+    links: [],
+    descent: { character: [id], format: [id] },
+    sightings: requireFixture<WallResponse>('wall').sightings.filter((x) => x.node_id === id),
+    history: [],
+  }
+}
+
 export async function getTree(id: string): Promise<TreeResponse> {
   if (!usingFixtures) return request<TreeResponse>(`/api/tree/${encodeURIComponent(id)}`)
-  return fixture<TreeResponse>(`tree-${id}`) ?? requireFixture<TreeResponse>('tree-wojak')
+  return fixture<TreeResponse>(`tree-${id}`) ?? loneTree(id) ?? requireFixture<TreeResponse>('tree-wojak')
 }
 
 export async function getRelated(a: string, b: string): Promise<RelatedResponse> {

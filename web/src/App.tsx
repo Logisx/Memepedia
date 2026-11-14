@@ -1,4 +1,4 @@
-import { BrowserRouter, Link, Route, Routes } from 'react-router'
+import { BrowserRouter, Link, NavLink, Route, Routes } from 'react-router'
 import Lineage from './screens/Lineage'
 import NotFound from './screens/NotFound'
 import Related from './screens/Related'
@@ -13,8 +13,19 @@ export default function App() {
           Memepedia
         </Link>
         <nav className="font-type flex gap-6 text-xl">
-          <Link to="/">Wall</Link>
-          <Link to="/related">Compare two memes</Link>
+          {[
+            { to: '/', label: 'Wall', end: true },
+            { to: '/related', label: 'Compare two memes', end: false },
+          ].map((l) => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              end={l.end}
+              className={({ isActive }) => `no-underline ${isActive ? 'border-b-2 border-ink font-bold' : 'border-b-2 border-transparent hover:border-ink-soft'}`}
+            >
+              {l.label}
+            </NavLink>
+          ))}
         </nav>
       </header>
       <main>

@@ -4,6 +4,7 @@ import '@xyflow/react/dist/style.css'
 import { useNavigate } from 'react-router'
 import type { MemeNode, TreeResponse } from '@contract/types'
 import { layoutFamily, NODE_H, NODE_W } from '../lib/familyLayout'
+import { abbreviateLatin } from '../lib/latin'
 import { NodeThumb } from './SpecimenCard'
 
 type MemeData = { node: MemeNode; selected: boolean; onPath: boolean }
@@ -15,6 +16,8 @@ const hiddenHandle = { opacity: 0, pointerEvents: 'none' } as const
 
 function MemeBox({ data }: NodeProps<MemeFlowNode>) {
   const { node, selected, onPath } = data
+  const longestWord = Math.max(...node.name.split(/\s+/).map((w) => w.length))
+  const nameSize = longestWord > 8 ? 'text-sm' : node.name.length > 16 ? 'text-base' : 'text-xl'
   const border = selected ? 'border-4 border-stamp' : onPath ? 'border-[3px] border-stamp' : 'border-2 border-ink'
   return (
     <div
@@ -25,11 +28,15 @@ function MemeBox({ data }: NodeProps<MemeFlowNode>) {
       <NodeThumb node={node} className="h-[68px] w-[68px]" />
       <div className="min-w-0" title={node.name}>
         <div
-          className={`line-clamp-2 font-extrabold leading-tight [overflow-wrap:anywhere] ${node.name.length > 16 ? 'text-base' : 'text-xl'}`}
+          className={`line-clamp-2 font-extrabold leading-tight ${nameSize}`}
         >
           {node.name}
         </div>
-        {node.latin_name && <div className="truncate text-base italic">{node.latin_name}</div>}
+        {node.latin_name && (
+          <div className="truncate text-base italic" title={node.latin_name}>
+            {abbreviateLatin(node.latin_name)}
+          </div>
+        )}
       </div>
       <Handle type="source" position={Position.Bottom} style={hiddenHandle} />
     </div>
@@ -56,7 +63,7 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
   const navigate = useNavigate()
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
 
-  const { nodes, edges } = useMemo(() => {
+  const { nodes, edges, legend } = useMemo(() => {
     const layout = layoutFamily(tree, expanded)
     const flowNodes: (MemeFlowNode | MoreFlowNode)[] = layout.nodes.map((n) =>
       n.kind === 'meme'
@@ -74,17 +81,19 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
         strokeDasharray: e.inferred ? '8 6' : undefined,
       },
     }))
-    return { nodes: flowNodes, edges: flowEdges }
+    const legend = { cited: layout.edges.some((e) => !e.inferred), inferred: layout.edges.some((e) => e.inferred) }
+    return { nodes: flowNodes, edges: flowEdges, legend }
   }, [tree, expanded])
 
   return (
+    <>
     <ReactFlow
       key={expanded.size} // refit the view after "+N" expands
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
       fitView
-      fitViewOptions={{ padding: 0.05, maxZoom: 1.1 }}
+      fitViewOptions={{ padding: 0.05, maxZoom: tree.family_ids.length <= 1 ? 0.9 : 1.1 }}
       minZoom={0.15}
       nodesDraggable={false}
       nodesConnectable={false}
@@ -99,5 +108,20 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
       }}
       proOptions={{ hideAttribution: true }}
     />
+    {(legend.cited || legend.inferred) && (
+      <div className="font-type pointer-events-none absolute right-3 top-3 z-10 border border-ink bg-paper px-2 py-1 text-sm">
+        {legend.cited && (
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-8 border-t-2 border-ink-soft" /> cited
+          </div>
+        )}
+        {legend.inferred && (
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-8 border-t-2 border-dashed border-ink-soft" /> citation needed
+          </div>
+        )}
+      </div>
+    )}
+    </>
   )
 }

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { HistoryItem, Link, ProposalResponse, Sighting } from '@contract/types'
 import { propose } from '../data'
+import { PLATFORM_NAME } from '../lib/platform'
 import { timeAgo } from '../lib/time'
 
 type Tab = 'sightings' | 'history' | 'suggest'
@@ -8,7 +9,7 @@ type Tab = 'sightings' | 'history' | 'suggest'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'sightings', label: 'Sightings' },
   { id: 'history', label: 'History' },
-  { id: 'suggest', label: 'Suggest a source' },
+  { id: 'suggest', label: 'Add a source' },
 ]
 
 const HISTORY_LABEL: Record<HistoryItem['type'], string> = {
@@ -52,14 +53,35 @@ export function SidePanel({ nodeId, sightings, history, onCited }: Props) {
   )
 }
 
+/** Cross-posts of the same picture and title collapse into one row. */
+function groupSightings(sightings: Sighting[]): { latest: Sighting; others: Sighting[] }[] {
+  const groups = new Map<string, Sighting[]>()
+  for (const s of sightings) {
+    const key = `${s.image_url}|${s.title}`
+    groups.set(key, [...(groups.get(key) ?? []), s])
+  }
+  return [...groups.values()].map((list) => {
+    const sorted = [...list].sort((a, b) => b.posted_at.localeCompare(a.posted_at))
+    return { latest: sorted[0]!, others: sorted.slice(1) }
+  })
+}
+
 function SightingsList({ sightings }: { sightings: Sighting[] }) {
   // Defensive: the backend should never send a sighting that isn't nsfw === false, but
   // never render one that slips through anyway.
   const safe = sightings.filter((s) => s.nsfw === false)
-  if (safe.length === 0) return <p className="font-type text-lg">No recent sightings of this meme.</p>
+  if (safe.length === 0)
+    return (
+      <div className="flex flex-col items-start gap-2">
+        <span className="font-type -rotate-2 border-2 border-dashed border-ink-soft px-2 py-0.5 text-lg uppercase text-ink-soft">
+          no sightings
+        </span>
+        <p className="font-type m-0 text-base">Nobody has spotted this meme in the wild recently.</p>
+      </div>
+    )
   return (
     <ul className="m-0 list-none space-y-3 p-0">
-      {safe.map((s) => (
+      {groupSightings(safe).map(({ latest: s, others }) => (
         <li key={s.id} className="flex gap-3">
           <img src={s.image_url} alt="" loading="lazy" className="h-20 w-20 shrink-0 border border-ink object-cover" />
           <div className="min-w-0">
@@ -67,8 +89,17 @@ function SightingsList({ sightings }: { sightings: Sighting[] }) {
               {s.title}
             </a>
             <div className="font-type text-sm">
-              {timeAgo(s.posted_at)} on {s.platform}
+              {timeAgo(s.posted_at)} on {PLATFORM_NAME[s.platform]}
               {s.author ? ` · ${s.author}` : ''}
+              {others.length > 0 && (
+                <span className="text-ink-soft">
+                  {' '}
+                  · ×{others.length + 1}
+                  {others.some((o) => o.author)
+                    ? `, also ${[...new Set(others.flatMap((o) => (o.author ? [o.author] : [])))].join(', ')}`
+                    : ''}
+                </span>
+              )}
             </div>
           </div>
         </li>
@@ -125,15 +156,15 @@ function SuggestForm({ nodeId, onCited }: { nodeId: string; onCited: (link: Link
 
   const field = 'w-full border border-ink bg-paper px-2 py-1.5 text-base'
   return (
-    <form onSubmit={submit} className="space-y-3">
-      <p className="m-0 text-base leading-snug">
+    <form onSubmit={submit} className="space-y-4">
+      <p className="m-0 mb-4 text-base leading-snug">
         Know a page that describes where this meme comes from? If it contains a sentence naming both memes, the link becomes cited.
       </p>
-      <label className="font-type block text-sm uppercase">
+      <label className="font-type block space-y-1 text-sm uppercase">
         Page URL
         <input type="url" required value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" className={field} />
       </label>
-      <label className="font-type block text-sm uppercase">
+      <label className="font-type block space-y-1 text-sm uppercase">
         Note
         <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} className={field} />
       </label>
