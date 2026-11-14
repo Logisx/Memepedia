@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Link as RouterLink } from 'react-router'
 import type { Sighting } from '@contract/types'
+import { useShowSensitive } from '../hooks/useShowSensitive'
 import { PLATFORM_NAME } from '../lib/platform'
 import { timeAgo } from '../lib/time'
 
@@ -42,11 +43,12 @@ interface Props {
 /** One post seen in the wild, stamped with the family it belongs to. */
 export function SightingTile({ sighting, now, arriving }: Props) {
   const [broken, setBroken] = useState(false)
+  const showSensitive = useShowSensitive()
   const resolved = sighting.state === 'resolved' && sighting.node_id !== null
 
-  // Defensive: the backend should never send a sighting that isn't nsfw === false, but
-  // never render one that slips through anyway.
-  if (sighting.nsfw !== false) return null
+  // Defensive: the backend only sends a sighting that isn't nsfw === false when the
+  // viewer asked to see sensitive sightings; never render one outside of that.
+  if (!showSensitive && sighting.nsfw !== false) return null
 
   const picture = broken ? (
     <div className="font-type flex h-16 items-center justify-center bg-paper-deep p-3 text-center text-base text-ink-soft">

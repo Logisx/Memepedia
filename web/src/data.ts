@@ -125,11 +125,15 @@ function mockWall(since: string | undefined, limit: number): WallResponse {
   }
 }
 
-/** Recent sightings, newest first. Pass the previous response's `server_time` as `since`. */
-export async function getWall(since?: string, limit = 60): Promise<WallResponse> {
+/**
+ * Recent sightings, newest first. Pass the previous response's `server_time` as `since`.
+ * `sensitive: true` asks the backend to include nsfw (true or unlabelled) sightings too.
+ */
+export async function getWall(since?: string, limit = 60, sensitive = false): Promise<WallResponse> {
   if (usingFixtures) return mockWall(since, limit)
   const params = new URLSearchParams({ limit: String(limit) })
   if (since) params.set('since', since)
+  if (sensitive) params.set('sensitive', 'true')
   return request<WallResponse>(`/api/wall?${params}`)
 }
 
