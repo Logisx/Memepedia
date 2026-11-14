@@ -1,7 +1,9 @@
 """Thin client for the Context.dev API (https://api.context.dev/v1), Bearer-auth, sync httpx.
 
 Covers `/web/scrape`, `/web/search` and `/monitors`. Plain HTTP in, typed objects out: this
-module never imports the database and never logs the API key.
+module never logs the API key, and touches the database only through `budget`, which refuses a
+paid call once the Context.dev credit cap or the kill switch says so and records what each call
+spent.
 
 Monitor webhooks (from the docs; never exercised live by the spikes): creating a monitor with
 `webhook: {"url": ..., "retry": {...}}` makes Context.dev POST events to that URL. `retry: {}`
@@ -17,6 +19,7 @@ change: <change object> | null}}`; `change.detected` -> `{id, data: {change: <ch
 from __future__ import annotations
 
 import json
+import logging
 import threading
 import time
 from collections.abc import Mapping, Sequence
@@ -25,11 +28,12 @@ from typing import Any
 
 import httpx
 
-from memepedia import blocklist, config
+from memepedia import blocklist, budget, config
 
 BASE_URL = "https://api.context.dev/v1"
 _RETRYABLE_STATUS = {500, 502, 503, 504}
 _ledger_lock = threading.Lock()
+log = logging.getLogger("memepedia.contextdev")
 
 
 class ContextDevError(Exception):
@@ -42,6 +46,10 @@ class ContextDevError(Exception):
 
 class Blocked(ContextDevError):
     """The target site served an anti-bot challenge or access wall instead of its page."""
+
+
+class CreditCapReached(ContextDevError):
+    """The credit cap or the kill switch refuses any further paid Context.dev call."""
 
 
 class MissingKey(ContextDevError):
@@ -100,9 +108,24 @@ def _request(
     raise ContextDevError(f"{method} {path} failed with no response")
 
 
+def _guard(what: str) -> None:
+    """Raise `CreditCapReached` when the budget allows no more paid Context.dev work."""
+    reason = budget.block_reason("contextdev")
+    if reason is not None:
+        raise CreditCapReached(f"{what} refused: {reason}")
+
+
+def _charge(credits: float) -> None:
+    try:
+        budget.charge("contextdev", credits)
+    except Exception:  # the call already happened; losing its record must not lose its result
+        log.exception("could not record %s Context.dev credits", credits)
+
+
 def _record_credit(
     endpoint: str, label: str, credits: float, latency_s: float, status: int
 ) -> None:
+    _charge(credits)
     entry = {
         "ts": time.time(),
         "endpoint": endpoint,
@@ -162,6 +185,7 @@ def scrape(
     """Scrape one URL through `/web/scrape`, raising `Blocked` if the site walled the request."""
     if blocklist.is_blocked(url):
         raise ContextDevError("knowyourmeme.com may not be scraped (its terms forbid aggregation)")
+    _guard(f"scrape {url}")
     t0 = time.time()
     body = {"url": url, "formats": dict(formats)}
     resp = _request("POST", "/web/scrape", json_body=body, timeout=timeout)
@@ -196,6 +220,7 @@ def search(
     timeout: float = 60.0,
 ) -> list[SearchHit]:
     """Search the web through `/web/search`, with page content inlined as markdown."""
+    _guard(f"search {query!r}")
     t0 = time.time()
     body = {
         "query": query,
@@ -231,14 +256,20 @@ def _monitor_credits(body: Mapping[str, Any]) -> float:
 def create_monitor(
     name: str, url: str, *, minutes: int = 10, webhook_url: str | None = None
 ) -> dict[str, Any]:
-    """Create a page monitor polling `url` every `minutes` (minimum 10)."""
+    """Create a page monitor polling `url` every `minutes` (minimum 10).
+
+    With a webhook, every run (not only a changed one) is delivered as `run.completed`, so the
+    receiver can count each run's credits and knows the monitors are alive. Creation queues a
+    baseline run, which costs a credit, so it is refused when the budget is spent.
+    """
+    _guard(f"create_monitor {name!r}")
     body: dict[str, Any] = {
         "name": name,
         "target": {"type": "page", "url": url},
         "schedule": {"type": "interval", "frequency": minutes, "unit": "minutes"},
     }
     if webhook_url:
-        body["webhook"] = {"url": webhook_url}
+        body["webhook"] = {"url": webhook_url, "events": ["run.completed"]}
     t0 = time.time()
     resp = _request("POST", "/monitors", json_body=body, timeout=30.0)
     data = resp.json()
@@ -261,6 +292,7 @@ def list_monitors() -> list[dict[str, Any]]:
 
 def run_monitor(monitor_id: str) -> dict[str, Any]:
     """Trigger an on-demand run; a no-op if the previous run is still in flight."""
+    _guard(f"run_monitor {monitor_id}")
     t0 = time.time()
     resp = _request("POST", f"/monitors/{monitor_id}/run", json_body=None, timeout=30.0)
     data = resp.json()
@@ -268,6 +300,35 @@ def run_monitor(monitor_id: str) -> dict[str, Any]:
     _record_credit("/monitors", "run_monitor", _monitor_credits(data), latency, resp.status_code)
     _raise_for_status(resp, f"run_monitor {monitor_id}")
     return dict(data)
+
+
+def _monitor_call(method: str, path: str, body: Mapping[str, Any] | None) -> dict[str, Any]:
+    """One free monitor-management call, ledgered like the others; raises on an API error."""
+    t0 = time.time()
+    resp = _request(method, path, json_body=body, timeout=30.0)
+    data = resp.json()
+    _record_credit("/monitors", path, _monitor_credits(data), time.time() - t0, resp.status_code)
+    _raise_for_status(resp, f"{method} {path}")
+    return dict(data)
+
+
+def set_monitor_status(monitor_id: str, status: str) -> dict[str, Any]:
+    """Pause (`"paused"`) or resume (`"active"`) a monitor; a paused one runs and costs nothing."""
+    return _monitor_call("PATCH", f"/monitors/{monitor_id}", {"status": status})
+
+
+def rotate_webhook_secret(monitor_id: str) -> str | None:
+    """Issue a new webhook signing secret for a monitor and return it; the old one stops working."""
+    data = _monitor_call("POST", f"/monitors/{monitor_id}/webhook/rotate-secret", None)
+    return webhook_secret_of(data)
+
+
+def webhook_secret_of(body: Mapping[str, Any]) -> str | None:
+    """The `whsec_...` signing secret in a monitor response, wherever the API put it."""
+    webhook = body.get("webhook")
+    secret = webhook.get("secret") if isinstance(webhook, Mapping) else None
+    secret = secret or body.get("secret")
+    return str(secret) if secret else None
 
 
 def delete_monitor(monitor_id: str) -> bool:

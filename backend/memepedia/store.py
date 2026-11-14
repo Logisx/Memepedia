@@ -637,3 +637,98 @@ def expire_specimens(days: int = 7) -> list[str]:
         )
         conn.execute("DELETE FROM nodes WHERE id = ANY(%s)", (ids,))
     return ids
+
+
+# --- cost guards and webhook bookkeeping (the policy is in budget.py and live.py) ---------------
+
+
+def add_spend(kind: str, amount: float) -> None:
+    """Add `amount` units of `kind` to the current hour's row in `spend`."""
+    db.execute(
+        "INSERT INTO spend (hour, kind, amount) VALUES (date_trunc('hour', now()), %s, %s) "
+        "ON CONFLICT (hour, kind) DO UPDATE SET amount = spend.amount + EXCLUDED.amount",
+        (kind, amount),
+    )
+
+
+def spend_total(kind: str, hours: int) -> float:
+    """Units of `kind` spent in the current hour and the `hours - 1` before it."""
+    row = db.fetch_one(
+        "SELECT coalesce(sum(amount), 0) AS total FROM spend WHERE kind = %s "
+        "AND hour >= date_trunc('hour', now()) - make_interval(hours => %s)",
+        (kind, hours - 1),
+    )
+    return float(row["total"]) if row is not None else 0.0
+
+
+def get_state(key: str) -> str | None:
+    """A value from `app_state`, or None when the key was never set."""
+    row = db.fetch_one("SELECT value FROM app_state WHERE key = %s", (key,))
+    return str(row["value"]) if row is not None else None
+
+
+def set_state(key: str, value: str) -> None:
+    """Set one `app_state` value, stamping when it changed."""
+    db.execute(
+        "INSERT INTO app_state (key, value, updated_at) VALUES (%s, %s, now()) "
+        "ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()",
+        (key, value),
+    )
+
+
+def clear_state(key: str) -> None:
+    """Remove one `app_state` key."""
+    db.execute("DELETE FROM app_state WHERE key = %s", (key,))
+
+
+def state_age(key: str) -> float | None:
+    """Seconds since `key` was last set in `app_state`, or None when it never was."""
+    row = db.fetch_one(
+        "SELECT extract(epoch FROM now() - updated_at) AS age FROM app_state WHERE key = %s",
+        (key,),
+    )
+    return float(row["age"]) if row is not None else None
+
+
+def claim_turn(key: str, every_s: float) -> bool:
+    """Stamp `key` unless it was stamped less than `every_s` ago; True when this call stamped it."""
+    claimed = db.execute(
+        "INSERT INTO app_state (key, value, updated_at) VALUES (%s, '', now()) "
+        "ON CONFLICT (key) DO UPDATE SET updated_at = now() "
+        "WHERE app_state.updated_at <= now() - make_interval(secs => %s)",
+        (key, every_s),
+    )
+    return claimed == 1
+
+
+def save_monitor(monitor_id: str, feed_key: str, secret: str | None) -> None:
+    """Remember a monitor this archive created, with its webhook signing secret."""
+    db.execute(
+        "INSERT INTO webhook_monitors (id, feed_key, secret) VALUES (%s, %s, %s) "
+        "ON CONFLICT (id) DO UPDATE SET feed_key = EXCLUDED.feed_key, secret = EXCLUDED.secret",
+        (monitor_id, feed_key, secret),
+    )
+
+
+def monitor_row(monitor_id: str) -> tuple[str, str | None] | None:
+    """A saved monitor's (feed key, signing secret), or None when it is not one of ours."""
+    row = db.fetch_one("SELECT feed_key, secret FROM webhook_monitors WHERE id = %s", (monitor_id,))
+    return (str(row["feed_key"]), row["secret"]) if row is not None else None
+
+
+def monitor_ids() -> list[str]:
+    """Every saved monitor id."""
+    return [str(r["id"]) for r in db.fetch_all("SELECT id FROM webhook_monitors ORDER BY id")]
+
+
+def delete_monitor_row(monitor_id: str) -> None:
+    """Forget a saved monitor."""
+    db.execute("DELETE FROM webhook_monitors WHERE id = %s", (monitor_id,))
+
+
+def first_delivery(event_id: str) -> bool:
+    """Record a webhook event id; True only the first time this id is seen."""
+    inserted = db.execute(
+        "INSERT INTO webhook_events (id) VALUES (%s) ON CONFLICT (id) DO NOTHING", (event_id,)
+    )
+    return inserted == 1

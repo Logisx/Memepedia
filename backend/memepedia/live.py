@@ -1,8 +1,10 @@
 """The live loop: fetch fresh posts, label them, resolve them to a family, and save sightings.
 
 One tick covers one feed end to end (FETCH, LOOK, RESOLVE). `tick_all` runs every feed plus
-emerging-meme detection and specimen expiry. `identify` serves a dropped image; `handle_webhook`
-and `verify_signature` serve the Context.dev monitor webhook.
+emerging-meme detection and specimen expiry. `identify` serves a dropped image; `authentic` and
+`handle_webhook` serve the Context.dev monitor webhook. In production every scheduled tick goes
+through `guarded_tick` (cost guards, a per-feed throttle, then `maintenance`), reached either from
+a monitor webhook or, as the fallback when no webhook has arrived lately, from `clock_tick`.
 """
 
 from __future__ import annotations
@@ -10,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import logging
+import os
 import time
 from collections.abc import Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
@@ -18,7 +21,7 @@ from typing import Any, Literal
 
 import httpx
 
-from memepedia import contextdev, db, resolver, sources, store
+from memepedia import budget, contextdev, db, resolver, sources, store
 from memepedia import llm as llm_module
 from memepedia.config import Settings, get_settings
 from memepedia.llm import Cluster, PendingItem, RootInfo
@@ -35,6 +38,11 @@ _AUTO_TRACE_MIN_CONFIDENCE = 0.85
 _PENDING_WINDOW_HOURS = 72
 _PENDING_MAX = 60
 _PENDING_MIN_CLUSTER = 3
+_TICK_MIN_INTERVAL_S = 300
+_MAINTENANCE_EVERY_S = 15 * 60
+_AUTO_PAUSE_EVERY_S = 30 * 60
+_FALLBACK_MINUTES = 20.0
+HEARTBEAT_KEY = "last_webhook"
 
 Shared = Literal["image", "structure", "phrase"]
 
@@ -232,6 +240,16 @@ def _has_second_sighting(guess: str, pending_rows: Sequence[db.Row]) -> bool:
     return len(named_authors) + (1 if anon else 0) >= 2
 
 
+def _trace_turn_refused() -> str | None:
+    """Count one background trace against its cap, or say (and log) why the cap refuses it."""
+    reason = budget.block_reason("traces", background=True)
+    if reason is not None:
+        log.warning("background trace skipped: %s", reason)
+        return f"background trace skipped: {reason}"
+    budget.charge("traces", 1)
+    return None
+
+
 def _auto_trace(candidates: Sequence[tuple[str, str]], cap: int, errors: list[str]) -> list[str]:
     """Traces, as specimens, up to `cap` pending candidates seen from a second author."""
     from memepedia import trace
@@ -244,6 +262,9 @@ def _auto_trace(candidates: Sequence[tuple[str, str]], cap: int, errors: list[st
     ][:cap]
     traced: list[str] = []
     for sid, guess in qualifying:
+        if (refused := _trace_turn_refused()) is not None:
+            errors.append(refused)
+            break
         try:
             node_id = trace.run(guess, as_specimen=True)
         except Exception as exc:  # trace.run should not raise; guard the tick anyway
@@ -383,6 +404,8 @@ def _apply_cluster(cluster: Cluster, row_by_id: Mapping[str, db.Row]) -> str | N
     members = _members_for(cluster, row_by_id)
     if not qualifies(members, cluster.shared):
         return None
+    if _trace_turn_refused() is not None:
+        return None
     context = _cluster_context(cluster, row_by_id)
     node_id = trace.run(cluster.name, context=context, as_specimen=True)
     if node_id is None:
@@ -474,18 +497,139 @@ def _refresh_monitor_cache() -> None:
     _monitor_feed_cache = cache
 
 
+def webhook_secrets(payload: Mapping[str, Any]) -> list[str]:
+    """The secrets a delivery may be signed with: its own monitor's, then CONTEXTDEV_WEBHOOK_SECRET.
+
+    Context.dev issues one secret per monitor, which `scripts/monitors.py create` stores in
+    `webhook_monitors`. The payload is read before it is trusted only to find which secret to try.
+    """
+    secrets: list[str] = []
+    monitor_id = _monitor_id_from_payload(payload)
+    row = store.monitor_row(monitor_id) if monitor_id else None
+    if row is not None and row[1]:
+        secrets.append(row[1])
+    env_secret = get_settings().webhook_secret
+    if env_secret:
+        secrets.append(env_secret)
+    return secrets
+
+
+def authentic(raw_body: bytes, header: str, payload: Mapping[str, Any]) -> bool:
+    """Whether a delivery is signed with a secret this archive holds; with none held, nothing is."""
+    return any(verify_signature(raw_body, header, s) for s in webhook_secrets(payload))
+
+
+def _run_credits(payload: Mapping[str, Any]) -> float:
+    """Credits the delivered monitor run cost (a page run is 1); 0 for a skipped run."""
+    run = (payload.get("data") or {}).get("run")
+    if not isinstance(run, Mapping):
+        return 0.0
+    default = 1 if run.get("status") in {"completed", "failed"} else 0
+    try:
+        return float(run.get("credits_charged", default) or 0)
+    except (TypeError, ValueError):
+        return float(default)
+
+
+def _page_changed(payload: Mapping[str, Any]) -> bool:
+    """Whether the delivered run found the watched page changed (null `change` when not)."""
+    return (payload.get("data") or {}).get("change") is not None
+
+
+def _feed_for_monitor(monitor_id: str) -> str | None:
+    """The feed a monitor watches: from `webhook_monitors`, else from its name on Context.dev."""
+    row = store.monitor_row(monitor_id)
+    if row is not None:
+        return row[0]
+    if monitor_id not in _monitor_feed_cache:
+        _refresh_monitor_cache()
+    return _monitor_feed_cache.get(monitor_id)
+
+
 def handle_webhook(payload: Mapping[str, Any]) -> str | None:
-    """Runs a tick for the feed a Context.dev webhook delivery names, or None if unrecognised."""
+    """Counts one authenticated monitor run, then ticks its feed if the watched page changed.
+
+    Every delivery refreshes the heartbeat the Modal clock checks before standing in. Returns
+    the feed key that was ticked, or None (unknown monitor, no change, or a guard said no).
+    """
     monitor_id = _monitor_id_from_payload(payload)
     if monitor_id is None:
         return None
-    if monitor_id not in _monitor_feed_cache:
-        _refresh_monitor_cache()
-    feed_key = _monitor_feed_cache.get(monitor_id)
-    if feed_key is None:
+    store.set_state(HEARTBEAT_KEY, monitor_id)
+    budget.charge("contextdev", _run_credits(payload))
+    feed_key = _feed_for_monitor(monitor_id)
+    if feed_key is None or not _page_changed(payload):
         return None
-    tick(feed_key)
-    return feed_key
+    return feed_key if guarded_tick(feed_key) is not None else None
+
+
+def _pause_monitors_once() -> None:
+    """Pause every monitor this archive created (each run costs a credit); every 30 min at most."""
+    if not budget.claim("auto_pause", _AUTO_PAUSE_EVERY_S):
+        return
+    for monitor_id in store.monitor_ids():
+        try:
+            contextdev.set_monitor_status(monitor_id, "paused")
+        except contextdev.ContextDevError as exc:
+            log.warning("could not pause monitor %s: %s", monitor_id, exc)
+
+
+def maintenance() -> None:
+    """At most every 15 minutes: turn qualifying pending clusters into specimens, expire stale."""
+    if not budget.claim("maintenance", _MAINTENANCE_EVERY_S):
+        return
+    try:
+        detect_specimens()
+        store.expire_specimens()
+    except Exception:  # background housekeeping must never break the tick that called it
+        log.exception("maintenance failed")
+
+
+def _guarded_tick(feed_key: str) -> TickReport | None:
+    reason = budget.background_block()
+    if reason is not None:
+        log.warning("paid work stopped, %s not ticked: %s", feed_key, reason)
+        _pause_monitors_once()
+        return None
+    if not budget.claim(f"tick:{feed_key}", _TICK_MIN_INTERVAL_S):
+        log.info("%s was ticked less than %ss ago; skipped", feed_key, _TICK_MIN_INTERVAL_S)
+        return None
+    report = tick(feed_key)
+    log.info("%s", report)
+    maintenance()
+    return report
+
+
+def guarded_tick(feed_key: str) -> TickReport | None:
+    """Ticks one feed unless a cost guard or the per-feed throttle says no; never raises.
+
+    Both the webhook and the Modal clock come through here, so a feed is ticked at most once per
+    `_TICK_MIN_INTERVAL_S` whoever asks, and nothing is spent once a background cap is reached
+    (the monitors are then paused too, since each of their runs costs a credit).
+    """
+    try:
+        return _guarded_tick(feed_key)
+    except Exception:  # a guard that cannot reach the database must not crash the caller
+        log.exception("guarded_tick(%s) failed", feed_key)
+        return None
+
+
+def _fallback_minutes() -> float:
+    get_settings()  # loads the repo's .env into the environment, once
+    return float(os.environ.get("MEMEPEDIA_CLOCK_FALLBACK_MINUTES") or _FALLBACK_MINUTES)
+
+
+def clock_tick(feed_key: str) -> str:
+    """The Modal clock's turn: idle while monitor webhooks keep arriving, the live loop otherwise.
+
+    With no monitor delivery in the last MEMEPEDIA_CLOCK_FALLBACK_MINUTES (default 20), and so
+    also when no monitor exists, the clock ticks `feed_key` itself, through the same guards.
+    """
+    age = store.state_age(HEARTBEAT_KEY)
+    if age is not None and age < _fallback_minutes() * 60:
+        return f"idle: a monitor webhook arrived {age:.0f}s ago"
+    report = guarded_tick(feed_key)
+    return str(report) if report is not None else f"skipped {feed_key} (see the log)"
 
 
 def feed_page_url(feed: Feed) -> str:
@@ -494,7 +638,7 @@ def feed_page_url(feed: Feed) -> str:
         instance, community = feed.target.split("/", 1)
         return f"https://{instance}/c/{community}?dataType=Post&sort=New"
     if feed.platform == "reddit":
-        return f"https://www.reddit.com/r/{feed.target}/new/"
+        return f"https://www.reddit.com/r/{feed.target}/new/.rss"
     if feed.platform == "imgflip":
         return f"https://imgflip.com/m/{feed.target}?sort=latest"
     raise ValueError(f"no page URL for platform {feed.platform!r}")

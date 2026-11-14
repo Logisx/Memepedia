@@ -1,8 +1,9 @@
 """Gemini calls for the pipeline: vision labelling, lineage drafting, identity and judging.
 
 Every public function makes exactly one Gemini call with low-temperature, JSON-schema-constrained
-output and returns typed objects. This module never touches the database or Context.dev; callers
-pass in everything it needs (root list, candidate names, web context).
+output and returns typed objects. This module never touches Context.dev, and the database only
+through `budget`: each attempt counts as one Gemini call, and none is made once the Gemini cap or
+the kill switch says so. Callers pass in everything else (root list, candidate names, context).
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ from google import genai
 from google.genai import errors, types
 from pydantic import BaseModel
 
+from memepedia import budget
 from memepedia.config import get_settings
 from memepedia.models import DraftChain, DraftLink, DraftNode, Kind, VisionLabel
 
@@ -30,6 +32,10 @@ class LLMError(Exception):
 
 class LLMUnavailable(LLMError):
     """Raised when no Gemini API key is configured."""
+
+
+class GeminiCapReached(LLMError):
+    """Raised when the Gemini call cap or the kill switch refuses any further call."""
 
 
 class LLMBlockedError(LLMError):
@@ -119,6 +125,13 @@ def _get_client() -> genai.Client:
     return _client
 
 
+def _guard() -> None:
+    """Raise `GeminiCapReached` when the budget allows no more Gemini calls."""
+    reason = budget.block_reason("gemini")
+    if reason is not None:
+        raise GeminiCapReached(f"Gemini call refused: {reason}")
+
+
 def _generate(
     contents: str | list[str | types.Part],
     *,
@@ -127,6 +140,7 @@ def _generate(
 ) -> str:
     """Makes one Gemini call with structured JSON output, retrying once on a transient failure."""
     client = _get_client()
+    _guard()
     config = types.GenerateContentConfig(
         response_mime_type="application/json",
         response_schema=response_schema,
@@ -136,6 +150,7 @@ def _generate(
     model = get_settings().gemini_model
     last_error: Exception | None = None
     for attempt in range(2):
+        budget.charge("gemini", 1)
         try:
             response = client.models.generate_content(model=model, contents=contents, config=config)
         except errors.ServerError as exc:

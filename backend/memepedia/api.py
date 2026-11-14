@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import threading
@@ -16,8 +17,9 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, StreamingResponse
+from starlette.concurrency import run_in_threadpool
 
-from memepedia import db, graph, live, static, store, trace
+from memepedia import budget, db, graph, live, static, store, trace
 from memepedia.config import get_settings
 from memepedia.llm import LLMError
 from memepedia.models import (
@@ -41,6 +43,7 @@ from memepedia.sources import FEEDS
 log = logging.getLogger("memepedia.api")
 
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+MAX_WEBHOOK_BYTES = 2 * 1024 * 1024
 
 
 @asynccontextmanager
@@ -226,7 +229,7 @@ class _Budget:
 _trace_budget = _Budget(12)
 _identify_budget = _Budget(20)
 _proposal_budget = _Budget(12)
-_seen_deliveries: deque[str] = deque(maxlen=500)
+_webhook_budget = _Budget(120)
 
 
 def _sse(events: Iterator[TraceEvent]) -> Iterator[str]:
@@ -280,27 +283,50 @@ def _webhook_payload(raw: bytes) -> dict[str, Any]:
     return payload
 
 
+def _event_id(request: Request, payload: dict[str, Any], raw: bytes) -> str:
+    """The delivery's stable event id (the same across retries), else a hash of its body."""
+    given = request.headers.get("X-Context-Id") or str(payload.get("id") or "")
+    return given or hashlib.sha256(raw).hexdigest()
+
+
+def _accept_webhook(raw: bytes, signature: str, payload: dict[str, Any], event_id: str) -> bool:
+    """Refuse (401) a delivery not signed with a secret we hold; False for a repeated event."""
+    if not live.authentic(raw, signature, payload):
+        raise HTTPException(401, "Bad webhook signature.")
+    return store.first_delivery(event_id)
+
+
 @app.post("/api/webhooks/context")
 async def post_context_webhook(request: Request, background: BackgroundTasks) -> dict[str, bool]:
-    """A Context.dev monitor fired: look at that feed now, after answering quickly."""
+    """A Context.dev monitor ran: check it is signed, count it once, then tick in the background.
+
+    Unsigned or wrongly signed deliveries get a 401 whether or not any secret is configured, a
+    repeated event id runs nothing, and the route takes at most `_webhook_budget` calls a minute.
+    """
     raw = await request.body()
-    secret = get_settings().webhook_secret
-    signature = request.headers.get("X-Context-Signature", "")
-    if secret and not live.verify_signature(raw, signature, secret):
-        raise HTTPException(401, "Bad webhook signature.")
+    if len(raw) > MAX_WEBHOOK_BYTES:
+        raise HTTPException(413, "Webhook body too large.")
+    _webhook_budget.take()
     payload = _webhook_payload(raw)
-    event_id = request.headers.get("X-Context-Id") or str(payload.get("id") or "")
-    if event_id and event_id in _seen_deliveries:
-        return {"ok": True}
-    _seen_deliveries.append(event_id)
-    background.add_task(live.handle_webhook, payload)
+    signature = request.headers.get("X-Context-Signature", "")
+    event_id = _event_id(request, payload, raw)
+    if await run_in_threadpool(_accept_webhook, raw, signature, payload, event_id):
+        background.add_task(live.handle_webhook, payload)
     return {"ok": True}
 
 
 @app.get("/api/health")
 def get_health() -> dict[str, Any]:
-    """Not in the contract; a quick deploy check."""
-    return {"ok": True, **store.counts()}
+    """Not in the contract; a quick deploy check.
+
+    Also says whether background work may spend now (`paid_work`) and how many seconds ago the
+    last authenticated Context.dev monitor delivery arrived (`last_webhook_s`, null if never).
+    """
+    guards = {
+        "paid_work": budget.background_block() or "allowed",
+        "last_webhook_s": store.state_age(live.HEARTBEAT_KEY),
+    }
+    return {"ok": True, **store.counts(), **guards}
 
 
 # Last, so it only answers what no API route claimed. A no-op when the web app is not built.
