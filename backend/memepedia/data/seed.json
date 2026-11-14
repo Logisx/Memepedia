@@ -965,6 +965,126 @@
       "summary": "Two stacked stills of Drake from the 'Hotline Bling' video, waving away the top caption and approving the bottom one.",
       "uncertain": false,
       "check_note": "Wikipedia dates the 'Hotline Bling' video, source of the Drakeposting format, to its October 19, 2015 release."
+    },
+    {
+      "id": "skibidi-toilet",
+      "name": "Skibidi Toilet",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Latrina cantans",
+      "first_seen": "2023-02-07",
+      "date_precision": "day",
+      "summary": "An animated web series by Alexey Gerasimov (YouTube channel DaFuq!?Boom!) about toilet-headed figures warring with camera-headed humanoids; the first 11-second episode was released on February 7, 2023.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "chill-guy",
+      "name": "Chill Guy",
+      "aliases": ["My New Character"],
+      "kind": "character",
+      "latin_name": "Canis tranquillus",
+      "first_seen": "2023-10-04",
+      "date_precision": "day",
+      "summary": "A smirking anthropomorphic dog in a grey sweater with hands in his pockets, drawn by artist Phillip Banks and posted to Twitter/X on October 4, 2023; it became a mass 'my new character' redraw template in late 2024.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "moo-deng",
+      "name": "Moo Deng",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Hippopotamus pusillus",
+      "first_seen": "2024-08-26",
+      "date_precision": "day",
+      "summary": "A baby pygmy hippopotamus born July 10, 2024 at Khao Kheow Open Zoo near Bangkok; a viral photo of her posted by the zoo's X account on August 26, 2024 touched off fan art and reaction-image edits of her startled expressions.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "grimace-shake",
+      "name": "Grimace Shake",
+      "aliases": ["Grimace Shake Challenge"],
+      "kind": "template",
+      "latin_name": "Lac purpureum letale",
+      "first_seen": "2023-06-12",
+      "date_precision": "day",
+      "summary": "A purple McDonald's milkshake released June 12, 2023 for mascot Grimace's birthday; a TikTok trend had posters film themselves drinking it, then cut to a scene of them collapsed or 'found dead.'",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "nihilist-penguin",
+      "name": "Nihilist Penguin",
+      "aliases": ["Wandering Penguin", "Lonely Penguin"],
+      "kind": "template",
+      "latin_name": "Pygoscelis nihilisticus",
+      "first_seen": "2026-01-16",
+      "date_precision": "day",
+      "summary": "A clip of a lone penguin walking away from its colony in Werner Herzog's 2007 documentary 'Encounters at the End of the World,' re-edited with Herzog's narration and melancholic music; TikToker natur_gamler's January 16, 2026 edit touched off a wave of posts using it to express detached, unbothered resignation.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "shrimp-jesus",
+      "name": "Shrimp Jesus",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Christus cancri",
+      "first_seen": "2024-03-01",
+      "date_precision": "month",
+      "summary": "AI-generated images fusing Jesus Christ with shrimp or crabs, posted en masse by Facebook engagement-farming accounts from early 2024, which became the signature example of low-effort 'AI slop.'",
+      "uncertain": true,
+      "check_note": "The fetched Nieman Lab source confirms the images and the engagement-farming context but not an exact first-post date; the March 2024 month comes from an unfetched search snippet."
+    },
+    {
+      "id": "studio-ghibli-ai-filter",
+      "name": "Studio Ghibli AI Filter",
+      "aliases": ["Ghiblified"],
+      "kind": "template",
+      "latin_name": "Pictura ghibliensis artificialis",
+      "first_seen": "2025-03-01",
+      "date_precision": "month",
+      "summary": "Following OpenAI's native GPT-4o image-generation rollout in late March 2025, users converted personal photos and memes into Studio Ghibli-style AI art en masse, sparking both a huge viral trend and an artist backlash.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "bombardiro-crocodilo",
+      "name": "Bombardiro Crocodilo",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Crocodilus aeroportans",
+      "first_seen": "2025-02-20",
+      "date_precision": "day",
+      "summary": "An AI-generated hybrid of a military bomber plane and a crocodile, introduced February 20, 2025 as part of the 'Italian Brainrot' wave of AI animal-object hybrid videos narrated in fake Italian.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "tralalero-tralala",
+      "name": "Tralalero Tralala",
+      "aliases": ["Tralalelo Tralala"],
+      "kind": "character",
+      "latin_name": "Squalus calceatus",
+      "first_seen": "2025-01-01",
+      "date_precision": "month",
+      "summary": "An AI-generated shark wearing Nike sneakers, narrated in fake-Italian text-to-speech gibberish; TikTok creator Choppa (@eZburger401) uploaded the original video in early January 2025, the first of the 'Italian Brainrot' wave.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "absolute-cinema",
+      "name": "Absolute Cinema",
+      "aliases": ["Kino Is Served"],
+      "kind": "phrase",
+      "latin_name": "Cinema absolutum",
+      "first_seen": "2022-12-01",
+      "date_precision": "month",
+      "summary": "A reaction image of director Martin Scorsese raising both hands (from a 2020 New York Times interview photo), captioned 'Absolute Cinema' to praise something as a masterpiece; X user @YashChillinn paired the image with an anime clip in December 2022, and the captioned version spread widely through 2023.",
+      "uncertain": false,
+      "check_note": null
     }
   ],
   "links": [
@@ -1387,6 +1507,66 @@
       "parent_id": "comparison",
       "axis": "format",
       "basis": "Two panels contrast a rejected option with a preferred one."
+    },
+    {
+      "child_id": "skibidi-toilet",
+      "parent_id": "video-remix",
+      "axis": "format",
+      "basis": "It spread as a serialized short-form video that other creators compiled, dubbed and continued with new episodes."
+    },
+    {
+      "child_id": "chill-guy",
+      "parent_id": "drawn-character",
+      "axis": "format",
+      "basis": "A recurring hand-drawn figure endlessly redrawn and edited by other artists."
+    },
+    {
+      "child_id": "moo-deng",
+      "parent_id": "reaction-image",
+      "axis": "format",
+      "basis": "Her startled/unimpressed expressions are cropped out and reused as stock reaction images."
+    },
+    {
+      "child_id": "grimace-shake",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "A reusable challenge template -- pose with the shake, then fake dying -- recreated with personal twists."
+    },
+    {
+      "child_id": "nihilist-penguin",
+      "parent_id": "video-remix",
+      "axis": "format",
+      "basis": "The same film clip is re-edited with different music, captions and narration by each poster."
+    },
+    {
+      "child_id": "shrimp-jesus",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "A reused AI-prompt template (a sympathetic figure fused with a bizarre animal) repeated with endless variations."
+    },
+    {
+      "child_id": "studio-ghibli-ai-filter",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "A reusable style-transfer template that anyone applies to their own photo, producing endless personalized variants."
+    },
+    {
+      "child_id": "bombardiro-crocodilo",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "Same AI-hybrid-plus-fake-Italian-narration template as the rest of the Italian Brainrot wave."
+    },
+    {
+      "child_id": "tralalero-tralala",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "A generative template -- AI image plus fake-Italian TTS gibberish -- copied with new absurd animal/object hybrids."
+    },
+    {
+      "child_id": "absolute-cinema",
+      "parent_id": "reaction-image",
+      "axis": "format",
+      "basis": "A still photo of a person's expression/gesture, reposted as a stock reply to express a reaction."
     }
   ]
 }
