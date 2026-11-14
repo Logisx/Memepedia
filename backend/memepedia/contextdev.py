@@ -25,7 +25,7 @@ from typing import Any
 
 import httpx
 
-from memepedia import config
+from memepedia import blocklist, config
 
 BASE_URL = "https://api.context.dev/v1"
 _RETRYABLE_STATUS = {500, 502, 503, 504}
@@ -160,7 +160,7 @@ def scrape(
     url: str, *, formats: Mapping[str, Any], label: str, timeout: float = 60.0
 ) -> ScrapeResult:
     """Scrape one URL through `/web/scrape`, raising `Blocked` if the site walled the request."""
-    if "knowyourmeme.com" in url:
+    if blocklist.is_blocked(url):
         raise ContextDevError("knowyourmeme.com may not be scraped (its terms forbid aggregation)")
     t0 = time.time()
     body = {"url": url, "formats": dict(formats)}
@@ -191,7 +191,7 @@ def search(
     query: str,
     *,
     num_results: int = 5,
-    exclude_domains: Sequence[str] = ("knowyourmeme.com",),
+    exclude_domains: Sequence[str] = ("knowyourmeme.com", "kym-cdn.com"),
     label: str,
     timeout: float = 60.0,
 ) -> list[SearchHit]:

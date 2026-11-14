@@ -11,7 +11,7 @@ import logging
 import re
 from collections.abc import Sequence
 
-from memepedia import contextdev, llm
+from memepedia import blocklist, contextdev, llm
 from memepedia.contextdev import ContextDevError
 from memepedia.llm import LLMError
 from memepedia.models import Axis, Evidence, MemeNode
@@ -163,7 +163,7 @@ def evidence_in_page(
     child: MemeNode, parent: MemeNode, axis: Axis, *, markdown: str, url: str, title: str
 ) -> Evidence | None:
     """One page's candidates, judged by the LLM, turned into `Evidence`, or `None`."""
-    if "knowyourmeme.com" in url:
+    if blocklist.is_blocked(url, title):
         return None
     cleaned = clean_text(markdown)
     child_names = [child.name, *child.aliases]
@@ -182,6 +182,8 @@ def evidence_in_page(
         return None
     quote = candidates[index]
     assert quote in cleaned
+    if blocklist.is_blocked(quote):
+        return None
     return Evidence(quote=quote, source_url=url, source_title=title or url)
 
 
@@ -202,7 +204,7 @@ def _gather_candidates(
     """(sentence, page_cleaned_text, url) triples across hits, capped overall and per page."""
     found: list[tuple[str, str, str]] = []
     for hit in hits:
-        if "knowyourmeme.com" in hit.url or not hit.markdown:
+        if blocklist.is_blocked(hit.url, hit.title) or not hit.markdown:
             continue
         cleaned = clean_text(hit.markdown)
         for sentence in candidate_sentences(
@@ -241,4 +243,7 @@ def find_evidence(child: MemeNode, parent: MemeNode, axis: Axis) -> Evidence | N
         return None
     quote, cleaned, url = found[index]
     assert quote in cleaned
-    return Evidence(quote=quote, source_url=url, source_title=titles_by_url.get(url, url))
+    title = titles_by_url.get(url, url)
+    if blocklist.is_blocked(quote, url, title):
+        return None
+    return Evidence(quote=quote, source_url=url, source_title=title)
