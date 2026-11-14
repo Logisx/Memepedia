@@ -31,6 +31,7 @@ class Settings:
     vision_per_tick: int
     vision_min_confidence: float
     auto_traces_per_tick: int
+    webhook_secret: str | None = None
 
 
 def _first(*names: str) -> str | None:
@@ -49,6 +50,7 @@ def get_settings() -> Settings:
         gemini_model=_first("GEMINI_MODEL") or DEFAULT_GEMINI_MODEL,
         public_base_url=_first("PUBLIC_BASE_URL"),
         vision_per_tick=int(_first("VISION_PER_TICK") or 10),
-        vision_min_confidence=float(_first("VISION_MIN_CONFIDENCE") or 0.7),
+        vision_min_confidence=float(_first("VISION_MIN_CONFIDENCE") or 0.85),
         auto_traces_per_tick=int(_first("AUTO_TRACES_PER_TICK") or 1),
+        webhook_secret=_first("CONTEXTDEV_WEBHOOK_SECRET"),
     )

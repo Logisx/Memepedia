@@ -1,0 +1,129 @@
+[
+  {
+    "local_file": "img_00.jpeg",
+    "is_known_template": true,
+    "truth_name": "Coraline Dad",
+    "accept": [
+      "Coraline's Dad"
+    ],
+    "note": "The father from Coraline slumped at his computer; an Imgflip template (the image carries the imgflip watermark). Not in the Imgflip top 100."
+  },
+  {
+    "local_file": "img_01.jpeg",
+    "is_known_template": true,
+    "truth_name": "Boardroom Meeting Suggestion",
+    "note": "Exact match to the imgflip top-100 template."
+  },
+  {
+    "local_file": "img_02.jpeg",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "One-off photo of a cat in a shopping cart with an original caption."
+  },
+  {
+    "local_file": "img_03.png",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Hiking photo with an original caption; no reused format."
+  },
+  {
+    "local_file": "img_04.jpeg",
+    "is_known_template": true,
+    "truth_name": "Simpsons So Far",
+    "accept": [
+      "The Worst Day of Your Life So Far",
+      "Worst Day of Your Life So Far"
+    ],
+    "note": "Two Simpsons panels, Homer correcting Bart: 'the worst day of your life so far'. An established template. Not in the Imgflip top 100."
+  },
+  {
+    "local_file": "img_05.png",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "One-off photo edit (a toilet-roll holder shaped like the Clippy icon)."
+  },
+  {
+    "local_file": "img_06.png",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Two-cats photo labelled Me/Manager; no established name."
+  },
+  {
+    "local_file": "img_07.jpeg",
+    "is_known_template": true,
+    "truth_name": "I Don't Want To Play With You Anymore",
+    "note": "Toy Story screenshot of Andy dropping Woody; a well-known template. Not in the Imgflip top 100."
+  },
+  {
+    "local_file": "img_08.jpeg",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Mulan screenshot via the 'IRL Movie Memes' page; not a top-100/established name."
+  },
+  {
+    "local_file": "img_09.jpeg",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Screenshot of a movie end-credits list; one-off joke, no reused format."
+  },
+  {
+    "local_file": "img_10.webp",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Screenshot of a social post about a dog sweater; no reused format."
+  },
+  {
+    "local_file": "img_11.png",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Photo of two similar pill bottles; one-off joke."
+  },
+  {
+    "local_file": "img_12.jpeg",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Edited Microsoft 365 logo; one-off edit."
+  },
+  {
+    "local_file": "img_13.png",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Speed Bump syndicated comic strip; not a meme template."
+  },
+  {
+    "local_file": "img_14.jpeg",
+    "is_known_template": true,
+    "truth_name": "Domino Effect",
+    "note": "Bottom panel is the imgflip top-100 'Domino Effect' stock photo, paired with an unrelated top photo as a two-panel comparison."
+  },
+  {
+    "local_file": "img_15.jpeg",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Photo of an arcade's black-light carpet; no reused format."
+  },
+  {
+    "local_file": "img_16.jpeg",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Photo of NVIDIA CEO Jensen Huang used as a reaction image; heavily recirculated right now but not an established named template as of this labelling."
+  },
+  {
+    "local_file": "img_17.jpeg",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Threads screenshot; no reused format."
+  },
+  {
+    "local_file": "img_18.png",
+    "is_known_template": false,
+    "truth_name": null,
+    "note": "Original 'Twonks' webcomic strip; not a meme template."
+  },
+  {
+    "local_file": "img_19.png",
+    "is_known_template": "uncertain",
+    "truth_name": null,
+    "note": "Stock photo of a Magic 8-Ball reading 'Outlook not so good' with a caption. Imgflip lists a 'Magic 8 ball' template, so the name is defensible, but it is graded strictly: any confident name here counts as a confident wrong."
+  }
+]

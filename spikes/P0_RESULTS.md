@@ -215,6 +215,81 @@ Samples: `spikes/out/monitor_create_raw.json`, `monitor_run_raw.json`, `monitor_
 
 ---
 
+## Test 6 — Vision labelling
+
+**Criterion:** (a) of the posts that use an established template, at least 70% named correctly;
+(b) at most 2 confident wrong names (confidence 0.7 or more on a wrong name, or on an image with
+no template); (c) at least 6 of 20 guesses match a name already in the archive (Imgflip top 100
+plus the fixture nodes, 131 names).
+
+**Result: GO.** Precision passes clearly; coverage on Lemmy is low, which changes what the wall
+will show rather than whether vision can be trusted.
+
+| Threshold | Result | Verdict |
+|---|---|---|
+| (a) established templates named correctly | 5 of 5 | PASS |
+| (b) confident wrong names | 1 (graded strictly) | PASS |
+| (c) guesses that match a name already in the archive | 2 of 20 | FAIL |
+
+Run with `uv run python ../spikes/test6_vision.py` from `backend/` against
+`memepedia.llm.vision_label`, model `gemini-3.8-flash`, on 20 pinned posts from Lemmy `/memes`
+(lemmy.world and lemmy.ml, hot). Median 6.7 s per image (4.7 s to 25.2 s). No failed calls in the
+final run; an earlier run hit one 504 that the client retried and then raised, as designed.
+
+**The first write-up of this test said FAIL on all three, and it was wrong.** The hand labels were
+written against a different file numbering and were off by one for two pairs of images, so correct
+answers were scored as hallucinations. The contested images were looked at again and the labels
+corrected in the script; the scores above are a re-score of the stored model output (no new calls).
+The first-pass scores are kept in `vision_results.json` under
+`scores_first_pass_with_shifted_labels`. The labels were made by an AI agent, not a person: 9 of
+the 20 images were viewed in the second pass, the other 11 are graded from the first-pass label
+plus the model's own description (all one-off photos, screenshots or comics).
+
+| Image | What it is | Model said | Confidence | Verdict |
+|---|---|---|---|---|
+| img_00 | Coraline's father at his computer (Imgflip template) | Coraline's Dad | 0.85 | right |
+| img_01 | Boardroom Meeting Suggestion | Boardroom Meeting Suggestion | 0.99 | right |
+| img_04 | Simpsons, "the worst day of your life so far" | The Worst Day of Your Life So Far | 0.90 | right |
+| img_07 | Toy Story, "I don't want to play with you anymore" | I Don't Want to Play With You Anymore | 0.90 | right |
+| img_14 | Domino Effect (bottom panel) | Domino Effect | 0.95 | right |
+| img_19 | Magic 8-Ball stock photo with a caption | Magic 8 Ball | 0.80 | borderline, counted as wrong |
+| 14 others | one-off photos, screenshots, comic strips | no name (3 of them "not a meme") | 0.0 | right to abstain |
+
+**What it means for the build**
+
+- Stamping can be trusted: every wrong-or-borderline name sat at 0.80, every right one at 0.85 or
+  above. The stamping threshold moves from 0.7 to **0.85**, the same bar the live loop uses to
+  auto-trace an unknown name. Twenty images is a small sample; re-check once the loop has run.
+- Coverage is the real finding. Of 20 Lemmy posts, 14 were one-off jokes with no template at all,
+  6 used a template, and only 2 of those templates are in the Imgflip top 100. On Lemmy most wall
+  tiles will carry no family. Three things compensate: confident names the archive does not know
+  are traced and added (three such in this sample), the Imgflip streams are template memes by
+  construction, and Reddit's meme subreddits are expected to lean more towards templates (not
+  measured yet).
+- Emerging-meme clustering stays in. The plan's fallback ("drop clustering") was written for
+  unreliable vision, which is not what happened; clustering costs one call per rotation and only
+  when the pending set changed.
+
+**Cheaper model** (5 images on `gemini-3.5-flash-lite`; `gemini-2.5-flash-lite` answers 404 "no
+longer available to new users" on this key):
+
+| Image | `gemini-3.8-flash` | `gemini-3.5-flash-lite` |
+|---|---|---|
+| img_00 Coraline's father | Coraline's Dad (0.85, 12.6 s), right | Waiting Skeleton (0.85, 1.7 s), wrong |
+| img_01 Boardroom | Boardroom Meeting Suggestion (0.99, 5.7 s), right | same (0.99, 1.2 s), right |
+| img_02 cat in a cart | no name (25.2 s), right | "Image Macro" (0.80, 1.5 s), wrong: a class, not a template |
+| img_03 hiking photo | no name (5.5 s), right | "Image Macro" (0.80, 1.8 s), wrong |
+| img_04 Simpsons | The Worst Day of Your Life So Far (0.90, 16.1 s), right | "say the line bart! simpsons" (0.95, 1.9 s), wrong template, right show |
+
+The cheap model is 4 to 10 times faster and confidently wrong on 4 of 5. Vision stays on
+`gemini-3.8-flash`.
+
+Samples: `spikes/out/vision_truth.json` (corrected labels), `spikes/out/vision_results.json`
+(model output per post, latencies, both score sets, the cheap-model comparison). The script pins
+its 20 posts by URL; images are downloaded to a temporary directory, never into the repo.
+
+---
+
 ## Other surprises / gotchas worth flagging
 
 - **Credits reporting is inconsistent across endpoint families**: `/web/scrape` and `/web/search` use the
