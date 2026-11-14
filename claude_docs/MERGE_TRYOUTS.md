@@ -76,12 +76,12 @@ Both failures involve Context.dev, and identify, which uses Gemini only, worked.
 
 ## 5. Real-data edge cases found and handled in the frontend
 
-The real archive grew to 88 nodes while this was being checked, so these come from a scan of all of them.
+The real archive kept growing while this was being checked (88 nodes, then 94), so these come from scans of all of them; the counts below are from the last scan, with 94 nodes (84 not format classes).
 
 | Finding | Handling in `web/` | For the backend owner |
 |---|---|---|
-| For many memes `descent.character` equals `descent.format` (33 of the 73 non-root memes, for example every Advice Animal and every object-labelling template). | The line toggle is hidden when the two lines are the same chain. | Probably intended, as the owner noted for Advice Animals. If not, the character line should stop at the character-line root. |
+| For many memes `descent.character` equals `descent.format` (39 of the 84 non-root memes, for example every Advice Animal and every object-labelling template). | The line toggle is hidden when the two lines are the same chain. | Probably intended, as the owner noted for Advice Animals. If not, the character line should stop at the character-line root. |
 | `descent.character` can include a parent that is joined to the child only by a link on the `format` axis (Undertaker Standing Behind AJ Styles → Object labelling; the response lists one link, axis `format`, status inferred). `types.ts` does not say whether a line may cross axes. | The strip looks for a link on the chosen axis first, then any link between the two cards, so the connector still shows "citation needed" or the quote. | Decide whether a line may use links of the other axis, and write it in `contract/README.md`. |
-| 33 memes are alone in their character-line family, so the family map is one node. | A caption under the map says no relatives are on record yet. | None; matches the parked "Advice Animals" decision. |
-| 12 nodes have no `first_seen`, 15 have no image, the longest name is 36 characters. | Cards show "date unknown" and the typeset specimen card. Long names wrap on cards and use a smaller font and a tooltip in the map. | None. |
+| 37 memes are alone in their character-line family, so the family map is one node. | A caption under the map says no relatives are on record yet. | None; matches the parked "Advice Animals" decision. |
+| 14 nodes have no `first_seen`, 15 have no image, the longest name is 41 characters. | Cards show "date unknown" and the typeset specimen card. Long names wrap on cards and use a smaller font and a tooltip in the map. | None. |
 | Three Reddit and Imgflip image URLs now return 404. | The tile shows "image unavailable". | Optional: drop sightings whose image no longer loads. |
