@@ -273,6 +273,29 @@ def test_sightings_for_node_hides_nsfw_true_and_unlabelled(client: TestClient) -
         db.execute("DELETE FROM sightings WHERE post_url LIKE 'https://x.test/nsfw-node-%%'")
 
 
+def test_sightings_for_node_include_sensitive_keeps_them(client: TestClient) -> None:
+    sfw = store.insert_sighting(
+        _post("https://x.test/nsfw-node-inc-sfw"), None, "doomer", "resolved", nsfw=False
+    )
+    nsfw = store.insert_sighting(
+        _post("https://x.test/nsfw-node-inc-nsfw"), None, "doomer", "resolved", nsfw=True
+    )
+    unlabelled = store.insert_sighting(
+        _post("https://x.test/nsfw-node-inc-null"), None, "doomer", "resolved"
+    )
+    try:
+        shown = {s.id for s in store.sightings_for_node("doomer", limit=500)}
+        assert sfw in shown
+        assert nsfw not in shown
+        assert unlabelled not in shown
+        everything = {
+            s.id for s in store.sightings_for_node("doomer", limit=500, include_sensitive=True)
+        }
+        assert {sfw, nsfw, unlabelled} <= everything
+    finally:
+        db.execute("DELETE FROM sightings WHERE post_url LIKE 'https://x.test/nsfw-node-inc-%%'")
+
+
 def test_set_node_nsfw_and_needing_label(client: TestClient) -> None:
     store.upsert_node(
         MemeNode(

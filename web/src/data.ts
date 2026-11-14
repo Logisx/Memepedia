@@ -179,8 +179,12 @@ function loneTree(id: string): TreeResponse | undefined {
   }
 }
 
-export async function getTree(id: string): Promise<TreeResponse> {
-  if (!usingFixtures) return request<TreeResponse>(`/api/tree/${encodeURIComponent(id)}`)
+/** `sensitive: true` asks the backend to include this meme's nsfw (true or unlabelled) sightings. */
+export async function getTree(id: string, sensitive = false): Promise<TreeResponse> {
+  if (!usingFixtures) {
+    const query = sensitive ? '?sensitive=true' : ''
+    return request<TreeResponse>(`/api/tree/${encodeURIComponent(id)}${query}`)
+  }
   return fixture<TreeResponse>(`tree-${id}`) ?? loneTree(id) ?? requireFixture<TreeResponse>('tree-wojak')
 }
 

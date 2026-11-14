@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { Link as RouterLink, useParams } from 'react-router'
 import type { Axis, Link, TreeResponse } from '@contract/types'
@@ -6,8 +6,9 @@ import { DescentStrip, flipDuration } from '../components/DescentStrip'
 import { FamilyMap } from '../components/FamilyMap'
 import { SidePanel } from '../components/SidePanel'
 import { getTree } from '../data'
+import { getShowSensitive, useShowSensitive } from '../hooks/useShowSensitive'
 
-type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; tree: TreeResponse }
+type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; tree: TreeResponse; sensitive: boolean }
 
 /** Route wrapper: loads the tree for `/meme/:id`, then hands it to the view. */
 export default function Lineage() {
@@ -18,8 +19,11 @@ export default function Lineage() {
   useEffect(() => {
     let cancelled = false
     setLoad({ status: 'loading' })
-    getTree(id).then(
-      (tree) => !cancelled && setLoad({ status: 'ready', tree }),
+    // Which sightings come back depends on the Sensitive toggle; LineageView refetches them
+    // if it is flipped later, so remember what this load asked for.
+    const sensitive = getShowSensitive()
+    getTree(id, sensitive).then(
+      (tree) => !cancelled && setLoad({ status: 'ready', tree, sensitive }),
       (e: unknown) => !cancelled && setLoad({ status: 'error', message: e instanceof Error ? e.message : String(e) }),
     )
     return () => {
@@ -38,12 +42,33 @@ export default function Lineage() {
       </div>
     )
   }
-  return <LineageView key={id} initial={load.tree} />
+  return <LineageView key={id} initial={load.tree} loadedSensitive={load.sensitive} />
 }
 
-function LineageView({ initial }: { initial: TreeResponse }) {
+function LineageView({ initial, loadedSensitive }: { initial: TreeResponse; loadedSensitive: boolean }) {
   const [tree, setTree] = useState(initial)
   const [axis, setAxis] = useState<Axis>('character')
+  const showSensitive = useShowSensitive()
+  const sightingsFetchedWith = useRef(loadedSensitive)
+
+  // The tree endpoint filters flagged sightings on the server, so flipping the Sensitive toggle
+  // needs a fresh fetch. Only the sightings are replaced: the axis, the map and any citation
+  // added from the panel stay as they are.
+  useEffect(() => {
+    if (showSensitive === sightingsFetchedWith.current) return
+    let cancelled = false
+    getTree(tree.selected_id, showSensitive).then(
+      (fresh) => {
+        if (cancelled) return
+        sightingsFetchedWith.current = showSensitive
+        setTree((prev) => ({ ...prev, sightings: fresh.sightings }))
+      },
+      () => undefined, // keep what is on screen; the panel still filters by the toggle
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [showSensitive, tree.selected_id])
 
   const nodesById = useMemo(() => new Map(tree.nodes.map((n) => [n.id, n])), [tree.nodes])
   const selected = nodesById.get(tree.selected_id)

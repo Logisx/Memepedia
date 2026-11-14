@@ -124,8 +124,12 @@ def _tree_node_ids(
 
 
 @app.get("/api/tree/{node_id}", response_model=TreeResponse)
-def get_tree(node_id: str) -> TreeResponse:
-    """The family, descent chains, links, sightings and history for one node."""
+def get_tree(node_id: str, sensitive: bool = False) -> TreeResponse:
+    """The family, descent chains, links, sightings and history for one node.
+
+    `sensitive=true` includes the node's nsfw (true or unlabelled) sightings too, for a viewer
+    who asked to see them; the default omits them, as before.
+    """
     selected = store.get_node(node_id)
     if selected is None:
         raise HTTPException(404, "Unknown node.")
@@ -143,7 +147,7 @@ def get_tree(node_id: str) -> TreeResponse:
         family_ids=family,
         links=link_set,
         descent=Descent(character=char_descent, format=format_descent),
-        sightings=store.sightings_for_node(node_id),
+        sightings=store.sightings_for_node(node_id, include_sensitive=sensitive),
         history=store.history_for(sorted(history_ids)),
     )
 

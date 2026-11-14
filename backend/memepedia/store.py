@@ -432,11 +432,18 @@ def counts() -> dict[str, int]:
     return {key: int(value) for key, value in (row or {}).items()}
 
 
-def sightings_for_node(node_id: str, limit: int = 12) -> list[Sighting]:
-    """Sightings of one node, newest first; nsfw (true or unlabelled) sightings are excluded."""
+def sightings_for_node(
+    node_id: str, limit: int = 12, include_sensitive: bool = False
+) -> list[Sighting]:
+    """Sightings of one node, newest first.
+
+    By default nsfw (true or unlabelled) sightings are excluded; `include_sensitive` keeps
+    them, for a viewer who asked to see them.
+    """
+    sensitive_filter = "" if include_sensitive else " AND s.nsfw = false"
     rows = db.fetch_all(
         _WALL_SELECT
-        + " WHERE s.node_id = %s AND s.nsfw = false ORDER BY s.posted_at DESC LIMIT %s",
+        + f" WHERE s.node_id = %s{sensitive_filter} ORDER BY s.posted_at DESC LIMIT %s",
         (node_id, limit),
     )
     return [_row_to_sighting(r) for r in rows]

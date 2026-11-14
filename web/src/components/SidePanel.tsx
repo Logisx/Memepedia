@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { HistoryItem, Link, ProposalResponse, Sighting } from '@contract/types'
 import { propose } from '../data'
+import { useShowSensitive } from '../hooks/useShowSensitive'
 import { PLATFORM_NAME } from '../lib/platform'
 import { timeAgo } from '../lib/time'
 
@@ -67,9 +68,10 @@ function groupSightings(sightings: Sighting[]): { latest: Sighting; others: Sigh
 }
 
 function SightingsList({ sightings }: { sightings: Sighting[] }) {
-  // Defensive: the backend should never send a sighting that isn't nsfw === false, but
-  // never render one that slips through anyway.
-  const safe = sightings.filter((s) => s.nsfw === false)
+  // The backend only sends a sighting that isn't nsfw === false when the viewer asked to see
+  // sensitive ones; unless that toggle is on, never render one that slips through anyway.
+  const showSensitive = useShowSensitive()
+  const safe = showSensitive ? sightings : sightings.filter((s) => s.nsfw === false)
   if (safe.length === 0)
     return (
       <div className="flex flex-col items-start gap-2">
