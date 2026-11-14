@@ -2,7 +2,8 @@
 
 FETCH, LOOK and RESOLVE exactly like a tick, across TopWeek-sorted Lemmy posts from the last
 7 days spread evenly across feeds; no auto-trace, no clustering. Sightings are inserted with
-seen_at=post.posted_at so old posts do not flood the wall as if they had just arrived.
+seen_at=post.posted_at so old posts do not flood the wall as if they had just arrived. It looks
+at no more images than the Gemini budget (memepedia/budget.py) still allows background work.
 
 Usage: uv run python scripts/backfill.py [--max-images 120]
 """
@@ -14,7 +15,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 
-from memepedia import db, store
+from memepedia import budget, db, store
 from memepedia.config import get_settings
 from memepedia.live import Thresholds, _archive_context, _look_one, classify
 from memepedia.llm import RootInfo
@@ -70,11 +71,24 @@ def _save_one(
     return state if sid is not None else "duplicate"
 
 
+def _affordable(max_images: int) -> int:
+    """How many images the Gemini budget lets the backfill look at; 0 when a guard says stop."""
+    if (reason := budget.background_block()) is not None:
+        print(f"backfill skipped: {reason}")
+        return 0
+    return min(max_images, int(budget.headroom("gemini")))
+
+
 def backfill(max_images: int) -> dict[str, int]:
-    """Backfills up to `max_images` Lemmy posts from the last 7 days; returns a state tally."""
+    """Backfills up to `max_images` Lemmy posts from the last 7 days; returns a state tally.
+
+    Lemmy is read directly, so this spends no Context.dev credits; each image costs one Gemini
+    call (plus one more for a near-match name), counted against the same caps as the live loop.
+    """
     if max_images > _MAX_LIMIT:
         raise ValueError(f"--max-images may not exceed {_MAX_LIMIT}")
-    batch = _gather(max_images)
+    affordable = _affordable(max_images)
+    batch = _gather(affordable) if affordable > 0 else []
     roots, known_names = _archive_context()
     thresholds = Thresholds.from_settings(get_settings())
     matcher = Matcher.from_store()
@@ -100,6 +114,7 @@ def main() -> None:
     parser.add_argument("--max-images", type=int, default=120)
     args = parser.parse_args()
 
+    print(f"database: {db.describe_target()}")
     db.init_schema()
     tally = backfill(args.max_images)
     for key, count in tally.items():
