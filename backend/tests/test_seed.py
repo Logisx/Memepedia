@@ -32,3 +32,8 @@ def test_merge_aliases_drops_a_retired_generic_alias_learned_before_the_seed_cha
 def test_merge_aliases_preserves_seed_order_first() -> None:
     merged = _merge_aliases(["Grogu", "Baby Yoda Soup"], ["Old Alias"], "Baby Yoda")
     assert merged == ["Grogu", "Baby Yoda Soup", "Old Alias"]
+
+
+def test_merge_aliases_keeps_a_generic_alias_the_seed_still_lists() -> None:
+    assert _merge_aliases(["NPC"], ["npc"], "NPC Wojak") == ["NPC"]
+    assert _merge_aliases(["Big Brain"], [], "Big Brain Wojak") == ["Big Brain"]

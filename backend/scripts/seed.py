@@ -42,18 +42,17 @@ def _load_seed() -> dict[str, Any]:
 def _merge_aliases(seed: list[str], existing: list[str], name: str) -> list[str]:
     """Seed aliases first, then learned aliases not already present; name-free, deduplicated.
 
-    Drops any alias that is generic on its own (`resolver.is_generic_subject`), so an alias
-    deliberately retired from the seed, such as "The Child", does not survive in production
-    through this union.
+    Drops a learned alias that is generic on its own (`resolver.is_generic_subject`), so an
+    alias deliberately retired from the seed, such as "The Child", does not survive in
+    production through this union. A seed alias is always kept: "NPC" must still match by guess.
     """
     merged: list[str] = []
     seen: set[str] = set()
     normalized_name = resolver.normalize(name)
-    for alias in [*seed, *existing]:
+    learned = [alias for alias in existing if not resolver.is_generic_subject(alias)]
+    for alias in [*seed, *learned]:
         key = alias.casefold()
         if key in seen or resolver.normalize(alias) == normalized_name:
-            continue
-        if resolver.is_generic_subject(alias):
             continue
         seen.add(key)
         merged.append(alias)
