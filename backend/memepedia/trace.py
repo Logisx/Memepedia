@@ -357,7 +357,7 @@ def propose(node_id: str, url: str, note: str) -> ProposalResponse:
             link=None,
         )
     try:
-        scraped = contextdev.scrape(url, formats={"markdown": {}}, label="proposal")
+        scraped = contextdev.scrape(url, formats={"markdown": True}, label="proposal")
     except ContextDevError:
         logger.warning("proposal scrape failed for %s", url, exc_info=True)
         return ProposalResponse(accepted=False, message="Could not read that page.", link=None)

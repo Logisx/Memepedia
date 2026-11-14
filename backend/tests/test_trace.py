@@ -346,6 +346,25 @@ def test_propose_accepted(monkeypatch: pytest.MonkeyPatch, cleanup: list[str]) -
     assert link is not None and link.status == "cited"
 
 
+def test_propose_scrapes_with_boolean_formats(
+    monkeypatch: pytest.MonkeyPatch, cleanup: list[str]
+) -> None:
+    """Context.dev's `/web/scrape` requires boolean format values, not `{}` (a past regression)."""
+    node = _make(cleanup, _node("t-prop-formats", "Test Propose Formats"))
+    calls: list[dict[str, Any]] = []
+
+    def fake_scrape(url: str, *, formats: dict[str, Any], label: str) -> ScrapeResult:
+        calls.append(dict(formats))
+        return ScrapeResult(
+            url=url, title="X", markdown="Some text.", html=None, images=[], credits=1.0
+        )
+
+    monkeypatch.setattr("memepedia.contextdev.scrape", fake_scrape)
+    trace.propose(node.id, "https://example.com/x", "")
+    assert calls == [{"markdown": True}]
+    assert all(isinstance(v, bool) for c in calls for v in c.values())
+
+
 def test_propose_rejected_when_no_qualifying_sentence(
     monkeypatch: pytest.MonkeyPatch, cleanup: list[str]
 ) -> None:
