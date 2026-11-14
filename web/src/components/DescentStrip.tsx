@@ -42,8 +42,20 @@ export function DescentStrip({ axis, descent, nodesById, links, checking = false
     return <p className="font-type self-center p-4 text-xl">No recorded {axis} line for this meme.</p>
   }
 
+  // On a phone the strip starts scrolled to its right end, which can land mid-way through the
+  // previous link's badge or quote. Fading the left edge hides that cropped sliver instead of
+  // cutting it off mid-word.
+  const edgeFade = narrow
+    ? {
+        maskImage: 'linear-gradient(to right, transparent, black 32px)',
+        WebkitMaskImage: 'linear-gradient(to right, transparent, black 32px)',
+        maskRepeat: 'no-repeat',
+        WebkitMaskRepeat: 'no-repeat',
+      }
+    : undefined
+
   return (
-    <div ref={scroller} className="flex h-full items-stretch overflow-x-auto pb-3 pr-3 pt-1">
+    <div ref={scroller} className="flex h-full items-stretch overflow-x-auto pb-3 pr-3 pt-1" style={edgeFade}>
       {ordered.map((id, index) => {
         const node = nodesById.get(id)
         if (!node) return null

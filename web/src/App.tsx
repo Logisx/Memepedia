@@ -26,9 +26,12 @@ function SensitiveToggle() {
       aria-label={showSensitive ? 'NSFW is on: switch to SFW' : 'SFW is on: switch to NSFW'}
       title={showSensitive ? 'Showing NSFW. Click to go back to SFW' : 'SFW only. Click to show NSFW'}
       onClick={toggle}
-      className="font-type ml-auto flex min-w-[5.5rem] shrink-0 items-center justify-center gap-1.5 border border-ink px-2 py-1 text-sm uppercase tracking-widest hover:bg-paper-deep"
+      className="font-type ml-auto flex min-w-[7rem] shrink-0 items-center justify-center gap-2 border-2 border-ink px-4 py-2 text-base uppercase tracking-widest hover:bg-paper-deep md:text-lg"
     >
-      <span aria-hidden className={wiggling ? 'animate-emoji-wiggle inline-block' : 'inline-block'}>
+      <span
+        aria-hidden
+        className={`text-2xl md:text-3xl ${wiggling ? 'animate-emoji-wiggle inline-block' : 'inline-block'}`}
+      >
         {showSensitive ? '👀' : '🙈'}
       </span>
       {showSensitive ? 'NSFW' : 'SFW'}

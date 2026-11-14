@@ -77,7 +77,9 @@ export function SightingTile({ sighting, now, arriving }: Props) {
             {picture}
           </RouterLink>
         ) : (
-          picture
+          <a href={sighting.post_url} target="_blank" rel="noopener noreferrer" className="block" aria-label="Open original post">
+            {picture}
+          </a>
         )}
         <Stamp sighting={sighting} />
       </div>
