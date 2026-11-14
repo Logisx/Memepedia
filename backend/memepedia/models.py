@@ -77,6 +77,7 @@ class WallResponse(ContractModel):
     sightings: list[Sighting]
     server_time: datetime
     sources_watched: int
+    next_before: str | None
 
 
 class NodesResponse(ContractModel):

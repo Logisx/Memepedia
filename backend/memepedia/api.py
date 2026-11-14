@@ -100,10 +100,21 @@ def _handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:
     return _error("Internal server error.", 500)
 
 
+MAX_WALL_PAGE_LIMIT = 100
+
+
 @app.get("/api/wall", response_model=WallResponse)
-def get_wall(since: str | None = None, limit: int = 60, sensitive: bool = False) -> WallResponse:
+def get_wall(
+    since: str | None = None,
+    before: str | None = None,
+    limit: int = 60,
+    sensitive: bool = False,
+) -> WallResponse:
     """Recent sightings; pass back server_time as `since` on the next poll.
 
+    `before` pages backwards through older sightings: pass the previous response's
+    `next_before` to get the page just older than it (null once the wall is exhausted).
+    `limit` is capped at 100 when `before` is used.
     `sensitive=true` includes nsfw (true or unlabelled) sightings too, for a viewer who
     asked to see them; the default omits them, as before.
     """
@@ -113,8 +124,19 @@ def get_wall(since: str | None = None, limit: int = 60, sensitive: bool = False)
             since_dt = datetime.fromisoformat(since)
         except ValueError as exc:
             raise HTTPException(400, "Invalid 'since' timestamp.") from exc
-    sightings, cursor = store.wall_page(since_dt, limit, include_sensitive=sensitive)
-    return WallResponse(sightings=sightings, server_time=cursor, sources_watched=len(FEEDS))
+    before_cursor = None
+    if before is not None:
+        try:
+            before_cursor = store.decode_wall_cursor(before)
+        except ValueError as exc:
+            raise HTTPException(400, "Invalid 'before' cursor.") from exc
+        limit = min(limit, MAX_WALL_PAGE_LIMIT)
+    sightings, cursor, next_before = store.wall_page(
+        since_dt, limit, include_sensitive=sensitive, before=before_cursor
+    )
+    return WallResponse(
+        sightings=sightings, server_time=cursor, sources_watched=len(FEEDS), next_before=next_before
+    )
 
 
 @app.get("/api/nodes", response_model=NodesResponse)
