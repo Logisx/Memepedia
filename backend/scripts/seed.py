@@ -39,6 +39,27 @@ def _load_seed() -> dict[str, Any]:
     return data
 
 
+def _merge_aliases(seed: list[str], existing: list[str], name: str) -> list[str]:
+    """Seed aliases first, then learned aliases not already present; name-free, deduplicated.
+
+    Drops any alias that is generic on its own (`resolver.is_generic_subject`), so an alias
+    deliberately retired from the seed, such as "The Child", does not survive in production
+    through this union.
+    """
+    merged: list[str] = []
+    seen: set[str] = set()
+    normalized_name = resolver.normalize(name)
+    for alias in [*seed, *existing]:
+        key = alias.casefold()
+        if key in seen or resolver.normalize(alias) == normalized_name:
+            continue
+        if resolver.is_generic_subject(alias):
+            continue
+        seen.add(key)
+        merged.append(alias)
+    return merged
+
+
 def step_families() -> dict[str, int]:
     """Upsert every curated node and link; never overwrite an existing link or image."""
     data = _load_seed()
@@ -48,7 +69,9 @@ def step_families() -> dict[str, int]:
         node = MemeNode(
             id=raw["id"],
             name=raw["name"],
-            aliases=raw["aliases"],
+            aliases=_merge_aliases(
+                raw["aliases"], existing.aliases if existing else [], raw["name"]
+            ),
             kind=raw["kind"],
             latin_name=raw["latin_name"],
             image_url=existing.image_url if existing else None,

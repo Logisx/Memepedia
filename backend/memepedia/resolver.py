@@ -107,6 +107,11 @@ _GENERIC_SUBJECTS = frozenset(
 )
 
 
+def is_generic_subject(name: str) -> bool:
+    """Whether `name` is too generic to name a character on its own (see `_GENERIC_SUBJECTS`)."""
+    return normalize(name) in _GENERIC_SUBJECTS
+
+
 class Matcher:
     """Name lookups for one batch of labels, with the archive's names loaded once."""
 
