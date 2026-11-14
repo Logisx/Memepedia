@@ -367,27 +367,29 @@ def test_tick_auto_trace_attaches_and_respects_cap(
         query: str, *, context: str | None = None, as_specimen: bool = False
     ) -> str | None:
         calls.append((query, as_specimen))
+        # The trace is what creates the node, so it must not exist before the tick: an existing
+        # node of that name would be an exact match and stamp both posts straight away.
+        store.upsert_node(
+            MemeNode(
+                id="new-specimen-node",
+                name="New Specimen X",
+                aliases=[],
+                kind="template",
+                latin_name=None,
+                image_url=None,
+                image_credit_url=None,
+                first_seen=None,
+                date_precision=None,
+                summary=None,
+                status="specimen",
+                sightings_24h=0,
+                sightings_7d=0,
+                nsfw=None,
+            )
+        )
         return "new-specimen-node"
 
     monkeypatch.setattr(trace, "run", fake_trace_run)
-    store.upsert_node(
-        MemeNode(
-            id="new-specimen-node",
-            name="New Specimen X",
-            aliases=[],
-            kind="template",
-            latin_name=None,
-            image_url=None,
-            image_credit_url=None,
-            first_seen=None,
-            date_precision=None,
-            summary=None,
-            status="specimen",
-            sightings_24h=0,
-            sightings_7d=0,
-            nsfw=None,
-        )
-    )
 
     report = live.tick(_FEED_KEY)
 
