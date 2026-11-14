@@ -1,0 +1,139 @@
+[
+  {
+    "delay_ms": 0,
+    "event": {
+      "type": "status",
+      "message": "Searching the archive for a visual match..."
+    }
+  },
+  {
+    "delay_ms": 900,
+    "event": {
+      "type": "status",
+      "message": "No exact match found. Building a descent chain..."
+    }
+  },
+  {
+    "delay_ms": 1400,
+    "event": {
+      "type": "chain",
+      "nodes": [
+        {
+          "id": "grug-early-man",
+          "name": "Grug",
+          "aliases": [
+            "Early Man Wojak"
+          ],
+          "kind": "character",
+          "latin_name": "Wojakus primigenius",
+          "image_url": null,
+          "image_credit_url": null,
+          "first_seen": "2024-02-01",
+          "date_precision": "month",
+          "summary": "A caveman-styled Wojak variant who speaks in simple grammar, used to voice blunt, unfiltered first takes.",
+          "status": "specimen",
+          "sightings_24h": 1,
+          "sightings_7d": 3
+        },
+        {
+          "id": "wojak",
+          "name": "Wojak",
+          "aliases": [
+            "Feels Guy"
+          ],
+          "kind": "character",
+          "latin_name": "Wojakus vulgaris",
+          "image_url": "https://i.imgflip.com/4/2qmyau.jpg",
+          "image_credit_url": "https://imgflip.com/meme/165673254/wojak",
+          "first_seen": "2010-06-01",
+          "date_precision": "month",
+          "summary": "A crudely drawn bald, wide-mouthed everyman face, originally from a Polish forum, used to express raw unfiltered feeling.",
+          "status": "established",
+          "sightings_24h": 2,
+          "sightings_7d": 10
+        },
+        {
+          "id": "drawn-character",
+          "name": "Drawn Character",
+          "aliases": [],
+          "kind": "format_class",
+          "latin_name": "Persona picta",
+          "image_url": null,
+          "image_credit_url": null,
+          "first_seen": "2008-01-01",
+          "date_precision": "year",
+          "summary": "Hand- or crudely-drawn recurring characters used as stand-ins for a mood or social type.",
+          "status": "established",
+          "sightings_24h": 5,
+          "sightings_7d": 27
+        }
+      ],
+      "links": [
+        {
+          "child_id": "grug-early-man",
+          "parent_id": "wojak",
+          "axis": "character",
+          "status": "inferred",
+          "quote": null,
+          "source_url": null,
+          "source_title": null
+        },
+        {
+          "child_id": "wojak",
+          "parent_id": "drawn-character",
+          "axis": "character",
+          "status": "inferred",
+          "quote": null,
+          "source_url": null,
+          "source_title": null
+        },
+        {
+          "child_id": "grug-early-man",
+          "parent_id": "drawn-character",
+          "axis": "character",
+          "status": "inferred",
+          "quote": null,
+          "source_url": null,
+          "source_title": null
+        }
+      ]
+    }
+  },
+  {
+    "delay_ms": 2600,
+    "event": {
+      "type": "link",
+      "link": {
+        "child_id": "wojak",
+        "parent_id": "drawn-character",
+        "axis": "character",
+        "status": "cited",
+        "quote": "The image originated on the Polish forum Krautchan around 2010 as a simple MS-Paint doodle of a bald man's face.",
+        "source_url": "https://knowyourmeme.com/memes/wojak",
+        "source_title": "Wojak - Know Your Meme"
+      }
+    }
+  },
+  {
+    "delay_ms": 4300,
+    "event": {
+      "type": "link",
+      "link": {
+        "child_id": "grug-early-man",
+        "parent_id": "wojak",
+        "axis": "character",
+        "status": "cited",
+        "quote": "Grug panels reuse the Wojak face with caveman grammar captions, first collected on a meme-archive subreddit in February 2024.",
+        "source_url": "https://knowyourmeme.com/memes/grug",
+        "source_title": "Grug - Know Your Meme"
+      }
+    }
+  },
+  {
+    "delay_ms": 5100,
+    "event": {
+      "type": "done",
+      "node_id": "grug-early-man"
+    }
+  }
+]

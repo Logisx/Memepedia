@@ -1,0 +1,143 @@
+{
+  "create": {
+    "request_body": {
+      "name": "meme-genealogy spike - lemmy memes",
+      "target": {
+        "type": "page",
+        "url": "https://lemmy.world/c/memes?dataType=Post&sort=New"
+      },
+      "schedule": {
+        "type": "interval",
+        "frequency": 10,
+        "unit": "minutes"
+      }
+    },
+    "status": 201,
+    "response": {
+      "mode": "web",
+      "id": "mon_dce632a0271642578d63d8efb2d79eac",
+      "name": "meme-genealogy spike - lemmy memes",
+      "tags": [],
+      "policies": [],
+      "change_detection": {
+        "type": "exact"
+      },
+      "schedule": {
+        "type": "interval",
+        "frequency": 10,
+        "unit": "minutes"
+      },
+      "webhook": null,
+      "status": "active",
+      "last_run_at": null,
+      "last_change_at": null,
+      "next_run_at": "2026-11-14T13:32:09.617Z",
+      "last_error": null,
+      "webhook_failure": null,
+      "created_at": "2026-11-14T13:24:56.459Z",
+      "updated_at": "2026-11-14T13:24:56.459Z",
+      "target": {
+        "type": "page",
+        "url": "https://lemmy.world/c/memes?dataType=Post&sort=New"
+      },
+      "initial_run_id": "run_4e3d2f845b0e4c088a3a2f6a5fe9ac0d",
+      "key_metadata": {
+        "credits_consumed": 0,
+        "credits_remaining": 50949
+      },
+      "request_id": "b65c5f93-47a3-46e4-8740-2978b871b73f"
+    },
+    "latency_s": 0.83
+  },
+  "run": {
+    "status": 202,
+    "response": {
+      "monitor_id": "mon_dce632a0271642578d63d8efb2d79eac",
+      "run_id": "run_1992a680ecef441f94835fba68b81f47",
+      "queued": true,
+      "key_metadata": {
+        "credits_consumed": 0,
+        "credits_remaining": 50949
+      },
+      "request_id": "1f73bba7-1174-4e4d-8617-11ab15334305"
+    },
+    "latency_s": 0.46
+  },
+  "list_runs": {
+    "status": 200,
+    "response": {
+      "data": [
+        {
+          "id": "run_1992a680ecef441f94835fba68b81f47",
+          "monitor_id": "mon_dce632a0271642578d63d8efb2d79eac",
+          "status": "skipped",
+          "run_type": "scheduled",
+          "target_type": "page",
+          "change_detection_type": "exact",
+          "started_at": null,
+          "completed_at": "2026-11-14T13:25:02.614Z",
+          "change_detected": false,
+          "baseline_created": false,
+          "credits_charged": 0,
+          "skip_reason": "superseded",
+          "error": null
+        },
+        {
+          "id": "run_4e3d2f845b0e4c088a3a2f6a5fe9ac0d",
+          "monitor_id": "mon_dce632a0271642578d63d8efb2d79eac",
+          "status": "completed",
+          "run_type": "baseline",
+          "target_type": "page",
+          "change_detection_type": "exact",
+          "started_at": "2026-11-14T13:24:57.133Z",
+          "completed_at": "2026-11-14T13:25:08.393Z",
+          "change_detected": false,
+          "change_id": null,
+          "baseline_created": true,
+          "credits_charged": 1,
+          "skip_reason": null,
+          "error": null
+        }
+      ],
+      "has_more": false,
+      "next_cursor": null,
+      "key_metadata": {
+        "credits_consumed": 0,
+        "credits_remaining": 50948
+      },
+      "request_id": "c6fbf7b2-e123-4021-9e82-9ed2191e5884"
+    },
+    "latency_s": 0.34
+  },
+  "list_changes": {
+    "status": 200,
+    "response": {
+      "data": [],
+      "has_more": false,
+      "next_cursor": null,
+      "key_metadata": {
+        "credits_consumed": 0,
+        "credits_remaining": 50948
+      },
+      "request_id": "cc45bb59-99e4-4564-8405-6cf5c79efe97"
+    },
+    "latency_s": 0.31
+  },
+  "delete": {
+    "status": 200,
+    "response": {
+      "id": "mon_dce632a0271642578d63d8efb2d79eac",
+      "deleted": true,
+      "key_metadata": {
+        "credits_consumed": 0,
+        "credits_remaining": 50948
+      },
+      "request_id": "0e0fe04e-13ce-471a-a433-cd581ea98a0b"
+    },
+    "latency_s": 0.91
+  },
+  "confirm_gone": {
+    "status": 404,
+    "body": "{\"message\":\"Monitor not found\",\"error_code\":\"NOT_FOUND\",\"key_metadata\":{\"credits_consumed\":0,\"credits_remaining\":50948},\"request_id\":\"8b2520d0-4999-4d7d-a225-ad48e5eb41d7\"}"
+  }
+}

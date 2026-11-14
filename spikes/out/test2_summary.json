@@ -1,0 +1,101 @@
+{
+  "hot_no_wait": {
+    "status": 200,
+    "latency_s": 4.4,
+    "credits": "5",
+    "json_success": true,
+    "json_error": null,
+    "n_posts": 14,
+    "n_with_image": 0,
+    "n_with_link": 14,
+    "n_with_template": 0,
+    "n_with_timestamp": 0,
+    "sample_posts": [
+      {
+        "image_url": null,
+        "post_link": "https://imgflip.com/gif/b5rot1",
+        "template_name": null,
+        "timestamp_text": null
+      },
+      {
+        "image_url": null,
+        "post_link": "https://imgflip.com/gif/b5suv7",
+        "template_name": null,
+        "timestamp_text": null
+      },
+      {
+        "image_url": null,
+        "post_link": "https://imgflip.com/gif/b5t0rp",
+        "template_name": null,
+        "timestamp_text": null
+      }
+    ],
+    "md_len": 11012
+  },
+  "hot_with_wait": {
+    "status": 200,
+    "latency_s": 9.59,
+    "credits": "5",
+    "json_success": true,
+    "json_error": null,
+    "n_posts": 14,
+    "n_with_image": 0,
+    "n_with_link": 14,
+    "n_with_template": 0,
+    "n_with_timestamp": 0,
+    "sample_posts": [
+      {
+        "image_url": null,
+        "post_link": "https://imgflip.com/gif/b5rot1",
+        "template_name": null,
+        "timestamp_text": null
+      },
+      {
+        "image_url": null,
+        "post_link": "https://imgflip.com/gif/b5suv7",
+        "template_name": null,
+        "timestamp_text": null
+      },
+      {
+        "image_url": null,
+        "post_link": "https://imgflip.com/gif/b5t0rp",
+        "template_name": null,
+        "timestamp_text": null
+      }
+    ],
+    "md_len": 11082
+  },
+  "latest_with_wait": {
+    "status": 200,
+    "latency_s": 9.02,
+    "credits": "5",
+    "json_success": true,
+    "json_error": null,
+    "n_posts": 14,
+    "n_with_image": 0,
+    "n_with_link": 14,
+    "n_with_template": 0,
+    "n_with_timestamp": 0,
+    "sample_posts": [
+      {
+        "image_url": null,
+        "post_link": "https://imgflip.com/i/au9sog",
+        "template_name": null,
+        "timestamp_text": null
+      },
+      {
+        "image_url": null,
+        "post_link": "https://imgflip.com/i/au9sga",
+        "template_name": null,
+        "timestamp_text": null
+      },
+      {
+        "image_url": null,
+        "post_link": "https://imgflip.com/i/b5vc48",
+        "template_name": null,
+        "timestamp_text": null
+      }
+    ],
+    "md_len": 8744
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "rising": [
+    {
+      "node": {
+        "id": "doomer",
+        "name": "Doomer",
+        "aliases": [],
+        "kind": "character",
+        "latin_name": "Wojakus desperatus",
+        "image_url": "https://i.imgflip.com/4/37i3fq.jpg",
+        "image_credit_url": "https://imgflip.com/meme/194000102/Doomer",
+        "first_seen": "2018-03-01",
+        "date_precision": "month",
+        "summary": "A black-beanie, black-hoodie Wojak variant signifying nihilistic pessimism about the future.",
+        "status": "established",
+        "sightings_24h": 3,
+        "sightings_7d": 14
+      },
+      "count_24h": 22,
+      "daily_mean_prior": 9.5
+    },
+    {
+      "node": {
+        "id": "soyjak",
+        "name": "Soyjak",
+        "aliases": [
+          "Soyboy"
+        ],
+        "kind": "character",
+        "latin_name": "Wojakus gracilis",
+        "image_url": "https://i.imgflip.com/4/5cik8d.png",
+        "image_credit_url": "https://imgflip.com/meme/323352301/soyjak",
+        "first_seen": "2018-08-01",
+        "date_precision": "month",
+        "summary": "An open-mouthed, wide-eyed Wojak variant used to caricature naive enthusiasm, nicknamed for soy milk drinkers.",
+        "status": "established",
+        "sightings_24h": 2,
+        "sightings_7d": 8
+      },
+      "count_24h": 15,
+      "daily_mean_prior": 4.0
+    },
+    {
+      "node": {
+        "id": "swole-doge-vs-cheems",
+        "name": "Swole Doge vs. Cheems",
+        "aliases": [
+          "Buff Doge vs. Cheems"
+        ],
+        "kind": "template",
+        "latin_name": "Comparatio caninus",
+        "image_url": "https://i.imgflip.com/43a45p.png",
+        "image_credit_url": "https://imgflip.com/meme/247375501/Buff-Doge-vs-Cheems",
+        "first_seen": "2020-03-15",
+        "date_precision": "day",
+        "summary": "A two-panel comparison pitting muscular Swole Doge against weak Cheems to mock generational or lifestyle decline.",
+        "status": "established",
+        "sightings_24h": 4,
+        "sightings_7d": 16
+      },
+      "count_24h": 19,
+      "daily_mean_prior": 7.0
+    },
+    {
+      "node": {
+        "id": "yes-chad",
+        "name": "Yes Chad",
+        "aliases": [
+          "Nordic Gamer",
+          "Chad"
+        ],
+        "kind": "character",
+        "latin_name": "Wojakus fortis affirmans",
+        "image_url": "https://i.imgflip.com/4/409a17.jpg",
+        "image_credit_url": "https://imgflip.com/meme/242297611/Yes-Chad",
+        "first_seen": "2018-11-01",
+        "date_precision": "month",
+        "summary": "A square-jawed, confident counterpart to Wojak who answers awkward questions with a flat, proud 'yes'.",
+        "status": "established",
+        "sightings_24h": 2,
+        "sightings_7d": 7
+      },
+      "count_24h": 11,
+      "daily_mean_prior": 3.5
+    },
+    {
+      "node": {
+        "id": "cheems",
+        "name": "Cheems",
+        "aliases": [],
+        "kind": "character",
+        "latin_name": "Canis loquens debilis",
+        "image_url": "https://i.imgflip.com/4/3nzkub.png",
+        "image_credit_url": "https://imgflip.com/meme/221689667/cheems",
+        "first_seen": "2020-03-01",
+        "date_precision": "month",
+        "summary": "A smaller, dumber-looking Shiba Inu derived from Doge, used as the 'weak' side of strength comparisons.",
+        "status": "established",
+        "sightings_24h": 2,
+        "sightings_7d": 9
+      },
+      "count_24h": 13,
+      "daily_mean_prior": 5.0
+    }
+  ],
+  "new_specimens": [
+    {
+      "id": "specimen-chair-doomer",
+      "name": "Unnamed office-chair doomer variant",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus sedentarius incertus",
+      "image_url": "https://i.imgflip.com/4/37i3fq.jpg",
+      "image_credit_url": "https://imgflip.com/meme/194000102/Doomer",
+      "first_seen": "2026-11-10",
+      "date_precision": "day",
+      "summary": "A newly spotted Wojak-style figure slumped in an office chair, recurring across several unrelated posts this week without a settled name yet.",
+      "status": "specimen",
+      "sightings_24h": 6,
+      "sightings_7d": 6
+    },
+    {
+      "id": "specimen-glitch-label",
+      "name": "Unnamed glitch-labelled diagram format",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Forma vitiosa incognita",
+      "image_url": null,
+      "image_credit_url": null,
+      "first_seen": "2026-11-12",
+      "date_precision": "day",
+      "summary": "A newly detected object-labelling layout where the labels themselves appear corrupted or glitched, seen spreading across three platforms.",
+      "status": "specimen",
+      "sightings_24h": 4,
+      "sightings_7d": 4
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "url": "https://www.reddit.com/r/memes/new.json?limit=50",
+  "html": {
+    "requested": false,
+    "success": null,
+    "data": null
+  },
+  "markdown": {
+    "requested": true,
+    "success": false,
+    "data": null,
+    "error_code": "WEBSITE_BLOCKED",
+    "message": "The site served an anti-bot challenge or access wall instead of the page. Retrying later or from another sharedParams.country sometimes succeeds."
+  },
+  "screenshot": {
+    "requested": false,
+    "success": null,
+    "data": null
+  },
+  "images": {
+    "requested": false,
+    "success": null,
+    "data": null
+  },
+  "bytes": {
+    "requested": false,
+    "success": null,
+    "data": null
+  },
+  "parsed": {
+    "requested": false,
+    "success": null,
+    "data": null,
+    "type": "custom"
+  },
+  "highlights": {
+    "requested": false,
+    "success": null,
+    "data": null
+  },
+  "json": {
+    "requested": false,
+    "success": null,
+    "data": null
+  },
+  "product": {
+    "requested": false,
+    "success": null,
+    "data": null
+  },
+  "profile": null,
+  "metadata": {},
+  "request_id": "5311da5b-3a0c-40dd-8d09-6dd33f8502d8",
+  "cache_metadata": {
+    "status": "miss",
+    "age_ms": 0
+  },
+  "key_metadata": {
+    "credits_consumed": 0,
+    "credits_remaining": 50946
+  }
+}

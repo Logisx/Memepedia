@@ -1,0 +1,300 @@
+{
+  "selected_id": "swole-doge-vs-cheems",
+  "nodes": [
+    {
+      "id": "cheems",
+      "name": "Cheems",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Canis loquens debilis",
+      "image_url": "https://i.imgflip.com/4/3nzkub.png",
+      "image_credit_url": "https://imgflip.com/meme/221689667/cheems",
+      "first_seen": "2020-03-01",
+      "date_precision": "month",
+      "summary": "A smaller, dumber-looking Shiba Inu derived from Doge, used as the 'weak' side of strength comparisons.",
+      "status": "established",
+      "sightings_24h": 2,
+      "sightings_7d": 9
+    },
+    {
+      "id": "comparison",
+      "name": "Comparison",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Comparatio duplex",
+      "image_url": null,
+      "image_credit_url": null,
+      "first_seen": "2010-01-01",
+      "date_precision": "year",
+      "summary": "Two-or-more-panel formats that juxtapose options, people or outcomes side by side.",
+      "status": "established",
+      "sightings_24h": 2,
+      "sightings_7d": 9
+    },
+    {
+      "id": "doge",
+      "name": "Doge",
+      "aliases": [
+        "Kabosu"
+      ],
+      "kind": "character",
+      "latin_name": "Canis loquens",
+      "image_url": "https://i.imgflip.com/4/4t0m5.jpg",
+      "image_credit_url": "https://imgflip.com/meme/Doge",
+      "first_seen": "2013-06-01",
+      "date_precision": "month",
+      "summary": "A Shiba Inu photographed with a skeptical sideways glance, captioned in broken 'doge speak' like 'such wow'.",
+      "status": "established",
+      "sightings_24h": 1,
+      "sightings_7d": 6
+    },
+    {
+      "id": "reaction-image",
+      "name": "Reaction Image",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Imago reactionis",
+      "image_url": null,
+      "image_credit_url": null,
+      "first_seen": "2005-01-01",
+      "date_precision": "year",
+      "summary": "A still image, usually a face or character, posted in reply to something to convey a reaction.",
+      "status": "established",
+      "sightings_24h": 4,
+      "sightings_7d": 22
+    },
+    {
+      "id": "swole-doge",
+      "name": "Swole Doge",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Canis loquens validus",
+      "image_url": "https://i.imgflip.com/4/3cqykx.png",
+      "image_credit_url": "https://imgflip.com/meme/202811793/Swole-Doge",
+      "first_seen": "2019-11-01",
+      "date_precision": "month",
+      "summary": "A heavily muscled edit of Doge representing the 'strong, disciplined past' side of a comparison format.",
+      "status": "established",
+      "sightings_24h": 1,
+      "sightings_7d": 4
+    },
+    {
+      "id": "swole-doge-vs-cheems",
+      "name": "Swole Doge vs. Cheems",
+      "aliases": [
+        "Buff Doge vs. Cheems"
+      ],
+      "kind": "template",
+      "latin_name": "Comparatio caninus",
+      "image_url": "https://i.imgflip.com/43a45p.png",
+      "image_credit_url": "https://imgflip.com/meme/247375501/Buff-Doge-vs-Cheems",
+      "first_seen": "2020-03-15",
+      "date_precision": "day",
+      "summary": "A two-panel comparison pitting muscular Swole Doge against weak Cheems to mock generational or lifestyle decline.",
+      "status": "established",
+      "sightings_24h": 4,
+      "sightings_7d": 16
+    },
+    {
+      "id": "virgin-vs-chad",
+      "name": "Virgin vs. Chad",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Comparatio virilis",
+      "image_url": "https://i.imgflip.com/4/3xnk83.jpg",
+      "image_credit_url": "https://imgflip.com/meme/237925155/Virgin-vs-Chad",
+      "first_seen": "2018-08-01",
+      "date_precision": "month",
+      "summary": "A two-column comparison template contrasting an exaggeratedly pathetic 'virgin' with a confident, idealized 'Chad'.",
+      "status": "established",
+      "sightings_24h": 2,
+      "sightings_7d": 8
+    },
+    {
+      "id": "walter",
+      "name": "Walter",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Canis loquens iratus",
+      "image_url": "https://i.imgflip.com/4/3a7v81.jpg",
+      "image_credit_url": "https://imgflip.com/meme/198561745/Walter",
+      "first_seen": "2021-05-01",
+      "date_precision": "month",
+      "summary": "An angry-eyebrowed Shiba Inu variant, named for a short-tempered dog character, used for indignant reactions.",
+      "status": "established",
+      "sightings_24h": 0,
+      "sightings_7d": 2
+    }
+  ],
+  "family_ids": [
+    "doge",
+    "cheems",
+    "swole-doge",
+    "walter"
+  ],
+  "links": [
+    {
+      "child_id": "doge",
+      "parent_id": "reaction-image",
+      "axis": "character",
+      "status": "cited",
+      "quote": "The original Doge photo of the Shiba Inu Kabosu was posted as a reaction image captioned in broken English.",
+      "source_url": "https://knowyourmeme.com/memes/doge",
+      "source_title": "Doge - Know Your Meme"
+    },
+    {
+      "child_id": "cheems",
+      "parent_id": "doge",
+      "axis": "character",
+      "status": "cited",
+      "quote": "Cheems reuses the Doge photo format on a different, smaller-looking Shiba Inu to depict a weaker variant.",
+      "source_url": "https://knowyourmeme.com/memes/cheems",
+      "source_title": "Cheems - Know Your Meme"
+    },
+    {
+      "child_id": "swole-doge",
+      "parent_id": "doge",
+      "axis": "character",
+      "status": "cited",
+      "quote": "Swole Doge edits muscle onto the Doge figure to represent a disciplined, idealized past self.",
+      "source_url": "https://knowyourmeme.com/memes/swole-doge-vs-cheems",
+      "source_title": "Swole Doge vs. Cheems - Know Your Meme"
+    },
+    {
+      "child_id": "walter",
+      "parent_id": "doge",
+      "axis": "character",
+      "status": "inferred",
+      "quote": null,
+      "source_url": null,
+      "source_title": null
+    },
+    {
+      "child_id": "swole-doge-vs-cheems",
+      "parent_id": "swole-doge",
+      "axis": "character",
+      "status": "cited",
+      "quote": "The comparison pairs the muscular Swole Doge against Cheems across its two panels.",
+      "source_url": "https://knowyourmeme.com/memes/swole-doge-vs-cheems",
+      "source_title": "Swole Doge vs. Cheems - Know Your Meme"
+    },
+    {
+      "child_id": "swole-doge-vs-cheems",
+      "parent_id": "comparison",
+      "axis": "format",
+      "status": "inferred",
+      "quote": null,
+      "source_url": null,
+      "source_title": null
+    },
+    {
+      "child_id": "virgin-vs-chad",
+      "parent_id": "comparison",
+      "axis": "format",
+      "status": "cited",
+      "quote": "Virgin vs. Chad set the template for later two-column comparison memes with its contrasting captioned columns.",
+      "source_url": "https://knowyourmeme.com/memes/virgin-vs-chad",
+      "source_title": "Virgin vs. Chad - Know Your Meme"
+    }
+  ],
+  "descent": {
+    "character": [
+      "swole-doge-vs-cheems",
+      "swole-doge",
+      "doge",
+      "reaction-image"
+    ],
+    "format": [
+      "swole-doge-vs-cheems",
+      "comparison"
+    ]
+  },
+  "sightings": [
+    {
+      "id": "s015",
+      "platform": "reddit",
+      "post_url": "https://old.reddit.com/r/memes/comments/2e576/swole_doge_vs_cheems/",
+      "image_url": "https://i.imgflip.com/43a45p.png",
+      "title": "gym bro vs gamer bro",
+      "author": "shibainu_fan",
+      "posted_at": "2026-11-14T15:16:13Z",
+      "node_id": "swole-doge-vs-cheems",
+      "node_name": "Swole Doge vs. Cheems",
+      "state": "resolved"
+    },
+    {
+      "id": "extra-swole-doge-vs-cheems-3",
+      "platform": "imgflip",
+      "post_url": "https://lemmy.ca/post/73835763",
+      "image_url": "https://i.imgflip.com/43a45p.png",
+      "title": "me in 2020 vs me now",
+      "author": "Quilotoa",
+      "posted_at": "2026-11-14T15:12:43Z",
+      "node_id": "swole-doge-vs-cheems",
+      "node_name": "Swole Doge vs. Cheems",
+      "state": "resolved"
+    },
+    {
+      "id": "extra-swole-doge-vs-cheems-0",
+      "platform": "mastodon",
+      "post_url": "https://lemmy.world/post/54213248",
+      "image_url": "https://i.imgflip.com/43a45p.png",
+      "title": "then vs now format strikes again",
+      "author": "BoredGamer",
+      "posted_at": "2026-11-14T15:09:44Z",
+      "node_id": "swole-doge-vs-cheems",
+      "node_name": "Swole Doge vs. Cheems",
+      "state": "resolved"
+    },
+    {
+      "id": "extra-swole-doge-vs-cheems-1",
+      "platform": "lemmy",
+      "post_url": "https://piefed.world/c/memes/p/1523443/so-unfair",
+      "image_url": "https://i.imgflip.com/43a45p.png",
+      "title": "gym bro vs gamer bro",
+      "author": "StillAlive",
+      "posted_at": "2026-11-14T15:05:57Z",
+      "node_id": "swole-doge-vs-cheems",
+      "node_name": "Swole Doge vs. Cheems",
+      "state": "resolved"
+    },
+    {
+      "id": "extra-swole-doge-vs-cheems-2",
+      "platform": "lemmy",
+      "post_url": "https://lemmy.ca/post/73576958",
+      "image_url": "https://i.imgflip.com/43a45p.png",
+      "title": "me in 2020 vs me now",
+      "author": "Quilotoa",
+      "posted_at": "2026-11-14T14:46:23Z",
+      "node_id": "swole-doge-vs-cheems",
+      "node_name": "Swole Doge vs. Cheems",
+      "state": "resolved"
+    }
+  ],
+  "history": [
+    {
+      "id": "h1",
+      "ts": "2026-11-12T16:00:00Z",
+      "type": "cited",
+      "message": "Cited Swole Doge vs. Cheems' character link to Swole Doge.",
+      "source_url": "https://knowyourmeme.com/memes/swole-doge-vs-cheems",
+      "pending": false
+    },
+    {
+      "id": "h2",
+      "ts": "2026-11-10T16:00:00Z",
+      "type": "traced",
+      "message": "Format axis traced to the broader Comparison format class.",
+      "source_url": null,
+      "pending": false
+    },
+    {
+      "id": "h3",
+      "ts": "2026-11-04T16:00:00Z",
+      "type": "cited",
+      "message": "Linked Virgin vs. Chad to Comparison with a citation.",
+      "source_url": "https://knowyourmeme.com/memes/virgin-vs-chad",
+      "pending": false
+    }
+  ]
+}

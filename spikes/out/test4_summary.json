@@ -1,0 +1,81 @@
+[
+  {
+    "child": "Doomer",
+    "parent": "Wojak",
+    "query": "\"Doomer\" \"Wojak\" meme origin",
+    "found": true,
+    "sentence": "# The Evolution of Doomer\n\n### or, how girl Wojaks changed the direction of a meme tradition\n\nJan 02, 2024\n\n\u2219 Paid\n\n6\n\nShare\n\nWhen we look forward, we see darkness around the corner.",
+    "url": "https://howtodothingswithmemes.substack.com/p/the-evolution-of-doomer",
+    "used_short_form": false,
+    "latency_s": 5.91,
+    "credits": "6",
+    "n_results": 5,
+    "domains": [
+      "howtodothingswithmemes.substack.com"
+    ]
+  },
+  {
+    "child": "NPC Wojak",
+    "parent": "Wojak",
+    "query": "\"NPC Wojak\" \"Wojak\" meme origin",
+    "found": true,
+    "sentence": "# NPC Wojak\n\n2016Image macro / exploitable characterclassic\n\nPublished March 10, 2026 \u00b7 Updated March 23, 2026\n\nAlso known as: NPC meme \u00b7 NPC \u00b7 Grey Wojak\n\n**NPC Wojak is a grey, expressionless variant of the Wojak meme character, designed to represent people perceived as lacking independent thought or an inner monologue.** The concept originated on 4chan's /v/ board in July 2016, but the distinctive grey-faced visual didn't appear until September 2018, when it exploded into one of the most politically charged memes of the Trump era[1](https://meme.com/memes/npc-wojak#ref-1).",
+    "url": "https://meme.com/memes/npc-wojak",
+    "used_short_form": false,
+    "latency_s": 21.18,
+    "credits": "4",
+    "n_results": 5,
+    "domains": [
+      "meme.com"
+    ]
+  },
+  {
+    "child": "Cheems",
+    "parent": "Doge",
+    "query": "\"Cheems\" \"Doge\" meme origin",
+    "found": true,
+    "sentence": "# Cheems\n\n2019Image macro / multi-panel comic / reaction imagesemi-active\n\nPublished March 10, 2026 \u00b7 Updated March 16, 2026\n\nAlso known as: Balltze \u00b7 Ball Ball \u00b7 Cheemsburger\n\n**Cheems is an ironic Doge character based on a Shiba Inu named Balltze, known for humorously misspelling words by adding extra \"m\" letters, most famously saying \"cheemsburbger\" instead of \"cheeseburger.\" The meme originated on Reddit's r/dogelore subreddit in June 2019 and quickly spread across social media, spawning formats like Swole Doge vs.",
+    "url": "https://meme.com/memes/cheems",
+    "used_short_form": false,
+    "latency_s": 6.13,
+    "credits": "5",
+    "n_results": 5,
+    "domains": [
+      "meme.com"
+    ]
+  },
+  {
+    "child": "Swole Doge vs. Cheems",
+    "parent": "Virgin vs. Chad",
+    "query": "\"Swole Doge vs. Cheems\" \"Virgin vs. Chad\" meme origin",
+    "found": false,
+    "sentence": null,
+    "url": null,
+    "used_short_form": false,
+    "latency_s": 3.36,
+    "credits": "5",
+    "n_results": 5,
+    "domains": [
+      "gurus.dedyn.io",
+      "mememoe.com",
+      "portal.intuition.systems",
+      "grokipedia.com",
+      "meme.com"
+    ]
+  },
+  {
+    "child": "Trollface",
+    "parent": "Rage Comics",
+    "query": "\"Trollface\" \"Rage Comics\" meme origin",
+    "found": true,
+    "sentence": "Search interest for Rage Guy, Rage Comics and Trollface peaked around February 2012.",
+    "url": "https://memepulse.net/meme/rage-comics",
+    "used_short_form": false,
+    "latency_s": 6.08,
+    "credits": "6",
+    "n_results": 5,
+    "domains": [
+      "memepulse.net"
+    ]
+  }
+]
