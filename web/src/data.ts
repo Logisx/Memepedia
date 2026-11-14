@@ -216,8 +216,11 @@ export async function trace(
   signal?: AbortSignal,
 ): Promise<void> {
   if (usingFixtures) {
+    // delay_ms in trace-sample.json rises from step to step, so it is the offset from the
+    // start of the trace, not the gap since the previous event.
+    const startedAt = Date.now()
     for (const step of requireFixture<TraceStep[]>('trace-sample')) {
-      await sleep(step.delay_ms)
+      await sleep(Math.max(0, step.delay_ms - (Date.now() - startedAt)))
       if (signal?.aborted) return
       onEvent(step.event)
     }

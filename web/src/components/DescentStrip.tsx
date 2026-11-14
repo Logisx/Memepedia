@@ -18,10 +18,12 @@ interface Props {
   descent: string[]
   nodesById: Map<string, MemeNode>
   links: Link[]
+  /** While a trace is running, inferred links read "checking the web…" instead of "citation needed". */
+  checking?: boolean
 }
 
 /** The line of descent: oldest on the left, the selected meme on the right. */
-export function DescentStrip({ axis, descent, nodesById, links }: Props) {
+export function DescentStrip({ axis, descent, nodesById, links, checking = false }: Props) {
   const ordered = [...descent].reverse() // oldest first
   const count = ordered.length
 
@@ -48,7 +50,7 @@ export function DescentStrip({ axis, descent, nodesById, links }: Props) {
                 animate={{ opacity: 1 }}
                 transition={{ delay: delay + 0.25, duration: 0.4 }}
               >
-                <LinkConnector link={link} />
+                <LinkConnector link={link} checking={checking} />
               </motion.div>
             )}
             <motion.div
