@@ -37,3 +37,28 @@ a {
   border-color: var(--color-rule);
   border-width: 1px;
 }
+
+/* Playful pop on the Sensitive toggle's emoji; skipped when motion is reduced. */
+@keyframes emoji-wiggle {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-18deg) scale(1.25);
+  }
+  50% {
+    transform: rotate(14deg) scale(1.25);
+  }
+  75% {
+    transform: rotate(-8deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-emoji-wiggle {
+    animation: emoji-wiggle 0.4s ease-in-out;
+  }
+}

@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { BrowserRouter, Link, NavLink, Route, Routes } from 'react-router'
 import { setShowSensitive, useShowSensitive } from './hooks/useShowSensitive'
 import Lineage from './screens/Lineage'
@@ -8,14 +9,29 @@ import Wall from './screens/Wall'
 
 function SensitiveToggle() {
   const showSensitive = useShowSensitive()
+  const [wiggling, setWiggling] = useState(false)
+  const wiggleTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  const toggle = () => {
+    setShowSensitive(!showSensitive)
+    setWiggling(true)
+    clearTimeout(wiggleTimer.current)
+    wiggleTimer.current = setTimeout(() => setWiggling(false), 400)
+  }
+
   return (
     <button
       type="button"
       aria-pressed={showSensitive}
-      onClick={() => setShowSensitive(!showSensitive)}
-      className="font-type ml-auto shrink-0 border border-ink px-2 py-1 text-sm uppercase tracking-widest hover:bg-paper-deep"
+      aria-label={showSensitive ? 'Hide sensitive memes' : 'Show sensitive memes'}
+      title={showSensitive ? 'Hide sensitive memes' : 'Show sensitive memes'}
+      onClick={toggle}
+      className="font-type ml-auto flex shrink-0 items-center gap-1.5 border border-ink px-2 py-1 text-sm uppercase tracking-widest hover:bg-paper-deep"
     >
-      Sensitive: {showSensitive ? 'shown' : 'hidden'}
+      <span aria-hidden className={wiggling ? 'animate-emoji-wiggle inline-block' : 'inline-block'}>
+        {showSensitive ? '👀' : '🙈'}
+      </span>
+      Sensitive
     </button>
   )
 }
