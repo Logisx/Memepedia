@@ -235,3 +235,97 @@ def test_wall_since_semantics(client: TestClient) -> None:
     assert third.status_code == 200
     ids = {s["id"] for s in third.json()["sightings"]}
     assert store.sighting_id("https://example.test/since-semantics-post") in ids
+
+
+def test_wall_endpoint_carries_a_next_before_cursor(client: TestClient) -> None:
+    response = client.get("/api/wall", params={"limit": 5})
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["sightings"]) == 5
+    assert body["next_before"] is not None
+
+
+def test_wall_before_pagination_walks_backwards_without_duplicates_or_gaps(
+    client: TestClient,
+) -> None:
+    whole = client.get("/api/wall", params={"limit": 1000})
+    assert whole.status_code == 200
+    all_ids = [s["id"] for s in whole.json()["sightings"]]
+    assert len(all_ids) >= 6, "need enough sightings in the test database to page through"
+
+    page_size = max(1, len(all_ids) // 3)
+    seen: list[str] = []
+    before: str | None = None
+    for _ in range(len(all_ids) + 1):  # generous bound against an infinite loop on a bug
+        params = {"limit": page_size}
+        if before is not None:
+            params["before"] = before
+        page = client.get("/api/wall", params=params)
+        assert page.status_code == 200
+        body = page.json()
+        seen.extend(s["id"] for s in body["sightings"])
+        before = body["next_before"]
+        if before is None:
+            break
+    else:
+        raise AssertionError("before pagination never exhausted the wall")
+
+    assert seen == all_ids, "paged-through ids must match the single-shot order exactly, in order"
+    assert len(seen) == len(set(seen)), "no sighting should be returned twice across pages"
+
+
+def test_wall_before_rejects_a_garbage_cursor(client: TestClient) -> None:
+    response = client.get("/api/wall", params={"before": "not-a-cursor"})
+    assert response.status_code == 400
+    assert "error" in response.json()
+
+    response = client.get("/api/wall", params={"before": "2020-01-01T00:00:00+00:00"})
+    assert response.status_code == 400
+
+
+def test_wall_before_caps_the_limit_at_100(client: TestClient) -> None:
+    first_page = client.get("/api/wall", params={"limit": 1})
+    assert first_page.status_code == 200
+    cursor = first_page.json()["next_before"]
+    assert cursor is not None
+
+    response = client.get("/api/wall", params={"before": cursor, "limit": 10_000})
+    assert response.status_code == 200
+    assert len(response.json()["sightings"]) <= 100
+
+
+def test_wall_order_is_deterministic_for_same_posted_at(client: TestClient) -> None:
+    tied_at = datetime(2021, 6, 1, 12, 0, 0, tzinfo=UTC)
+    ids = []
+    for name in ("tie-a", "tie-b", "tie-c"):
+        sid = store.insert_sighting(
+            Post(
+                platform="lemmy",
+                source="test",
+                post_url=f"https://example.test/order-tiebreak-{name}",
+                image_url="https://example.test/img.jpg",
+                title=name,
+                author="tester",
+                posted_at=tied_at,
+            ),
+            None,
+            "doomer",
+            "resolved",
+            nsfw=False,
+        )
+        assert sid is not None
+        ids.append(sid)
+    try:
+        first = client.get("/api/wall", params={"limit": 1000})
+        assert first.status_code == 200
+        order = [s["id"] for s in first.json()["sightings"] if s["id"] in ids]
+        assert order == sorted(ids, reverse=True), "ties on posted_at must break on id DESC"
+
+        # Running the same query twice gives the same order (nothing depends on scan order).
+        second = client.get("/api/wall", params={"limit": 1000})
+        order2 = [s["id"] for s in second.json()["sightings"] if s["id"] in ids]
+        assert order2 == order
+    finally:
+        db.execute(
+            "DELETE FROM sightings WHERE post_url LIKE 'https://example.test/order-tiebreak-%%'"
+        )

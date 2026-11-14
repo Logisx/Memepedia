@@ -78,6 +78,10 @@ interface WallMock {
   visible: Dripped[]
   held: Sighting[]
   nextReleaseAt: number
+  /** ms added to every fixture timestamp to keep the mock looking live; also anchors older history. */
+  shift: number
+  /** posted_at (ms, shifted) of the oldest sighting in `visible`: older-history pages start just before this. */
+  oldestMs: number
 }
 
 let wallMock: WallMock | undefined
@@ -91,6 +95,7 @@ function startWallMock(): WallMock {
   const visible = newestFirst.slice(HELD_BACK)
   const now = Date.now()
   const newest = visible[0]
+  const oldest = visible[visible.length - 1] ?? newest
   const shift = newest ? now - NEWEST_AGE_MS - Date.parse(newest.posted_at) : 0
   return {
     visible: visible.map((s) => ({
@@ -99,6 +104,8 @@ function startWallMock(): WallMock {
     })),
     held,
     nextReleaseAt: now + nextDelay(),
+    shift,
+    oldestMs: oldest ? Date.parse(oldest.posted_at) + shift : now,
   }
 }
 
@@ -122,6 +129,52 @@ function mockWall(since: string | undefined, limit: number): WallResponse {
     sightings: fresh.slice(0, limit).map((d) => d.sighting),
     server_time: new Date(now).toISOString(),
     sources_watched: requireFixture<WallResponse>('wall').sources_watched,
+    // Every response carries a cursor for the page just older than the oldest visible
+    // sighting; it never changes, since the live poll's `since` only ever reveals newer ones.
+    next_before: OLDER_CURSOR_PREFIX + '0',
+  }
+}
+
+/* ---------- wall (mock older-history pagination) ---------- */
+
+// Synthetic history behind the fixtures, so scrolling the mock wall down keeps loading
+// older pages for a while instead of running out after ~30 tiles. It is still finite, so
+// the "end of wall" state is reachable in fixtures mode too.
+const OLDER_CURSOR_PREFIX = 'mock-before:'
+const OLDER_HISTORY_REPEATS = 4
+const OLDER_GAP_MS = { min: 45_000, max: 150_000 }
+
+let olderHistory: Sighting[] | undefined
+
+/** Older-than-the-fixtures sightings, newest first, built once from the fixture data looped
+ * backwards in time so the mock wall has enough depth to exercise infinite scroll. */
+function buildOlderHistory(anchorMs: number): Sighting[] {
+  const base = [...requireFixture<WallResponse>('wall').sightings].sort((a, b) =>
+    b.posted_at.localeCompare(a.posted_at),
+  )
+  const out: Sighting[] = []
+  let cursor = anchorMs
+  for (let page = 0; page < OLDER_HISTORY_REPEATS; page++) {
+    for (const s of base) {
+      cursor -= OLDER_GAP_MS.min + Math.random() * (OLDER_GAP_MS.max - OLDER_GAP_MS.min)
+      out.push({ ...s, id: `${s.id}-hist-${page}`, posted_at: new Date(cursor).toISOString() })
+    }
+  }
+  return out
+}
+
+function mockWallBefore(before: string, limit: number): WallResponse {
+  wallMock ??= startWallMock()
+  olderHistory ??= buildOlderHistory(wallMock.oldestMs)
+  const index = Number(before.slice(OLDER_CURSOR_PREFIX.length))
+  const start = Number.isFinite(index) && index >= 0 ? index : 0
+  const page = olderHistory.slice(start, start + limit)
+  const nextIndex = start + limit
+  return {
+    sightings: page,
+    server_time: new Date().toISOString(),
+    sources_watched: requireFixture<WallResponse>('wall').sources_watched,
+    next_before: nextIndex < olderHistory.length ? OLDER_CURSOR_PREFIX + String(nextIndex) : null,
   }
 }
 
@@ -133,6 +186,17 @@ export async function getWall(since?: string, limit = 60, sensitive = false): Pr
   if (usingFixtures) return mockWall(since, limit)
   const params = new URLSearchParams({ limit: String(limit) })
   if (since) params.set('since', since)
+  if (sensitive) params.set('sensitive', 'true')
+  return request<WallResponse>(`/api/wall?${params}`)
+}
+
+/**
+ * Sightings older than `before` (a `WallResponse.next_before` cursor), for infinite scroll.
+ * `sensitive: true` asks the backend to include nsfw (true or unlabelled) sightings too.
+ */
+export async function getOlderWall(before: string, limit = 60, sensitive = false): Promise<WallResponse> {
+  if (usingFixtures) return mockWallBefore(before, limit)
+  const params = new URLSearchParams({ before, limit: String(limit) })
   if (sensitive) params.set('sensitive', 'true')
   return request<WallResponse>(`/api/wall?${params}`)
 }

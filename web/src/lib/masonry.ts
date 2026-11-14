@@ -1,6 +1,10 @@
 import type { Sighting } from '@contract/types'
 
-export const MAX_TILES = 120
+// The wall is meant to feel near-infinite: tiles never disappear as new ones arrive, and
+// older posts load in as the viewer scrolls down. This is only a memory guard against an
+// unbounded session running for days without a refresh; in practice nobody scrolls (or
+// stays on the page) long enough to reach it.
+export const MAX_TILES = 2000
 
 export interface MasonryState {
   byId: Map<string, Sighting>
@@ -46,6 +50,37 @@ function prune(state: MasonryState): MasonryState {
 /** Rebuild from scratch, e.g. when the number of columns changes. */
 export function relayout(state: MasonryState, count: number): MasonryState {
   return { byId: state.byId, columns: distribute([...state.byId.values()].sort(byNewest), count) }
+}
+
+/** The column with the fewest tiles (an empty column wins), used to balance appended pages. */
+function shortestColumn(columns: string[][]): number {
+  let best = 0
+  let bestLen = Infinity
+  columns.forEach((col, i) => {
+    if (col.length < bestLen) {
+      best = i
+      bestLen = col.length
+    }
+  })
+  return best
+}
+
+/**
+ * Append an older page to the bottom of columns, without reshuffling any tile already
+ * placed. Each new tile goes to the shortest column so columns stay roughly balanced.
+ */
+export function appendOlder(state: MasonryState, incoming: Sighting[]): MasonryState {
+  const fresh = incoming.filter((s) => !state.byId.has(s.id))
+  if (fresh.length === 0) return state
+  const byId = new Map(state.byId)
+  fresh.forEach((s) => byId.set(s.id, s))
+  const columns = state.columns.map((col) => [...col])
+  if (columns.length === 0) columns.push([])
+  // incoming is newest-first; keep that order when appended to the bottom of a column.
+  for (const s of fresh) {
+    columns[shortestColumn(columns)]?.push(s.id)
+  }
+  return prune({ byId, columns })
 }
 
 /** Add sightings. The first batch is dealt out by age; later arrivals drop in at the top of one column. */

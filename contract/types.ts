@@ -84,12 +84,17 @@ export interface HistoryItem {
   pending: boolean;
 }
 
-/** GET /api/wall?since=<iso>&limit=60 */
+/** GET /api/wall?since=<iso>&limit=60, or GET /api/wall?before=<cursor>&limit=N for older pages */
 export interface WallResponse {
   sightings: Sighting[];
   /** Pass back as `since` on the next poll. */
   server_time: string;
   sources_watched: number;
+  /**
+   * Opaque cursor for the page just older than this one; pass it back as `before`.
+   * Null once there are no more older sightings. `limit` is capped at 100 when `before` is used.
+   */
+  next_before: string | null;
 }
 
 /** GET /api/nodes?q=<text>&limit=20 (empty q returns a popular mix) */

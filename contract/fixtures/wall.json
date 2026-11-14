@@ -522,5 +522,6 @@
     }
   ],
   "server_time": "2026-11-14T16:00:00Z",
-  "sources_watched": 37
+  "sources_watched": 37,
+  "next_before": null
 }
