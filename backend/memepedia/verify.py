@@ -25,6 +25,8 @@ _MAX_PER_PAGE = 4
 
 _HEADING_RE = re.compile(r"^\s*#{1,6}\s*")
 _IMAGE_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
+_FOOTNOTE_ANCHOR = r"(?:cite_note|cite_ref|ref|fn|footnote)-"
+_FOOTNOTE_LINK_RE = re.compile(r"\[\\?\[?\d{1,3}\\?\]?\]\([^)]*" + _FOOTNOTE_ANCHOR + r"[^)]*\)")
 _LINK_RE = re.compile(r"\[([^\]]*)\]\([^)]*\)")
 _EMPHASIS_RE = re.compile(r"(\*{1,3}|_{1,3}|`)")
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
@@ -57,6 +59,7 @@ def clean_text(markdown: str) -> str:
     """The page as plain text: drop images, link targets, heading/emphasis marks, HTML, tables."""
     text = _FRONT_MATTER_RE.sub("", markdown)
     text = _IMAGE_RE.sub("", text)
+    text = _FOOTNOTE_LINK_RE.sub("", text)
     text = _LINK_RE.sub(r"\1", text)
     text = _HTML_TAG_RE.sub("", text)
     lines = []

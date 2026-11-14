@@ -47,6 +47,49 @@ def test_clean_text_keeps_link_text_but_not_target() -> None:
     assert "example.com/wojak" not in cleaned
 
 
+def test_clean_text_drops_meme_com_style_footnote_link() -> None:
+    markdown = (
+        "First posted to 4chan's /biz/ board in September 2018"
+        "[3](https://meme.com/memes/x#ref-3), the character quickly spread."
+    )
+    cleaned = verify.clean_text(markdown)
+    assert "September 2018, the character" in cleaned
+    assert "20183" not in cleaned
+
+
+def test_clean_text_drops_footnote_link_at_end_of_sentence() -> None:
+    markdown = (
+        "that took hold on 4chan's /biz/ board in mid-2017[2](https://meme.com/memes/x#ref-2)."
+    )
+    cleaned = verify.clean_text(markdown)
+    assert cleaned.strip() == "that took hold on 4chan's /biz/ board in mid-2017."
+    assert "20172" not in cleaned
+
+
+def test_clean_text_drops_wikipedia_style_footnote_link() -> None:
+    markdown = (
+        "a stereotypical Generation Z teenager or young adult"
+        "[\\[3\\]](https://en.wikipedia.org/wiki/X#cite_note-3)."
+    )
+    cleaned = verify.clean_text(markdown)
+    assert cleaned.strip() == "a stereotypical Generation Z teenager or young adult."
+
+
+def test_clean_text_keeps_non_footnote_numeric_link() -> None:
+    markdown = "Read the comments. [0](https://memepulse.net/meme/rage-comics#comments)"
+    cleaned = verify.clean_text(markdown)
+    assert "0" in cleaned
+
+
+def test_clean_text_preserves_legitimate_glued_digits() -> None:
+    markdown = (
+        "Posted on 4chan in 2018, the meme spread via Web3 forums, MP3 rips, "
+        "Covid19 jokes, and a 9gag repost."
+    )
+    cleaned = verify.clean_text(markdown)
+    assert cleaned.strip() == markdown
+
+
 def test_split_sentences_does_not_glue_heading_to_next_paragraph() -> None:
     cleaned = verify.clean_text(MESSY_MARKDOWN)
     sentences = verify.split_sentences(cleaned)
