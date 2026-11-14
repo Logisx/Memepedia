@@ -1,26 +1,37 @@
-"""The public Memepedia API: exactly the contract's GET routes."""
+"""The public Memepedia API: the contract's routes plus the Context.dev webhook."""
 
 from __future__ import annotations
 
+import json
 import logging
-from collections.abc import AsyncGenerator
+import threading
+import time
+from collections import deque
+from collections.abc import AsyncGenerator, Iterator
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
-from memepedia import db, graph, store
+from memepedia import db, graph, live, store, trace
+from memepedia.config import get_settings
+from memepedia.llm import LLMError
 from memepedia.models import (
     Descent,
+    IdentifyResponse,
     Kind,
     Link,
     NodesResponse,
+    ProposalRequest,
+    ProposalResponse,
     RandomResponse,
     RelatedResponse,
+    TraceEvent,
+    TraceRequest,
     TreeResponse,
     WallResponse,
     WeekResponse,
@@ -28,6 +39,8 @@ from memepedia.models import (
 from memepedia.sources import FEEDS
 
 log = logging.getLogger("memepedia.api")
+
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
 
 @asynccontextmanager
@@ -162,6 +175,100 @@ def get_related(a: str, b: str) -> RelatedResponse:
 def get_week() -> WeekResponse:
     """Rising families and newly detected specimens."""
     return WeekResponse(rising=store.rising(), new_specimens=store.new_specimens())
+
+
+class _Budget:
+    """A shared allowance of calls per minute, so a looping client cannot drain paid quotas."""
+
+    def __init__(self, limit: int, window_s: float = 60.0) -> None:
+        self._limit = limit
+        self._window_s = window_s
+        self._calls: deque[float] = deque()
+        self._lock = threading.Lock()
+
+    def take(self) -> None:
+        """Count one call, or refuse with a 429 when the minute's allowance is spent."""
+        now = time.monotonic()
+        with self._lock:
+            while self._calls and now - self._calls[0] > self._window_s:
+                self._calls.popleft()
+            if len(self._calls) >= self._limit:
+                raise HTTPException(429, "The archive is busy. Try again in a minute.")
+            self._calls.append(now)
+
+
+_trace_budget = _Budget(12)
+_identify_budget = _Budget(20)
+_proposal_budget = _Budget(12)
+_seen_deliveries: deque[str] = deque(maxlen=500)
+
+
+def _sse(events: Iterator[TraceEvent]) -> Iterator[str]:
+    for event in events:
+        yield f"data: {event.model_dump_json()}\n\n"
+
+
+@app.post("/api/trace")
+def post_trace(body: TraceRequest) -> StreamingResponse:
+    """Trace a meme's lineage; the events arrive as a server-sent stream."""
+    query = body.query.strip()
+    if not query:
+        raise HTTPException(400, "Name a meme to trace.")
+    _trace_budget.take()
+    headers = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+    return StreamingResponse(
+        _sse(trace.trace(query)), media_type="text/event-stream", headers=headers
+    )
+
+
+@app.post("/api/identify", response_model=IdentifyResponse)
+def post_identify(image: UploadFile) -> IdentifyResponse:
+    """Name the meme in an uploaded image, or say what to trace instead."""
+    _identify_budget.take()
+    data = image.file.read(MAX_UPLOAD_BYTES + 1)
+    try:
+        return live.identify(data, image.content_type or "")
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    except LLMError as exc:
+        raise HTTPException(503, "The archive could not look at that image. Try again.") from exc
+
+
+@app.post("/api/proposals", response_model=ProposalResponse)
+def post_proposal(body: ProposalRequest) -> ProposalResponse:
+    """Check a visitor's source for a sentence that supports one of the node's links."""
+    _proposal_budget.take()
+    try:
+        return trace.propose(body.node_id, body.url.strip(), body.note.strip())
+    except LookupError as exc:
+        raise HTTPException(404, "Unknown node.") from exc
+
+
+def _webhook_payload(raw: bytes) -> dict[str, Any]:
+    try:
+        payload = json.loads(raw)
+    except ValueError as exc:
+        raise HTTPException(400, "Invalid webhook body.") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(400, "Invalid webhook body.")
+    return payload
+
+
+@app.post("/api/webhooks/context")
+async def post_context_webhook(request: Request, background: BackgroundTasks) -> dict[str, bool]:
+    """A Context.dev monitor fired: look at that feed now, after answering quickly."""
+    raw = await request.body()
+    secret = get_settings().webhook_secret
+    signature = request.headers.get("X-Context-Signature", "")
+    if secret and not live.verify_signature(raw, signature, secret):
+        raise HTTPException(401, "Bad webhook signature.")
+    payload = _webhook_payload(raw)
+    event_id = request.headers.get("X-Context-Id") or str(payload.get("id") or "")
+    if event_id and event_id in _seen_deliveries:
+        return {"ok": True}
+    _seen_deliveries.append(event_id)
+    background.add_task(live.handle_webhook, payload)
+    return {"ok": True}
 
 
 @app.get("/api/health")
