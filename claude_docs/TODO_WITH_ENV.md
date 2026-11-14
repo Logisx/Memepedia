@@ -18,8 +18,7 @@ Needs on that machine: `uv`, `.env` at the repo root, Modal access to the
       them. If that matters, copy the aliases out first (`SELECT id, aliases FROM nodes`).
 - [ ] Note the Context.dev credit balance (dashboard) and `backend/.data/credits.jsonl` total.
 - [ ] `git pull` on `bugfix/various-fixes`; from `backend/` run `uv run pytest -q`, `uv run ruff check .`,
-      `uv run mypy memepedia scripts`. Expect 5 known failures in `tests/test_trace.py` (they call
-      Gemini; with a key in `.env` they may pass instead).
+      `uv run mypy memepedia scripts`. Expect all 265 tests to pass on Linux/WSL.
 
 ## 1. Put the new families in the archive
 

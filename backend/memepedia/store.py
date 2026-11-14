@@ -454,6 +454,22 @@ def pending_sightings(hours: int = 72) -> list[db.Row]:
     )
 
 
+def delete_nodes(ids: Sequence[str]) -> int:
+    """Delete these nodes; their links and history go with them.
+
+    Sightings attached to them are kept but become unclassified, because a resolved sighting
+    may not lose its node. Returns the number of nodes removed.
+    """
+    if not ids:
+        return 0
+    with db.connection() as conn:
+        conn.execute(
+            "UPDATE sightings SET node_id = NULL, state = 'unclassified' WHERE node_id = ANY(%s)",
+            (list(ids),),
+        )
+        return conn.execute("DELETE FROM nodes WHERE id = ANY(%s)", (list(ids),)).rowcount
+
+
 def pending_with_vision(hours: int | None = None) -> list[db.Row]:
     """Pending sightings that carry a saved vision label (id, vision), oldest first.
 

@@ -322,3 +322,37 @@ def test_set_sighting_nsfw_and_needing_label(client: TestClient) -> None:
         assert sid in relabel_ids
     finally:
         db.execute("DELETE FROM sightings WHERE id = %s", (sid,))
+
+
+def test_delete_nodes_keeps_their_sightings_as_unclassified(client: TestClient) -> None:
+    store.upsert_node(
+        MemeNode(
+            id="delete-nodes-test",
+            name="Delete Nodes Test",
+            aliases=[],
+            kind="character",
+            latin_name=None,
+            image_url=None,
+            image_credit_url=None,
+            first_seen=None,
+            date_precision=None,
+            summary=None,
+            status="specimen",
+            sightings_24h=0,
+            sightings_7d=0,
+            nsfw=None,
+        )
+    )
+    sid = store.insert_sighting(
+        _post("https://x.test/delete-nodes-sighting"), None, "delete-nodes-test", "resolved"
+    )
+    assert sid is not None
+    try:
+        assert store.delete_nodes(["delete-nodes-test", "no-such-node"]) == 1
+        assert store.delete_nodes([]) == 0
+        assert store.get_node("delete-nodes-test") is None
+        row = db.fetch_one("SELECT state, node_id FROM sightings WHERE id = %s", (sid,))
+        assert row == {"state": "unclassified", "node_id": None}
+    finally:
+        db.execute("DELETE FROM sightings WHERE id = %s", (sid,))
+        db.execute("DELETE FROM nodes WHERE id = 'delete-nodes-test'")

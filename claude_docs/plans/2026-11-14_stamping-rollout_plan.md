@@ -91,6 +91,10 @@ re-stamped where that is right.
       `descent.character` is `["rickroll", "duckroll", "reaction-image"]`. List the new nodes with no
       `image_url` for the owner.
 
+- [ ] Ask the owner about the orphan `big-bird-in-a-meeting` (no links, image or date; the code bug that
+      made it is fixed in this branch). If they agree, delete it with `store.delete_nodes(["big-bird-in-a-meeting"])`
+      (a one-off `uv run python -` snippet) and say so in the report. Its sightings, if any, become unclassified.
+
 ### 4. Cite the new links (optional, costs credits)  — CHECKPOINT B
 
 - [ ] Ask the owner whether to spend credits (about 6 to 7 per link, roughly 250 to 300 for all 43; the
@@ -105,8 +109,7 @@ re-stamped where that is right.
 ### 5. Open the PR
 
 - [ ] `git push -u origin bugfix/various-fixes`; `gh pr create --base main --head bugfix/various-fixes`
-      with a short description of the two changes, the test result (258 passed, 5 known failures that
-      call Gemini), and the new `VISION_*` settings. Do not add attribution lines to the description
+      with a short description of the two changes, the test result (265 passed), and the new `VISION_*` settings. Do not add attribution lines to the description
       unless the owner asks.
 
 ### 6. Merge into `main`  — CHECKPOINT C
@@ -184,8 +187,7 @@ re-stamped where that is right.
 
 Give the owner a short summary: nodes and links added; images found and missing; credits spent against
 the 350 budget; the deployed commit; the two measurement results; how many sightings were re-stamped by
-`exact`, `near` and `subject`; anything skipped or failing (for example the 5 known `test_trace.py`
-failures); and a list of things still open from `claude_docs/TODO_WITH_ENV.md` (overnight clock,
+`exact`, `near` and `subject`; anything skipped or failing; and a list of things still open from `claude_docs/TODO_WITH_ENV.md` (overnight clock,
 Context.dev monitors, week backfill, Imgflip top 100). Update `claude_docs/STATUS.md` with what is now
 live and commit it.
 

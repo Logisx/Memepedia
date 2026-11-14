@@ -31,6 +31,12 @@ def _db() -> None:
     db.init_schema()
 
 
+@pytest.fixture(autouse=True)
+def _no_llm_name_matching(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A near name would be put to the real Gemini; answer "new" unless a test says otherwise."""
+    monkeypatch.setattr(llm, "same_or_new", lambda *args, **kwargs: None)
+
+
 @pytest.fixture
 def cleanup() -> Iterator[list[str]]:
     ids: list[str] = []
@@ -211,6 +217,31 @@ def test_materialise_rejects_a_younger_parent(cleanup: list[str]) -> None:
     )
     trace.materialise(draft)
     assert store.get_link(child.id, "character") is None
+
+
+def test_materialise_leaves_nothing_behind_when_it_cannot_place_the_meme(
+    cleanup: list[str],
+) -> None:
+    keep = _make(cleanup, _node("t-keep-a", "Test Keep A"))
+    draft = DraftChain(
+        subject="Orphan Test Subject",
+        known=True,
+        nodes=[
+            _draft_node("Orphan Test Subject", kind="template"),
+            _draft_node("Orphan Test Parent"),
+            _draft_node(keep.name, existing_id=keep.id),
+        ],
+        links=[
+            DraftLink(child="Orphan Test Subject", parent="Orphan Test Parent", axis="character"),
+            DraftLink(child="Orphan Test Parent", parent=keep.name, axis="character"),
+        ],
+    )
+    cleanup.extend(["orphan-test-subject", "orphan-test-parent"])
+    assert trace.materialise(draft) is None  # no format-class root anywhere in the draft
+    assert store.get_node("orphan-test-subject") is None
+    assert store.get_node("orphan-test-parent") is None
+    assert store.get_node(keep.id) is not None  # nodes that already existed are never touched
+    assert store.get_link("orphan-test-parent", "character") is None
 
 
 def test_materialise_attaches_rootless_chain_to_named_root(cleanup: list[str]) -> None:
