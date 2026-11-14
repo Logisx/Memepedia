@@ -1,6 +1,7 @@
 # To do: things only someone with the repo-root `.env` can do
 
-Written 2026-11-14. These steps cover the stamping change (branch `bugfix/various-fixes`) and the
+Written 2026-11-14. A Claude session can do all of this by following
+`claude_docs/plans/2026-11-14_stamping-rollout_plan.md`. These steps cover the stamping change (branch `bugfix/various-fixes`) and the
 new seed families. Anything run from `backend/` with a `.env` holding `DATABASE_URL` hits the
 **hosted production database**. Do the steps in order.
 
