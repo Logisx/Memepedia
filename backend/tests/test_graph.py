@@ -260,3 +260,30 @@ def test_lineage_of_an_orphan_and_of_a_cycle() -> None:
     assert graph.lineage([], "orphan") == ["orphan"]
     looped = [link("a", "b"), link("b", "a", "format")]
     assert graph.lineage(looped, "a") == ["a", "b"]
+
+
+def test_family_links_follow_the_order_of_the_families_named() -> None:
+    links = [
+        link("pepe", "drawn-character"),
+        link("wojak", "drawn-character"),
+        link("doomer", "wojak"),
+        link("doomer", "comparison", "format"),
+        link("sad-frog", "pepe"),
+    ]
+    kinds: dict[str, Kind] = {
+        "drawn-character": "format_class",
+        "comparison": "format_class",
+        "wojak": "character",
+        "doomer": "character",
+        "pepe": "character",
+        "sad-frog": "character",
+    }
+    picked = graph.family_links(links, kinds, ["wojak", "pepe"])
+    assert [(item.child_id, item.axis) for item in picked] == [
+        ("wojak", "character"),
+        ("doomer", "character"),
+        ("doomer", "format"),
+        ("pepe", "character"),
+        ("sad-frog", "character"),
+    ]
+    assert graph.family_links(links, kinds, ["wojak", "doomer"]) == picked[:3]

@@ -94,6 +94,17 @@ def family_ids(links: Sequence[Link], kinds: Mapping[str, Kind], node_id: str) -
     return result
 
 
+def family_links(
+    links: Sequence[Link], kinds: Mapping[str, Kind], heads: Sequence[str]
+) -> list[Link]:
+    """Every link whose child is in one of the named families, family by family, none twice."""
+    picked: list[Link] = []
+    for head in heads:
+        members = set(family_ids(links, kinds, head))
+        picked += [item for item in links if item.child_id in members and item not in picked]
+    return picked
+
+
 def common_ancestor(links: Sequence[Link], a_id: str, b_id: str, axis: Axis) -> AncestorPath | None:
     """The first id shared by descent(a) and descent(b), with the paths up to it inclusive."""
     if a_id == b_id:

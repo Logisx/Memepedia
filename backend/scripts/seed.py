@@ -1,7 +1,9 @@
 """Build the real archive: curated families, Imgflip templates, images, and link verification.
 
 Usage: uv run python scripts/seed.py [--reset] [--steps families,templates,images,verify]
-       [--limit N] [--workers N]
+       [--limit N] [--workers N] [--families wojak,doge]
+
+`--families` narrows the verify step to the links of those families, in the order given.
 """
 
 from __future__ import annotations
@@ -15,7 +17,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from memepedia import contextdev, db, images, llm, resolver, store, trace, verify
+from memepedia import contextdev, db, graph, images, llm, resolver, store, trace, verify
 from memepedia.contextdev import ContextDevError
 from memepedia.llm import LLMError
 from memepedia.models import DraftChain, Link, MemeNode
@@ -181,12 +183,22 @@ def _verify_one(link: Link, nodes_by_id: dict[str, MemeNode]) -> tuple[Link, boo
     return updated, True
 
 
-def step_verify(limit: int | None, workers: int) -> dict[str, int]:
+def _links_to_verify(nodes_by_id: dict[str, MemeNode], families: Sequence[str]) -> list[Link]:
+    unknown = [head for head in families if head not in nodes_by_id]
+    if unknown:
+        raise SystemExit(f"unknown family head(s): {', '.join(unknown)}")
+    links = store.all_links()
+    if families:
+        links = graph.family_links(links, {n.id: n.kind for n in nodes_by_id.values()}, families)
+    return [link for link in links if link.status == "inferred"]
+
+
+def step_verify(limit: int | None, workers: int, families: Sequence[str] = ()) -> dict[str, int]:
     """Verify every inferred link (or up to `limit`) in parallel; print a line per link."""
-    links = [link for link in store.all_links() if link.status == "inferred"]
+    nodes_by_id = {n.id: n for n in store.all_nodes()}
+    links = _links_to_verify(nodes_by_id, families)
     if limit is not None:
         links = links[:limit]
-    nodes_by_id = {n.id: n for n in store.all_nodes()}
     cited = 0
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(_verify_one, link, nodes_by_id): link for link in links}
@@ -216,9 +228,11 @@ def main() -> None:
     parser.add_argument("--steps", type=str, default=None)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--families", type=str, default="")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO)
 
+    families = [head.strip() for head in args.families.split(",") if head.strip()]
     db.reset_schema() if args.reset else db.init_schema()
     before = contextdev.credits_spent()
     for step in _parse_steps(args.steps):
@@ -229,7 +243,7 @@ def main() -> None:
         elif step == "images":
             print("images:", step_images(args.workers))
         elif step == "verify":
-            print("verify:", step_verify(args.limit, args.workers))
+            print("verify:", step_verify(args.limit, args.workers, families))
     spent = contextdev.credits_spent() - before
     print(f"counts: {store.counts()}")
     print(f"credits spent this run: {spent:.1f}")
