@@ -1,0 +1,223 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <title>Memepedia — how it works</title>
+  <style>
+    text { font-family: Ubuntu, "Segoe UI", "Helvetica Neue", Arial, "DejaVu Sans", sans-serif; fill: #f3f5f9; }
+    .title { font-size: 56px; font-weight: 700; }
+    .subtitle { font-size: 28px; fill: #a9b3c4; }
+    .partner { font-size: 36px; font-weight: 700; }
+    .h { font-size: 28px; font-weight: 700; }
+    .t { font-size: 24px; }
+    .m { font-size: 24px; fill: #a9b3c4; }
+    .lane { font-size: 24px; font-weight: 700; letter-spacing: 2px; fill: #6ea8ff; }
+    .cdev { fill: #ffb547; }
+    .gem { fill: #6ea8ff; }
+    .aiven { fill: #ff7a66; }
+    .modal { fill: #9be564; }
+    .web { fill: #c9d1dd; }
+  </style>
+
+  <rect x="0" y="0" width="1920" height="1080" fill="#0b0d12"/>
+
+  <!-- Title -->
+  <text class="title" x="40" y="100">Memepedia — how it works</text>
+  <text class="subtitle" x="1880" y="100" text-anchor="end">memes seen minutes ago, traced to their origin</text>
+
+  <!-- ===== Column 1: live web ===== -->
+  <rect x="40" y="150" width="220" height="610" rx="18" fill="#141821" stroke="#c9d1dd" stroke-width="3"/>
+  <text class="partner web" x="150" y="202" text-anchor="middle">Live web</text>
+
+  <rect x="55" y="250" width="190" height="100" rx="12" fill="#1c212d" stroke="#3a4252" stroke-width="2"/>
+  <text class="h" x="150" y="290" text-anchor="middle">Lemmy</text>
+  <text class="m" x="150" y="326" text-anchor="middle">9 communities</text>
+
+  <rect x="55" y="480" width="190" height="100" rx="12" fill="#1c212d" stroke="#3a4252" stroke-width="2"/>
+  <text class="h" x="150" y="520" text-anchor="middle">Reddit</text>
+  <text class="m" x="150" y="556" text-anchor="middle">5 subreddits</text>
+
+  <rect x="55" y="620" width="190" height="100" rx="12" fill="#1c212d" stroke="#3a4252" stroke-width="2"/>
+  <text class="h" x="150" y="660" text-anchor="middle">Imgflip</text>
+  <text class="m" x="150" y="696" text-anchor="middle">2 streams</text>
+
+  <!-- Modal clock -->
+  <rect x="40" y="840" width="220" height="190" rx="18" fill="#141821" stroke="#9be564" stroke-width="3"/>
+  <text class="h modal" x="150" y="890" text-anchor="middle">Modal clock</text>
+  <text class="t" x="150" y="935" text-anchor="middle">visits one feed</text>
+  <text class="t" x="150" y="970" text-anchor="middle">every minute</text>
+  <line x1="150" y1="840" x2="150" y2="780" stroke="#9be564" stroke-width="4"/>
+  <polygon points="150,762 140,782 160,782" fill="#9be564"/>
+
+  <!-- ===== Column 2: Context.dev ===== -->
+  <rect x="310" y="340" width="270" height="690" rx="18" fill="#141821" stroke="#ffb547" stroke-width="3"/>
+  <text class="partner cdev" x="445" y="392" text-anchor="middle">Context.dev</text>
+  <text class="m" x="445" y="436" text-anchor="middle" font-style="italic">the web as a</text>
+  <text class="m" x="445" y="468" text-anchor="middle" font-style="italic">real-time database</text>
+
+  <rect x="325" y="500" width="240" height="200" rx="12" fill="#1c212d" stroke="#ffb547" stroke-opacity="0.5" stroke-width="2"/>
+  <text class="h" x="445" y="550" text-anchor="middle">Scrape feeds</text>
+  <text class="t" x="445" y="592" text-anchor="middle">Reddit RSS</text>
+  <text class="t" x="445" y="628" text-anchor="middle">Imgflip pages</text>
+
+  <rect x="325" y="830" width="240" height="160" rx="12" fill="#1c212d" stroke="#ffb547" stroke-opacity="0.5" stroke-width="2"/>
+  <text class="h" x="445" y="880" text-anchor="middle">Web search</text>
+  <text class="t" x="445" y="920" text-anchor="middle">+ full page text</text>
+  <text class="m" x="445" y="956" text-anchor="middle">for every trace</text>
+
+  <!-- ===== Column 3: Google Gemini ===== -->
+  <rect x="630" y="150" width="720" height="880" rx="18" fill="#141821" stroke="#6ea8ff" stroke-width="3"/>
+  <text class="partner gem" x="652" y="200">Google Gemini</text>
+  <text class="m" x="1330" y="200" text-anchor="end">gemini-3.8-flash</text>
+
+  <!-- Live loop lane -->
+  <rect x="645" y="222" width="690" height="368" rx="14" fill="#10141c" stroke="#6ea8ff" stroke-opacity="0.35" stroke-width="2"/>
+  <text class="lane" x="1320" y="258" text-anchor="end">LIVE LOOP</text>
+
+  <rect x="660" y="280" width="200" height="120" rx="12" fill="#1c212d" stroke="#6ea8ff" stroke-width="2"/>
+  <text class="h" x="760" y="318" text-anchor="middle">Vision label</text>
+  <text class="t" x="760" y="353" text-anchor="middle">stamp if ≥ 0.85</text>
+  <text class="m" x="760" y="384" text-anchor="middle">+ NSFW flag</text>
+
+  <rect x="890" y="280" width="200" height="120" rx="12" fill="#1c212d" stroke="#6ea8ff" stroke-width="2"/>
+  <text class="h" x="990" y="318" text-anchor="middle">Match name</text>
+  <text class="t" x="990" y="353" text-anchor="middle">exact first,</text>
+  <text class="t" x="990" y="384" text-anchor="middle">then LLM</text>
+
+  <rect x="1120" y="280" width="200" height="120" rx="12" fill="#1c212d" stroke="#6ea8ff" stroke-width="2"/>
+  <text class="h" x="1220" y="318" text-anchor="middle">Sighting</text>
+  <text class="t" x="1220" y="353" text-anchor="middle">stamped with</text>
+  <text class="t" x="1220" y="384" text-anchor="middle">its family</text>
+
+  <line x1="860" y1="340" x2="874" y2="340" stroke="#6ea8ff" stroke-width="4"/>
+  <polygon points="890,340 872,331 872,349" fill="#6ea8ff"/>
+  <line x1="1090" y1="340" x2="1104" y2="340" stroke="#6ea8ff" stroke-width="4"/>
+  <polygon points="1120,340 1102,331 1102,349" fill="#6ea8ff"/>
+
+  <!-- unsure: pending pool, new specimen -->
+  <line x1="760" y1="400" x2="760" y2="444" stroke="#6ea8ff" stroke-width="4"/>
+  <polygon points="760,462 751,442 769,442" fill="#6ea8ff"/>
+  <text class="m" x="776" y="440">unsure</text>
+
+  <rect x="660" y="462" width="200" height="110" rx="12" fill="#1c212d" stroke="#6ea8ff" stroke-width="2"/>
+  <text class="h" x="760" y="505" text-anchor="middle">Pending pool</text>
+  <text class="m" x="760" y="542" text-anchor="middle">last 72 hours</text>
+
+  <rect x="890" y="462" width="200" height="110" rx="12" fill="#1c212d" stroke="#6ea8ff" stroke-width="2"/>
+  <text class="h" x="990" y="505" text-anchor="middle">New meme</text>
+  <text class="m" x="990" y="542" text-anchor="middle">2+ authors</text>
+
+  <line x1="860" y1="517" x2="874" y2="517" stroke="#6ea8ff" stroke-width="4"/>
+  <polygon points="890,517 872,508 872,526" fill="#6ea8ff"/>
+
+  <!-- Trace lane -->
+  <rect x="645" y="605" width="690" height="410" rx="14" fill="#10141c" stroke="#6ea8ff" stroke-opacity="0.35" stroke-width="2"/>
+  <text class="lane" x="1320" y="641" text-anchor="end">TRACE: WHERE DID IT COME FROM?</text>
+
+  <rect x="660" y="665" width="200" height="120" rx="12" fill="#1c212d" stroke="#6ea8ff" stroke-width="2"/>
+  <text class="h" x="760" y="703" text-anchor="middle">Draft lineage</text>
+  <text class="t" x="760" y="738" text-anchor="middle">LLM guesses</text>
+  <text class="t" x="760" y="769" text-anchor="middle">the ancestors</text>
+
+  <rect x="890" y="665" width="200" height="120" rx="12" fill="#1c212d" stroke="#ffb547" stroke-width="3"/>
+  <text class="h" x="990" y="703" text-anchor="middle">Search web</text>
+  <text class="t cdev" x="990" y="738" text-anchor="middle">Context.dev</text>
+  <text class="t" x="990" y="769" text-anchor="middle">live pages</text>
+
+  <rect x="1120" y="665" width="200" height="120" rx="12" fill="#1c212d" stroke="#6ea8ff" stroke-width="2"/>
+  <text class="h" x="1220" y="703" text-anchor="middle">Verify quote</text>
+  <text class="t" x="1220" y="738" text-anchor="middle">verbatim</text>
+  <text class="t" x="1220" y="769" text-anchor="middle">sentence only</text>
+
+  <line x1="860" y1="725" x2="874" y2="725" stroke="#6ea8ff" stroke-width="4"/>
+  <polygon points="890,725 872,716 872,734" fill="#6ea8ff"/>
+  <line x1="1090" y1="725" x2="1104" y2="725" stroke="#6ea8ff" stroke-width="4"/>
+  <polygon points="1120,725 1102,716 1102,734" fill="#6ea8ff"/>
+
+  <text class="t" x="664" y="962">Two lines of descent:</text>
+  <text class="t" x="664" y="996">character + format</text>
+
+  <!-- Link outcome, doubles as the legend -->
+  <line x1="1220" y1="785" x2="1220" y2="812" stroke="#6ea8ff" stroke-width="4"/>
+  <polygon points="1220,830 1211,810 1229,810" fill="#6ea8ff"/>
+  <rect x="1120" y="830" width="200" height="170" rx="12" fill="#1c212d" stroke="#6ea8ff" stroke-width="2"/>
+  <line x1="1138" y1="872" x2="1188" y2="872" stroke="#f3f5f9" stroke-width="5"/>
+  <text class="h" x="1200" y="882">cited</text>
+  <line x1="1138" y1="926" x2="1188" y2="926" stroke="#f3f5f9" stroke-width="5" stroke-dasharray="11 8"/>
+  <text class="h" x="1200" y="936">inferred</text>
+  <text class="m" x="1220" y="978" text-anchor="middle">needs citation</text>
+
+  <!-- ===== Column 4: Aiven PostgreSQL ===== -->
+  <rect x="1400" y="150" width="210" height="880" rx="18" fill="#141821" stroke="#ff7a66" stroke-width="3"/>
+  <text class="partner aiven" x="1505" y="202" text-anchor="middle">Aiven</text>
+  <text class="m" x="1505" y="240" text-anchor="middle">PostgreSQL</text>
+
+  <rect x="1415" y="290" width="180" height="100" rx="12" fill="#1c212d" stroke="#ff7a66" stroke-opacity="0.5" stroke-width="2"/>
+  <text class="h" x="1505" y="350" text-anchor="middle">Sightings</text>
+
+  <rect x="1415" y="440" width="180" height="100" rx="12" fill="#1c212d" stroke="#ff7a66" stroke-opacity="0.5" stroke-width="2"/>
+  <text class="h" x="1505" y="485" text-anchor="middle">Memes</text>
+  <text class="m" x="1505" y="520" text-anchor="middle">formats</text>
+
+  <rect x="1415" y="590" width="180" height="100" rx="12" fill="#1c212d" stroke="#ff7a66" stroke-opacity="0.5" stroke-width="2"/>
+  <text class="h" x="1505" y="650" text-anchor="middle">History</text>
+
+  <rect x="1415" y="855" width="180" height="120" rx="12" fill="#1c212d" stroke="#ff7a66" stroke-opacity="0.5" stroke-width="2"/>
+  <text class="h" x="1505" y="905" text-anchor="middle">Links</text>
+  <text class="m" x="1505" y="942" text-anchor="middle">with quotes</text>
+
+  <line x1="1610" y1="400" x2="1642" y2="400" stroke="#9be564" stroke-width="4"/>
+  <polygon points="1660,400 1640,390 1640,410" fill="#9be564"/>
+
+  <!-- ===== Column 5: Modal ===== -->
+  <rect x="1660" y="150" width="220" height="880" rx="18" fill="#141821" stroke="#9be564" stroke-width="3"/>
+  <text class="partner modal" x="1770" y="202" text-anchor="middle">Modal</text>
+
+  <rect x="1675" y="250" width="190" height="270" rx="12" fill="#1c212d" stroke="#9be564" stroke-opacity="0.5" stroke-width="2"/>
+  <text class="h" x="1770" y="295" text-anchor="middle">FastAPI</text>
+  <text class="t" x="1770" y="340" text-anchor="middle">REST API</text>
+  <text class="t" x="1770" y="378" text-anchor="middle">live trace</text>
+  <text class="t" x="1770" y="410" text-anchor="middle">stream (SSE)</text>
+  <text class="m" x="1770" y="456" text-anchor="middle">per-minute</text>
+  <text class="m" x="1770" y="488" text-anchor="middle">call budgets</text>
+
+  <line x1="1770" y1="520" x2="1770" y2="562" stroke="#9be564" stroke-width="4"/>
+  <polygon points="1770,580 1760,560 1780,560" fill="#9be564"/>
+
+  <rect x="1675" y="580" width="190" height="300" rx="12" fill="#1c212d" stroke="#9be564" stroke-opacity="0.5" stroke-width="2"/>
+  <text class="h" x="1770" y="625" text-anchor="middle">React app</text>
+  <text class="t" x="1770" y="675" text-anchor="middle">Live wall</text>
+  <text class="t" x="1770" y="715" text-anchor="middle">Family tree</text>
+  <text class="t" x="1770" y="755" text-anchor="middle">Trace</text>
+  <text class="t" x="1770" y="795" text-anchor="middle">Proposals</text>
+  <text class="t" x="1770" y="835" text-anchor="middle">Image drop</text>
+
+  <text class="m" x="1770" y="940" text-anchor="middle">one public URL</text>
+
+  <!-- ===== Connectors between columns (drawn last, on top) ===== -->
+  <!-- Lemmy direct -->
+  <text class="m" x="455" y="284" text-anchor="middle">direct JSON API</text>
+  <line x1="245" y1="300" x2="642" y2="300" stroke="#c9d1dd" stroke-width="4"/>
+  <polygon points="660,300 640,290 640,310" fill="#c9d1dd"/>
+  <!-- Reddit, Imgflip into Context.dev -->
+  <line x1="245" y1="530" x2="307" y2="530" stroke="#c9d1dd" stroke-width="4"/>
+  <polygon points="325,530 305,520 305,540" fill="#c9d1dd"/>
+  <line x1="245" y1="670" x2="307" y2="670" stroke="#c9d1dd" stroke-width="4"/>
+  <polygon points="325,670 305,660 305,680" fill="#c9d1dd"/>
+  <!-- Feeds out of Context.dev into the live loop -->
+  <polyline points="565,600 610,600 610,370 642,370" fill="none" stroke="#ffb547" stroke-width="4" stroke-linejoin="round"/>
+  <polygon points="660,370 640,360 640,380" fill="#ffb547"/>
+
+  <!-- New meme goes to the trace -->
+  <polyline points="990,572 990,597 800,597 800,647" fill="none" stroke="#6ea8ff" stroke-width="4" stroke-linejoin="round"/>
+  <polygon points="800,665 791,645 809,645" fill="#6ea8ff"/>
+
+  <!-- Context.dev search serves the trace -->
+  <polyline points="583,910 990,910 990,803" fill="none" stroke="#ffb547" stroke-width="4" stroke-linejoin="round"/>
+  <polygon points="990,785 981,805 999,805" fill="#ffb547"/>
+  <polygon points="565,910 585,900 585,920" fill="#ffb547"/>
+
+  <!-- To the archive -->
+  <line x1="1320" y1="340" x2="1382" y2="340" stroke="#ff7a66" stroke-width="4"/>
+  <polygon points="1400,340 1380,330 1380,350" fill="#ff7a66"/>
+  <line x1="1320" y1="915" x2="1382" y2="915" stroke="#ff7a66" stroke-width="4"/>
+  <polygon points="1400,915 1380,905 1380,925" fill="#ff7a66"/>
+
+</svg>
