@@ -165,7 +165,11 @@ export async function getRelated(a: string, b: string): Promise<RelatedResponse>
     return request<RelatedResponse>(`/api/related?${new URLSearchParams({ a, b })}`)
   }
   const found = fixture<RelatedResponse>(`related-${a}-${b}`) ?? fixture<RelatedResponse>(`related-${b}-${a}`)
-  if (!found) throw new Error(`No mock comparison for ${a} and ${b}`)
+  if (!found) {
+    throw new Error(
+      `No mock comparison for ${a} and ${b}. The fixtures only cover doomer with yes-chad, and swole-doge-vs-cheems with yes-chad.`,
+    )
+  }
   return found
 }
 
