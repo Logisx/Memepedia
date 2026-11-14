@@ -1,0 +1,20 @@
+[
+  {
+    "accepted": true,
+    "message": "The submitted URL contained a qualifying sentence; the link from Doomer Girl to Doomer is now cited.",
+    "link": {
+      "child_id": "doomer-girl",
+      "parent_id": "doomer",
+      "axis": "character",
+      "status": "cited",
+      "quote": "Doomer Girl adapts the Doomer's beanie and nihilistic affect onto a feminine-presenting variant of the face.",
+      "source_url": "https://knowyourmeme.com/memes/doomer-girl",
+      "source_title": "Doomer Girl - Know Your Meme"
+    }
+  },
+  {
+    "accepted": false,
+    "message": "The submitted URL did not contain a sentence clearly describing the proposed link, so it was not accepted.",
+    "link": null
+  }
+]

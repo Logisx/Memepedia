@@ -1,0 +1,69 @@
+{
+  "a_id": "doomer",
+  "b_id": "yes-chad",
+  "nodes": [
+    {
+      "id": "doomer",
+      "name": "Doomer",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus desperatus",
+      "image_url": "https://i.imgflip.com/4/37i3fq.jpg",
+      "image_credit_url": "https://imgflip.com/meme/194000102/Doomer",
+      "first_seen": "2018-03-01",
+      "date_precision": "month",
+      "summary": "A black-beanie, black-hoodie Wojak variant signifying nihilistic pessimism about the future.",
+      "status": "established",
+      "sightings_24h": 3,
+      "sightings_7d": 14
+    },
+    {
+      "id": "wojak",
+      "name": "Wojak",
+      "aliases": [
+        "Feels Guy"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus vulgaris",
+      "image_url": "https://i.imgflip.com/4/2qmyau.jpg",
+      "image_credit_url": "https://imgflip.com/meme/165673254/wojak",
+      "first_seen": "2010-06-01",
+      "date_precision": "month",
+      "summary": "A crudely drawn bald, wide-mouthed everyman face, originally from a Polish forum, used to express raw unfiltered feeling.",
+      "status": "established",
+      "sightings_24h": 2,
+      "sightings_7d": 10
+    },
+    {
+      "id": "yes-chad",
+      "name": "Yes Chad",
+      "aliases": [
+        "Nordic Gamer",
+        "Chad"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus fortis affirmans",
+      "image_url": "https://i.imgflip.com/4/409a17.jpg",
+      "image_credit_url": "https://imgflip.com/meme/242297611/Yes-Chad",
+      "first_seen": "2018-11-01",
+      "date_precision": "month",
+      "summary": "A square-jawed, confident counterpart to Wojak who answers awkward questions with a flat, proud 'yes'.",
+      "status": "established",
+      "sightings_24h": 2,
+      "sightings_7d": 7
+    }
+  ],
+  "character": {
+    "ancestor_id": "wojak",
+    "path_a": [
+      "doomer",
+      "wojak"
+    ],
+    "path_b": [
+      "yes-chad",
+      "wojak"
+    ]
+  },
+  "format": null,
+  "sentence": "By character: both descend from Wojak (2010)."
+}

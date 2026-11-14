@@ -1,0 +1,84 @@
+{
+  "a_id": "swole-doge-vs-cheems",
+  "b_id": "yes-chad",
+  "nodes": [
+    {
+      "id": "comparison",
+      "name": "Comparison",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Comparatio duplex",
+      "image_url": null,
+      "image_credit_url": null,
+      "first_seen": "2010-01-01",
+      "date_precision": "year",
+      "summary": "Two-or-more-panel formats that juxtapose options, people or outcomes side by side.",
+      "status": "established",
+      "sightings_24h": 2,
+      "sightings_7d": 9
+    },
+    {
+      "id": "swole-doge-vs-cheems",
+      "name": "Swole Doge vs. Cheems",
+      "aliases": [
+        "Buff Doge vs. Cheems"
+      ],
+      "kind": "template",
+      "latin_name": "Comparatio caninus",
+      "image_url": "https://i.imgflip.com/43a45p.png",
+      "image_credit_url": "https://imgflip.com/meme/247375501/Buff-Doge-vs-Cheems",
+      "first_seen": "2020-03-15",
+      "date_precision": "day",
+      "summary": "A two-panel comparison pitting muscular Swole Doge against weak Cheems to mock generational or lifestyle decline.",
+      "status": "established",
+      "sightings_24h": 4,
+      "sightings_7d": 16
+    },
+    {
+      "id": "virgin-vs-chad",
+      "name": "Virgin vs. Chad",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Comparatio virilis",
+      "image_url": "https://i.imgflip.com/4/3xnk83.jpg",
+      "image_credit_url": "https://imgflip.com/meme/237925155/Virgin-vs-Chad",
+      "first_seen": "2018-08-01",
+      "date_precision": "month",
+      "summary": "A two-column comparison template contrasting an exaggeratedly pathetic 'virgin' with a confident, idealized 'Chad'.",
+      "status": "established",
+      "sightings_24h": 2,
+      "sightings_7d": 8
+    },
+    {
+      "id": "yes-chad",
+      "name": "Yes Chad",
+      "aliases": [
+        "Nordic Gamer",
+        "Chad"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus fortis affirmans",
+      "image_url": "https://i.imgflip.com/4/409a17.jpg",
+      "image_credit_url": "https://imgflip.com/meme/242297611/Yes-Chad",
+      "first_seen": "2018-11-01",
+      "date_precision": "month",
+      "summary": "A square-jawed, confident counterpart to Wojak who answers awkward questions with a flat, proud 'yes'.",
+      "status": "established",
+      "sightings_24h": 2,
+      "sightings_7d": 7
+    }
+  ],
+  "character": null,
+  "format": {
+    "ancestor_id": "virgin-vs-chad",
+    "path_a": [
+      "swole-doge-vs-cheems",
+      "comparison"
+    ],
+    "path_b": [
+      "yes-chad",
+      "virgin-vs-chad"
+    ]
+  },
+  "sentence": "No shared character ancestor, but by format: Yes Chad shares the Virgin vs. Chad format lineage with Swole Doge vs. Cheems' Comparison roots."
+}

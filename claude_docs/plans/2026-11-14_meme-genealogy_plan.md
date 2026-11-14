@@ -21,7 +21,7 @@ Changes in v3 (after live-source tests and a two-round adversarial review): the 
 | Know Your Meme | Terms forbid automated access and aggregation. Not scraped; outbound links only. |
 | Open backbone | Wikidata: 1,066 meme items, 77 "based on" links. Too sparse to mine lineage from; useful for dates and identity. |
 | Live social sources, plain curl | Lemmy JSON API works (titles, timestamps, image URLs, scores, `sort=TopWeek`). Imgflip hot page works but is partly JS-rendered. trends24.in (X trends) and Mastodon trends respond. Reddit RSS and old.reddit answered once, then 429. Reddit JSON, Bluesky public search, 9GAG, Memedroid return 403. |
-| Reddit | Only reachable through a provider with proxies. To be tested through Context.dev scrape in P0. Exa's Reddit coverage is unconfirmed and can only be checked with a key. |
+| Reddit | Tested: normal pages and the JSON endpoint are blocked, but `reddit.com/r/<sub>/new/.rss` read through Context.dev scrape returns complete posts for 1 credit. Reddit is a live source; Exa is not needed. |
 | Context.dev | Scrape with JSON-schema extraction on any URL; search; research answers; monitors on page, sitemap, extract or search targets with a 10-minute minimum interval and on-demand runs; webhooks `change.detected` and `run.completed`. Costs: scrape 1 credit plus 1 to 4 for extraction, search 1 per 10 results, page-monitor run 1, extract-monitor run 10. Budget 50,000. |
 | Hosting | The backend needs a public URL for Context.dev webhooks and for judges. Modal (a Junction sponsor) provides that plus scheduled functions; Context.dev monitors remain the primary clock. |
 
@@ -168,14 +168,12 @@ A family is everything connected on the character line. Format links are shown o
 
 ## 8. Split
 
-| | Person A (AI and backend) | Person B (backend and frontend) |
-|---|---|---|
-| P0 | Context.dev key, vision test, source tests, verify test | Scaffold, Aiven Postgres, deploy, monitor-to-webhook capture, fixture family |
-| P1 | Resolver, trace, seed script, hand-check | Lineage screen (descent strip, family map), search, trace streaming UI |
-| P2 | Live loop, vision, Lemmy backfill, `/api/week` | Wall, drip release, drop zone, strip |
-| P3 | Emerging clustering, proposal verifier | Related, History tab, styling, domain |
+The build is split into two halves that meet only at `contract/` and do not depend on each other until the merge.
 
-Sync points: hour 2 (contract frozen, tests read out), hour 8 (real lineage on the real screen), hour 13 (a live post reaches the wall with its family), hour 16 (freeze).
+- Backend (data and agents): `2026-11-14_backend-pipeline_plan.md`
+- Frontend (experience): `2026-11-14_frontend-experience_plan.md`
+
+Current progress and open decisions: `claude_docs/STATUS.md`.
 
 ## 9. Demo (3 minutes)
 
@@ -193,7 +191,7 @@ Pre-seeding the Imgflip top 100 makes most judge picks instant. The wall needs n
 |---|---|---|
 | Context.dev | context.dev/signup, redeem `JUNCTION26` | Hour 0 |
 | Gemini API key | aistudio.google.com, free | Hour 0 |
-| Vercel and a public GitHub repo with a licence file | Self-serve | Hour 0 |
+| Modal account (backend hosting) and a licence file in the repo | Self-serve | Hour 1 |
 | Aiven Postgres | Free plan; ask the booth for credits | Hour 1 |
 | Cloudinary | Free account; cloud name for fetch URLs | Hour 3 |
 | `memepedia.fi` | Accredited .fi registrar | P3 |

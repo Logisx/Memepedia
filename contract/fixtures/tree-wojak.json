@@ -1,0 +1,429 @@
+{
+  "selected_id": "wojak",
+  "nodes": [
+    {
+      "id": "bloomer",
+      "name": "Bloomer",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus optimisticus",
+      "image_url": "https://i.imgflip.com/4/7v5fya.jpg",
+      "image_credit_url": "https://imgflip.com/meme/475585282/Bloomer",
+      "first_seen": "2019-01-01",
+      "date_precision": "month",
+      "summary": "An older, content Wojak variant coined as the cheerful counterpart to the Doomer.",
+      "status": "established",
+      "sightings_24h": 0,
+      "sightings_7d": 2
+    },
+    {
+      "id": "brainlet",
+      "name": "Brainlet",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus parvocerebrus",
+      "image_url": "https://i.imgflip.com/4/2bg8a5.jpg",
+      "image_credit_url": "https://imgflip.com/meme/140165357/Brainlet",
+      "first_seen": "2017-11-01",
+      "date_precision": "month",
+      "summary": "A Wojak variant with a tiny brain drawn above the head, mocking oversimplified takes.",
+      "status": "established",
+      "sightings_24h": 0,
+      "sightings_7d": 2
+    },
+    {
+      "id": "coomer",
+      "name": "Coomer",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus compulsivus",
+      "image_url": "https://i.imgflip.com/4/4vms6e.jpg",
+      "image_credit_url": "https://imgflip.com/meme/294995750/Coomer",
+      "first_seen": "2019-04-01",
+      "date_precision": "month",
+      "summary": "A puffy-eyed, unshaven Wojak variant depicting compulsive overconsumption, usually of adult content.",
+      "status": "established",
+      "sightings_24h": 1,
+      "sightings_7d": 3
+    },
+    {
+      "id": "doomer",
+      "name": "Doomer",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus desperatus",
+      "image_url": "https://i.imgflip.com/4/37i3fq.jpg",
+      "image_credit_url": "https://imgflip.com/meme/194000102/Doomer",
+      "first_seen": "2018-03-01",
+      "date_precision": "month",
+      "summary": "A black-beanie, black-hoodie Wojak variant signifying nihilistic pessimism about the future.",
+      "status": "established",
+      "sightings_24h": 3,
+      "sightings_7d": 14
+    },
+    {
+      "id": "doomer-girl",
+      "name": "Doomer Girl",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus desperatus femina",
+      "image_url": "https://i.imgflip.com/4/3mxvdf.jpg",
+      "image_credit_url": "https://imgflip.com/meme/219930387/Doomer-Girl",
+      "first_seen": "2019-06-01",
+      "date_precision": "month",
+      "summary": "The female counterpart to Doomer, drawn with a beanie and messy hair, sharing the same nihilistic affect.",
+      "status": "established",
+      "sightings_24h": 1,
+      "sightings_7d": 3
+    },
+    {
+      "id": "drawn-character",
+      "name": "Drawn Character",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Persona picta",
+      "image_url": null,
+      "image_credit_url": null,
+      "first_seen": "2008-01-01",
+      "date_precision": "year",
+      "summary": "Hand- or crudely-drawn recurring characters used as stand-ins for a mood or social type.",
+      "status": "established",
+      "sightings_24h": 5,
+      "sightings_7d": 27
+    },
+    {
+      "id": "npc-wojak",
+      "name": "NPC Wojak",
+      "aliases": [
+        "Grey Wojak",
+        "NPC"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus automaticus",
+      "image_url": "https://i.imgflip.com/4/2jy24u.jpg",
+      "image_credit_url": "https://imgflip.com/meme/NPC",
+      "first_seen": "2018-07-01",
+      "date_precision": "month",
+      "summary": "A grey, featureless Wojak variant used to mock people depicted as running on social scripts rather than thinking.",
+      "status": "established",
+      "sightings_24h": 1,
+      "sightings_7d": 4
+    },
+    {
+      "id": "soyjak",
+      "name": "Soyjak",
+      "aliases": [
+        "Soyboy"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus gracilis",
+      "image_url": "https://i.imgflip.com/4/5cik8d.png",
+      "image_credit_url": "https://imgflip.com/meme/323352301/soyjak",
+      "first_seen": "2018-08-01",
+      "date_precision": "month",
+      "summary": "An open-mouthed, wide-eyed Wojak variant used to caricature naive enthusiasm, nicknamed for soy milk drinkers.",
+      "status": "established",
+      "sightings_24h": 2,
+      "sightings_7d": 8
+    },
+    {
+      "id": "thirty-year-old-boomer",
+      "name": "Thirty-Year-Old Boomer",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus praecox senex",
+      "image_url": "https://i.imgflip.com/4/2d634e.jpg",
+      "image_credit_url": "https://imgflip.com/meme/143051342/30-year-old-Boomer",
+      "first_seen": "2019-04-01",
+      "date_precision": "month",
+      "summary": "A Wojak variant mocking a young adult who already behaves and complains like a retiree.",
+      "status": "established",
+      "sightings_24h": 0,
+      "sightings_7d": 1
+    },
+    {
+      "id": "trad-girl",
+      "name": "Trad Girl",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus traditionalis femina",
+      "image_url": "https://i.imgflip.com/4/4ov2hl.jpg",
+      "image_credit_url": "https://imgflip.com/meme/283625049/Trad-Girl",
+      "first_seen": "2019-09-01",
+      "date_precision": "month",
+      "summary": "A braided-hair, modestly-dressed female character paired with Yes Chad to represent traditionalist values online.",
+      "status": "established",
+      "sightings_24h": 0,
+      "sightings_7d": 1
+    },
+    {
+      "id": "wojak",
+      "name": "Wojak",
+      "aliases": [
+        "Feels Guy"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus vulgaris",
+      "image_url": "https://i.imgflip.com/4/2qmyau.jpg",
+      "image_credit_url": "https://imgflip.com/meme/165673254/wojak",
+      "first_seen": "2010-06-01",
+      "date_precision": "month",
+      "summary": "A crudely drawn bald, wide-mouthed everyman face, originally from a Polish forum, used to express raw unfiltered feeling.",
+      "status": "established",
+      "sightings_24h": 2,
+      "sightings_7d": 10
+    },
+    {
+      "id": "yes-chad",
+      "name": "Yes Chad",
+      "aliases": [
+        "Nordic Gamer",
+        "Chad"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus fortis affirmans",
+      "image_url": "https://i.imgflip.com/4/409a17.jpg",
+      "image_credit_url": "https://imgflip.com/meme/242297611/Yes-Chad",
+      "first_seen": "2018-11-01",
+      "date_precision": "month",
+      "summary": "A square-jawed, confident counterpart to Wojak who answers awkward questions with a flat, proud 'yes'.",
+      "status": "established",
+      "sightings_24h": 2,
+      "sightings_7d": 7
+    },
+    {
+      "id": "zoomer",
+      "name": "Zoomer",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus iuvenilis",
+      "image_url": "https://i.imgflip.com/4/8omj8m.jpg",
+      "image_credit_url": "https://imgflip.com/meme/525091558/zoomer",
+      "first_seen": "2018-09-01",
+      "date_precision": "month",
+      "summary": "A Wojak variant with a man-bun and piercing representing Gen Z online culture.",
+      "status": "established",
+      "sightings_24h": 1,
+      "sightings_7d": 5
+    }
+  ],
+  "family_ids": [
+    "wojak",
+    "npc-wojak",
+    "doomer",
+    "bloomer",
+    "zoomer",
+    "thirty-year-old-boomer",
+    "coomer",
+    "soyjak",
+    "brainlet",
+    "doomer-girl",
+    "yes-chad",
+    "trad-girl"
+  ],
+  "links": [
+    {
+      "child_id": "wojak",
+      "parent_id": "drawn-character",
+      "axis": "character",
+      "status": "cited",
+      "quote": "The image originated on the Polish forum Krautchan around 2010 as a simple MS-Paint doodle of a bald man's face.",
+      "source_url": "https://knowyourmeme.com/memes/wojak",
+      "source_title": "Wojak - Know Your Meme"
+    },
+    {
+      "child_id": "npc-wojak",
+      "parent_id": "wojak",
+      "axis": "character",
+      "status": "cited",
+      "quote": "The NPC Wojak strips away color and detail from the original face to depict a person running on social default settings.",
+      "source_url": "https://knowyourmeme.com/memes/npc-wojak",
+      "source_title": "NPC Wojak - Know Your Meme"
+    },
+    {
+      "child_id": "doomer",
+      "parent_id": "wojak",
+      "axis": "character",
+      "status": "cited",
+      "quote": "Doomer recolors the Wojak face in black and adds a beanie to depict listless pessimism about the future.",
+      "source_url": "https://knowyourmeme.com/memes/doomer",
+      "source_title": "Doomer - Know Your Meme"
+    },
+    {
+      "child_id": "bloomer",
+      "parent_id": "wojak",
+      "axis": "character",
+      "status": "inferred",
+      "quote": null,
+      "source_url": null,
+      "source_title": null
+    },
+    {
+      "child_id": "zoomer",
+      "parent_id": "wojak",
+      "axis": "character",
+      "status": "cited",
+      "quote": "Zoomer gives the Wojak face a man-bun and piercings to stand in for Gen Z online culture.",
+      "source_url": "https://knowyourmeme.com/memes/zoomer",
+      "source_title": "Zoomer - Know Your Meme"
+    },
+    {
+      "child_id": "thirty-year-old-boomer",
+      "parent_id": "wojak",
+      "axis": "character",
+      "status": "inferred",
+      "quote": null,
+      "source_url": null,
+      "source_title": null
+    },
+    {
+      "child_id": "coomer",
+      "parent_id": "wojak",
+      "axis": "character",
+      "status": "cited",
+      "quote": "Coomer modifies the Wojak face with bloodshot eyes and stubble to mock compulsive overconsumption.",
+      "source_url": "https://knowyourmeme.com/memes/coomer",
+      "source_title": "Coomer - Know Your Meme"
+    },
+    {
+      "child_id": "soyjak",
+      "parent_id": "wojak",
+      "axis": "character",
+      "status": "cited",
+      "quote": "Soyjak distorts the Wojak mouth into a wide open-mouthed grin to parody exaggerated naive enthusiasm.",
+      "source_url": "https://knowyourmeme.com/memes/soyjak",
+      "source_title": "Soyjak - Know Your Meme"
+    },
+    {
+      "child_id": "brainlet",
+      "parent_id": "wojak",
+      "axis": "character",
+      "status": "inferred",
+      "quote": null,
+      "source_url": null,
+      "source_title": null
+    },
+    {
+      "child_id": "doomer-girl",
+      "parent_id": "doomer",
+      "axis": "character",
+      "status": "cited",
+      "quote": "Doomer Girl adapts the Doomer's beanie and nihilistic affect onto a feminine-presenting variant of the face.",
+      "source_url": "https://knowyourmeme.com/memes/doomer-girl",
+      "source_title": "Doomer Girl - Know Your Meme"
+    },
+    {
+      "child_id": "yes-chad",
+      "parent_id": "wojak",
+      "axis": "character",
+      "status": "cited",
+      "quote": "Yes Chad began as a square-jawed foil posted beside Wojak to answer embarrassing questions with proud affirmation.",
+      "source_url": "https://knowyourmeme.com/memes/yes-chad-gigachad",
+      "source_title": "Yes Chad / Gigachad - Know Your Meme"
+    },
+    {
+      "child_id": "trad-girl",
+      "parent_id": "yes-chad",
+      "axis": "character",
+      "status": "inferred",
+      "quote": null,
+      "source_url": null,
+      "source_title": null
+    }
+  ],
+  "descent": {
+    "character": [
+      "wojak",
+      "drawn-character"
+    ],
+    "format": []
+  },
+  "sightings": [
+    {
+      "id": "extra-wojak-0",
+      "platform": "reddit",
+      "post_url": "https://lemmy.ca/post/73835662",
+      "image_url": "https://i.imgflip.com/4/2qmyau.jpg",
+      "title": "wojak energy today",
+      "author": "Quilotoa",
+      "posted_at": "2026-11-14T15:28:53Z",
+      "node_id": "wojak",
+      "node_name": "Wojak",
+      "state": "resolved"
+    },
+    {
+      "id": "extra-wojak-2",
+      "platform": "reddit",
+      "post_url": "https://lemmy.world/post/54382002",
+      "image_url": "https://i.imgflip.com/4/2qmyau.jpg",
+      "title": "the feeling when",
+      "author": "Warl0k3",
+      "posted_at": "2026-11-14T15:25:45Z",
+      "node_id": "wojak",
+      "node_name": "Wojak",
+      "state": "resolved"
+    },
+    {
+      "id": "extra-wojak-3",
+      "platform": "x",
+      "post_url": "https://poptalk.scrubbles.tech/post/5067695",
+      "image_url": "https://i.imgflip.com/4/2qmyau.jpg",
+      "title": "the feeling when",
+      "author": "scrubbles",
+      "posted_at": "2026-11-14T15:08:28Z",
+      "node_id": "wojak",
+      "node_name": "Wojak",
+      "state": "resolved"
+    },
+    {
+      "id": "extra-wojak-1",
+      "platform": "mastodon",
+      "post_url": "https://piefed.world/c/memes/p/1533419/silver-lining",
+      "image_url": "https://i.imgflip.com/4/2qmyau.jpg",
+      "title": "the feeling when",
+      "author": "StillAlive",
+      "posted_at": "2026-11-14T15:07:53Z",
+      "node_id": "wojak",
+      "node_name": "Wojak",
+      "state": "resolved"
+    },
+    {
+      "id": "s025",
+      "platform": "lemmy",
+      "post_url": "https://lemmy.world/post/54370487",
+      "image_url": "https://i.imgflip.com/4/2qmyau.jpg",
+      "title": "the feeling when",
+      "author": "cannedtuna",
+      "posted_at": "2026-11-14T14:46:54Z",
+      "node_id": "wojak",
+      "node_name": "Wojak",
+      "state": "resolved"
+    }
+  ],
+  "history": [
+    {
+      "id": "h1",
+      "ts": "2026-11-13T14:00:00Z",
+      "type": "cited",
+      "message": "Established Wojak's character link to Drawn Character.",
+      "source_url": "https://knowyourmeme.com/memes/wojak",
+      "pending": false
+    },
+    {
+      "id": "h2",
+      "ts": "2026-11-09T16:00:00Z",
+      "type": "traced",
+      "message": "Soyjak traced as a Wojak variant from a sightings cluster.",
+      "source_url": null,
+      "pending": false
+    },
+    {
+      "id": "h3",
+      "ts": "2026-11-06T16:00:00Z",
+      "type": "cited",
+      "message": "Linked Yes Chad to Wojak as its confident foil.",
+      "source_url": "https://knowyourmeme.com/memes/yes-chad-gigachad",
+      "pending": false
+    }
+  ]
+}
