@@ -16,6 +16,12 @@ from memepedia.api import app  # noqa: E402
 from scripts.load_fixtures import load  # noqa: E402
 
 
+@pytest.fixture(scope="session", autouse=True)
+def local_test_database() -> None:
+    """Every test talks to the local test database, never to the one in DATABASE_URL."""
+    db.configure(db.local_url("memepedia_test"))
+
+
 @pytest.fixture(scope="session")
 def client() -> Iterator[TestClient]:
     """A TestClient against a freshly loaded test database, for the whole test session."""
