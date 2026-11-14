@@ -1,10 +1,10 @@
 # Memepedia — current status
 
-Last updated: 2026-11-14 18:10 EET. Read this first when picking the project up in a new session.
+Last updated: 2026-11-14 evening EET. Read this first when picking the project up in a new session.
 
 ## In one paragraph
 
-Memepedia is a hackathon project (Junction 2026, team of two, main challenge: Context.dev "The Web Is Your Real-Time Database"). It is a live meme genealogy site: posts seen on social feeds minutes ago are stamped with the meme family they belong to, and any meme can be traced back to its origin with a quoted source on every link. The owner gave the go-ahead on 2026-11-14 and the backend is being built on the `pipeline` branch. The backend code is written end to end and tested: the database layer, every route of the contract (both `GET` and `POST`), the Context.dev client, the three source fetchers, the image lookup, the Gemini client, the name resolver, the trace with quote verification, the live loop with emerging-meme detection, and the curated seed data. All of it is committed and pushed to `origin/pipeline`. What remains is running it for real (the full seed, the week backfill, the live loop), deployment, monitors, and the merge with the frontend.
+Memepedia is a hackathon project (Junction 2026, team of two, main challenge: Context.dev "The Web Is Your Real-Time Database"). It is a live meme genealogy site: posts seen on social feeds minutes ago are stamped with the meme family they belong to, and any meme can be traced back to its origin with a quoted source on every link. Backend and frontend are both merged into `main`: `pipeline` (the owner's backend) was merged into `main` with the owner's explicit OK, and the teammate's `web` branch (the frontend, in `web/`) had already been merged into `main` earlier via PR #1. `pipeline` has since been fast-forwarded to `main`, so both branches now carry backend and frontend together. The backend code is written end to end and tested: the database layer, every route of the contract (both `GET` and `POST`), the Context.dev client, the three source fetchers, the image lookup, the Gemini client, the name resolver, the trace with quote verification, the live loop with emerging-meme detection, and the curated seed data. The two bugs found when the frontend first exercised the deployed backend (see `claude_docs/MERGE_TRYOUTS.md`) — trace and proposals — are fixed. What remains: hosting the built frontend, Context.dev monitors, the week backfill, the Imgflip top-100 step, and the in-progress NSFW guardrail and modern-memes additions below.
 
 ## Where everything is
 
@@ -17,6 +17,8 @@ Memepedia is a hackathon project (Junction 2026, team of two, main challenge: Co
 | Mock data, one file per endpoint | `contract/fixtures/` (see its README; run `python3 -I contract/fixtures/check_fixtures.py` to validate) |
 | Feasibility test scripts, samples and results | `spikes/`, results in `spikes/P0_RESULTS.md` |
 | Backend code | `backend/memepedia/` (package), `backend/scripts/`, `backend/tests/` |
+| Frontend code | `web/` (static React app) |
+| Frontend teammate's try-out report against the deployed backend (two failures, trace and proposals — both now fixed) | `claude_docs/MERGE_TRYOUTS.md` |
 | Curated seed data (roots and five families) | `backend/memepedia/data/seed.json` |
 | Secrets | `.env` (git-ignored): `CONTEXTDOTDEV_KEY`, `GEMINI_KEY`, `GEMINI_EMAIL`, `GEMINI_PASSWORD` |
 | Context.dev credit ledger (local, git-ignored) | `backend/.data/credits.jsonl` |
@@ -59,19 +61,28 @@ The database is a local PostgreSQL 16 that starts itself on first use (the `pgse
 - Image identification: names the meme in an uploaded image, or says what to trace instead.
 - The clock scripts: `run_loop.py` (a local rotation until there is a public URL) and `monitors.py` (Context.dev page monitors as the clock once there is one).
 - The four `POST` routes, wired in `backend/memepedia/api.py`: `/api/trace` (a server-sent event stream), `/api/identify` (image upload, 5 MB limit), `/api/proposals`, `/api/webhooks/context`. The first three share a per-minute call budget (trace 12, identify 20, proposals 12) that answers 429 once spent, so a looping client cannot drain paid quotas. The webhook answers quickly and runs the feed tick in the background, ignores repeated deliveries of the same event id, and checks the `X-Context-Signature` header only when `CONTEXTDEV_WEBHOOK_SECRET` is set.
-- Tests for the four `POST` routes (`backend/tests/test_api_post.py`). The whole suite is 187 tests, all passing; Ruff and strict mypy are clean.
-- Deployed to Modal (2026-11-14 ~17:15 EET): `backend/deploy.py`'s `web` function (kept warm) and `clock` function (every minute, one feed per tick) are both live at `https://aleksandr-shishkov-work--memepedia-web.us-east.modal.run`. All routes respond 200; CORS and the `/api/trace` SSE stream (events arrive incrementally, not buffered) both check out. The clock has already resolved several sightings into the wall.
+- Tests for the four `POST` routes (`backend/tests/test_api_post.py`). The suite is now 210 tests, all passing; Ruff is clean. Strict mypy (`uv run mypy memepedia scripts`) is clean; `mypy memepedia tests` still reports pre-existing errors in 6 test files (see "Still open").
+- Deployed to Modal (2026-11-14 ~17:15 EET, redeployed since with the fixes below): `backend/deploy.py`'s `web` function (kept warm) and `clock` function are both live at `https://aleksandr-shishkov-work--memepedia-web.us-east.modal.run`. All routes respond 200; CORS and the `/api/trace` SSE stream (events arrive incrementally, not buffered) both check out.
+- The Modal clock's schedule is now switchable by the `MEMEPEDIA_CLOCK` env var (unset = paused, `MEMEPEDIA_CLOCK=1` turns it on; set it in `backend/.env` or the shell and redeploy). **It is currently paused** — it does not run every minute any more; see "Decisions made" and "Still open".
+- Auto-trace fix: a pending sighting only triggers an automatic trace once the same template guess has been seen from at least 2 distinct authors inside the 72-hour pending window, and the result is created as a `specimen` node (not `established`).
+- Proposals scrape fix: the Context.dev `formats` argument was being sent as `{"markdown": {}}` (an object), which Context.dev rejected with 400 ("Could not read that page"); it is now sent as booleans.
+- Gemini reliability fix: per-attempt timeout raised from 20 s to 60 s with one retry; the `/api/trace` SSE stream emits a "Still thinking…" `StatusEvent` every 8 s while waiting, and a timeout now produces a specific error message instead of a generic failure.
+- Live verification after redeploy, same URL: proposals works end to end (tried against the Wikipedia Wojak page, correctly and honestly rejected with "no citable sentence" in about 4 s); trace on "Rickroll" completed in about 116 s (roughly 60 s for Gemini's first draft, roughly 52 s for a citation search that found none, so the link to video-remix was inferred). The owner has accepted that trace latency of a few minutes is fine for the demo; speed is not a current priority.
+- NSFW guardrail (branch `feat/nsfw-guardrail`, PR open to `main`, in progress — see below).
 
 ## In progress
 
-Nothing is half-written right now. The backend code is complete for the planned build; what is left is running it for real (below) and deployment.
+- **NSFW guardrail** on branch `feat/nsfw-guardrail`, PR open to `main`: a nullable `nsfw: boolean | null` field on `MemeNode` and `Sighting`, labelled by the existing Gemini vision call under a strict, demo-safe policy. NSFW and unlabelled sightings are removed from the wall, week strip and live feed; a node whose image is NSFW or unlabelled is shown blurred with click-to-reveal. Includes a backfill script (`backend/scripts/label_nsfw.py`) and a manual override script (`backend/scripts/set_nsfw.py`). The production migration adds the nullable `nsfw` column; not yet run on the hosted database as of this update.
+- **Modern memes**: adding a shortlist the owner approved — Skibidi Toilet, Chill Guy, Moo Deng, Grimace Shake, Nihilist Penguin, Shrimp Jesus, Studio Ghibli AI filter, Bombardiro Crocodilo, Tralalero Tralala, Absolute Cinema, optionally Labubu and 100 Men vs 1 Gorilla. Candidates tracked in `backend/.data/modern_memes_candidates.json`.
 
 ## Not done
 
 - The Imgflip top 100 step of the seed (`--steps templates`, then `verify` for the new links). The curated part of the seed is done, see "State of the data". Verifying a link costs 6 to 7 credits, so 100 templates with one or two links each come to roughly 600 to 1300 credits: check the credit balance with the owner first.
 - The week backfill: `scripts/backfill.py` has not been run.
-- Context.dev monitors are not set up yet; the one-minute Modal clock is the live loop's source of ticks for now (see "Decisions waiting on the owner").
-- The merge with the frontend.
+- Context.dev monitors are not set up yet; the webhook signing secret has not been created either (the owner asked for an explanation of what it is before proceeding) — see "Still open".
+- Hosting the frontend build: not done yet. The owner's partner will serve it from the same Modal app (see "Decisions waiting on the owner").
+- Known orphan node `big-bird-in-a-meeting` (no link to anything) — an orphan bug in `trace.materialise` / `_attach_rootless`, not yet fixed. The owner says individual-meme bugs like this are low priority for now.
+- The 3-minute demo script and a backup video are still not written/recorded.
 
 ## Decisions made
 
@@ -87,6 +98,11 @@ Nothing is half-written right now. The backend code is complete for the planned 
 - Hosting (owner, 2026-11-14): Modal for the backend and Aiven for Postgres. Both wait on the owner's signups; until then the backend runs on the laptop.
 - Seed budget (owner, 2026-11-14): the full seed is affordable. Run it in priority order so the demo is covered first: Wojak, Doge and Pepe, then the other curated families, then the Imgflip top 100.
 - Advice Animals on the family map (owner, 2026-11-14): left as it is for now. They show as single nodes; the demo families are unaffected.
+- Clock schedule (owner, option 3, 2026-11-14): the Modal clock is switchable via `MEMEPEDIA_CLOCK` and is currently paused rather than running every minute; turn it on deliberately when wanted.
+- NSFW policy (owner, 2026-11-14): strict and demo-safe. NSFW sightings are removed from the wall; nodes with an NSFW or unlabelled image are hidden/blurred until a person reveals them by clicking.
+- Modern memes shortlist (owner, 2026-11-14): approved — see "In progress".
+- Cloudinary (owner, 2026-11-14): was only an optional idea in the original plan (an image host plus a side challenge); never implemented, and now dropped. Images stay hotlinked from their original sources (nodes mostly `i.imgflip.com`; sightings from Lemmy CDNs and `i.redd.it`).
+- Priorities (owner, 2026-11-14): fix only important breaking bugs for now; speed is not a priority (a trace taking a few minutes is acceptable). Next step after the work in progress is for the owner to check the app end to end and prepare the demo.
 
 ## Assumptions made while the owner was away (say if any is wrong)
 
@@ -98,15 +114,14 @@ Nothing is half-written right now. The backend code is complete for the planned 
 
 ## Decisions waiting on the owner
 
-1. **Hosting (done 2026-11-14 ~17:15 EET).** The backend is live on Modal: `https://aleksandr-shishkov-work--memepedia-web.us-east.modal.run` is the public base URL (now also `PUBLIC_BASE_URL` in `.env`). The `web` function stays warm and serves the API; the `clock` function runs every minute, visiting one feed per tick in rotation, and is already producing sightings (first run ~17:16, 99 sightings by 17:25). `CONTEXTDEV_WEBHOOK_SECRET` is still unset, so the webhook accepts any caller for now — set it before turning on Context.dev monitors (see below).
-2. **Context.dev monitors, not yet turned on.** `scripts/monitors.py create --dry-run` (run against the live `PUBLIC_BASE_URL`) shows it would create 16 monitors, one per feed, each polling every 10 minutes and pointing its webhook at `<PUBLIC_BASE_URL>/api/webhooks/context`. Two things needed first: the `whsec_...` webhook signing secret (not found in this repo — `spikes/P0_RESULTS.md` Test 5 created a monitor with no `webhook` key at all, so no secret was ever returned; per `contextdev.py`'s docstring it is either returned when a monitor/webhook is created with one, or copied from the Context.dev dashboard — needs checking there), and a credit-budget decision: `spikes/P0_RESULTS.md` Test 5 shows a monitor's baseline run costs 1 credit (`credits_charged: 1`); an immediately-following on-demand run was skipped as "superseded" at 0 credits, so the real per-run cost in steady state (one run per 10-minute interval, 16 monitors) still wants the owner's go-ahead.
-3. **When `pipeline` goes into `main`.** The code is pushed on `pipeline` (`origin/pipeline` is level with the local branch); `main` is untouched and equals `origin/main`. Open question: merge `pipeline` into `main` now so the teammate can branch `web` from `main`, or have them branch `web` from `pipeline` directly and merge everything into `main` later. Needs the owner's say.
-4. **Hand-check of seed facts.** Sixteen nodes are flagged `uncertain` in `seed.json` with a note on what to check: crying-wojak, brainlet, coomer, yes-chad, grug, doge, swole-doge-vs-cheems, walter, sad-frog, smug-frog, sadge, chad, average-fan-vs-average-enjoyer, paranoid-parrot, success-kid, drake-hotline-bling. The three demo families (Wojak, Doge, Pepe) matter most.
-5. **Modelling gap (parked).** Advice Animals are related through the format line only, so the character-family map shows each as a single node. The owner chose to leave this for now. If it is picked up later: either the map draws format links, or the strip defaults to the format line for such memes.
+1. **Hosting.** The backend is live on Modal: `https://aleksandr-shishkov-work--memepedia-web.us-east.modal.run` is the public base URL (also `PUBLIC_BASE_URL` in `.env`). The `web` function stays warm and serves the API. The frontend is not hosted yet; the owner's partner will serve the built frontend from the same Modal app. **Warning:** `modal deploy deploy.py` replaces the whole app, so only deploy from an up-to-date `main`/`pipeline`; deploying needs `backend/.env` and access to the `aleksandr-shishkov-work` Modal workspace.
+2. **Context.dev monitors and webhook secret — not created.** The owner asked for an explanation of what the webhook signing secret is and does before proceeding, so this is still open rather than merely waiting on a budget call. `scripts/monitors.py create --dry-run` (run against the live `PUBLIC_BASE_URL`) shows it would create 16 monitors, one per feed, each polling every 10 minutes and pointing its webhook at `<PUBLIC_BASE_URL>/api/webhooks/context`. Needed: the `whsec_...` webhook signing secret (per `contextdev.py`'s docstring, returned when a monitor/webhook is created with one, or copied from the Context.dev dashboard), and a credit-budget decision (a monitor's baseline run costs about 1 credit; steady-state cost for 16 monitors polling every 10 minutes still wants a go-ahead).
+3. **Hand-check of seed facts.** Sixteen nodes were flagged `uncertain` in `seed.json`; their dates were confirmed and corrected on 2026-11-14 (commit 51f4757). Sixteen uncertain seed facts are still listed as open below under "Still open" — check `seed.json` directly if this is inconsistent.
+4. **Modelling gap (parked).** Advice Animals are related through the format line only, so the character-family map shows each as a single node. The owner chose to leave this for now. If it is picked up later: either the map draws format links, or the strip defaults to the format line for such memes.
 
 ## Working agreements
 
-- `main` is protected: no commits, merges or pushes to it without the owner's explicit confirmation. Work happens on `pipeline` (backend) and `web` (frontend).
+- `main` is protected: no commits, merges or pushes to it without the owner's explicit confirmation. `pipeline` and `web` have both been merged into `main` and `pipeline` fast-forwarded to it, so `main` now holds backend and frontend together; new work should branch from an up-to-date `main`/`pipeline` (e.g. `feat/nsfw-guardrail`).
 - Commit regularly, with small commits.
 - The main session decides; subagents do the legwork: Opus for outsourced thinking, Sonnet for implementation, Haiku for cheap fact-gathering (verify what Haiku returns).
 - Never print or commit anything from `.env`.
@@ -137,5 +152,17 @@ Nothing is half-written right now. The backend code is complete for the planned 
 - A backup of this verified archive is in `backend/.data/archive_curated_verified.dump` (git-ignored, `pg_dump -Fc`). Do not run `seed.py --reset` without it: the citations cost about 510 credits to produce.
 - The hosted Aiven database was wiped at ~17:25 and restored at 17:45 EET from `backend/.data/after_templates_trial.json` (17:24 export: 85 nodes, 81 links of which 41 cited, 89 sightings, 52 history). Lost: the clock's sightings and any auto-traced rows between 17:24 and 17:45. Afterwards the orphan node `i-am-once-again-asking-for-your-financial-support` (no links, sightings or history) was deleted, and the monkas -> pepe-the-frog quote had its leading footnote links removed (the clean sentence was checked on the page). At 18:09 the hosted database held 96 nodes, 93 links (44 cited), 316 sightings, 67 history; the clock keeps adding to it.
 - Snapshots in `backend/.data/` (git-ignored): `aiven_before_templates.json` (17:18), `after_templates_trial.json` (17:24, the restore source), `step2_consolidated_repairs.json` (the quote repairs), `aiven_wiped_state.json` (the mock data that was served, kept as a record), `aiven_restored.json` (18:09, after the restore and the two fixes).
-- The week backfill has not been run. On the laptop the live loop is not running; the Modal clock is.
+- Further data cleanup on the production (Aiven) database, done after the above: an export `backend/.data/aiven_before_option3.json` was taken first; the junk nodes `piaget-s-conservation-of-volume` and `for-the-better-right` were deleted; 23 clock-made nodes were demoted to `specimen`. Counts after cleanup are roughly 103 nodes (80 `established`, including the new `rickroll`, plus 23 `specimen`).
+- Specimen expiry (`store.expire_specimens(days=7)`): deletes a `specimen` node older than 7 days with no sighting in the last 7 days. The earliest any of the current specimens can be removed by this is 2026-11-21.
+- Known orphan: `big-bird-in-a-meeting` has no link to anything (an orphan bug in `trace.materialise`/`_attach_rootless`, not yet fixed; low priority per the owner).
+- The week backfill has not been run. On the laptop the live loop is not running; the Modal clock is paused (see "Decisions made").
 - Context.dev credits: the backend ledger `backend/.data/credits.jsonl` shows 598 credits since 15:59 on 2026-11-14 (585 on quote verification, 13 on Reddit and Imgflip fetches), on top of roughly 55 from the feasibility tests. About 85 of those were wasted by re-checking 13 demo-family links that had already failed once.
+
+## Still open
+
+- Context.dev monitors and the webhook signing secret (not created; owner asked for an explanation first — see "Decisions waiting on the owner").
+- The week backfill (`scripts/backfill.py` not run).
+- The Imgflip top-100 templates step of the seed.
+- Sixteen uncertain seed facts (see "Decisions waiting on the owner" #3 for which commit touched these).
+- Three seed memes missing images (Consoomer, Foul Bachelor Frog, Ridiculously Photogenic Guy).
+- `mypy memepedia tests` reports pre-existing errors in 6 test files; `mypy memepedia scripts` is clean.
