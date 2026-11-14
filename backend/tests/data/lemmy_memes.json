@@ -1,0 +1,71 @@
+{
+  "posts": [
+    {
+      "post": {
+        "id": 1,
+        "name": "Spell it out",
+        "url": "https://lemmy.ca/pictrs/image/ecf653f9.png",
+        "published": "2026-11-14T12:24:13.720951Z",
+        "deleted": false,
+        "nsfw": false,
+        "removed": false,
+        "ap_id": "https://lemmy.ca/post/73835763",
+        "url_content_type": "image/png"
+      },
+      "creator": { "name": "Quilotoa" }
+    },
+    {
+      "post": {
+        "id": 2,
+        "name": "Reminder about Rule #2: No politics",
+        "body": "No url on this one, it's a text post.",
+        "published": "2024-11-08T15:23:49.627118Z",
+        "deleted": false,
+        "nsfw": false,
+        "removed": false,
+        "ap_id": "https://lemmy.world/post/21782719"
+      },
+      "creator": { "name": "The_Picard_Maneuver" }
+    },
+    {
+      "post": {
+        "id": 3,
+        "name": "An NSFW meme",
+        "url": "https://lemmy.world/pictrs/image/nsfw.jpg",
+        "published": "2026-11-14T10:00:00Z",
+        "deleted": false,
+        "nsfw": true,
+        "removed": false,
+        "ap_id": "https://lemmy.world/post/3"
+      },
+      "creator": { "name": "someone" }
+    },
+    {
+      "post": {
+        "id": 4,
+        "name": "A removed meme",
+        "url": "https://lemmy.world/pictrs/image/removed.jpg",
+        "published": "2026-11-14T10:00:00Z",
+        "deleted": false,
+        "nsfw": false,
+        "removed": true,
+        "ap_id": "https://lemmy.world/post/4"
+      },
+      "creator": { "name": "someone" }
+    },
+    {
+      "post": {
+        "id": 5,
+        "name": "We're hiring",
+        "url": "https://lemmy.ca/pictrs/image/8c565fea.png",
+        "published": "2026-11-14T12:22:47.773903Z",
+        "deleted": false,
+        "nsfw": false,
+        "removed": false,
+        "ap_id": "https://lemmy.ca/post/73835662",
+        "url_content_type": "image/png"
+      },
+      "creator": { "name": "Quilotoa" }
+    }
+  ]
+}
