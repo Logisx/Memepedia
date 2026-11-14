@@ -82,7 +82,9 @@ def _load_sightings(sightings: list[dict[str, Any]], offset: timedelta) -> int:
             continue
         posted_at = datetime.fromisoformat(raw["posted_at"]) + offset
         post = Post.model_validate({**raw, "source": "fixture", "posted_at": posted_at})
-        sid = store.insert_sighting(post, None, raw["node_id"], raw["state"])
+        sid = store.insert_sighting(
+            post, None, raw["node_id"], raw["state"], nsfw=raw.get("nsfw", False)
+        )
         if sid is not None:
             db.execute("UPDATE sightings SET seen_at = %s WHERE id = %s", (posted_at, sid))
             count += 1

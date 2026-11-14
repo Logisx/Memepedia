@@ -41,6 +41,8 @@ def _label(**overrides: object) -> VisionLabel:
         overlaid_text=None,
         catchphrase=None,
         description="a tired-looking figure",
+        nsfw=False,
+        nsfw_reason=None,
     )
     base.update(overrides)
     return VisionLabel(**base)
@@ -299,6 +301,7 @@ def test_tick_auto_trace_attaches_and_respects_cap(
             status="specimen",
             sightings_24h=0,
             sightings_7d=0,
+            nsfw=None,
         )
     )
 
@@ -507,6 +510,7 @@ def test_detect_specimens_full_flow(client: TestClient, monkeypatch: pytest.Monk
             status="specimen",
             sightings_24h=0,
             sightings_7d=0,
+            nsfw=None,
         )
     )
     store.upsert_node(
@@ -524,6 +528,7 @@ def test_detect_specimens_full_flow(client: TestClient, monkeypatch: pytest.Monk
             status="established",
             sightings_24h=0,
             sightings_7d=0,
+            nsfw=None,
         )
     )
 
@@ -621,6 +626,27 @@ def test_identify_unknown_without_guess(
     assert result.node_id is None
     assert result.trace_query == "an odd drawing"
     assert result.guess == "an odd drawing"
+
+
+def test_identify_blanks_the_response_for_an_nsfw_image(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(live, "get_settings", lambda: _settings())
+    monkeypatch.setattr(
+        llm,
+        "vision_label",
+        lambda *a, **kw: _label(
+            template_guess="Doomer", confidence=0.95, nsfw=True, nsfw_reason="graphic gore"
+        ),
+    )
+    monkeypatch.setattr(resolver, "resolve", lambda name, *, hint=None: "doomer")
+
+    result = live.identify(b"bytes", "image/png")
+
+    assert result.node_id is None
+    assert result.trace_query is None
+    assert result.guess is None
+    assert result.overlaid_text is None
 
 
 def test_identify_rejects_an_unsupported_type() -> None:

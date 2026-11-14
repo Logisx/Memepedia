@@ -164,6 +164,7 @@ def _node(
         status="established",
         sightings_24h=0,
         sightings_7d=0,
+        nsfw=None,
     )
 
 

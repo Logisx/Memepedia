@@ -14,7 +14,8 @@
       "summary": "A smaller, dumber-looking Shiba Inu derived from Doge, used as the 'weak' side of strength comparisons.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 9
+      "sightings_7d": 9,
+      "nsfw": false
     },
     {
       "id": "comparison",
@@ -29,7 +30,8 @@
       "summary": "Two-or-more-panel formats that juxtapose options, people or outcomes side by side.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 9
+      "sightings_7d": 9,
+      "nsfw": false
     },
     {
       "id": "doge",
@@ -46,7 +48,8 @@
       "summary": "A Shiba Inu photographed with a skeptical sideways glance, captioned in broken 'doge speak' like 'such wow'.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 6
+      "sightings_7d": 6,
+      "nsfw": false
     },
     {
       "id": "reaction-image",
@@ -61,7 +64,8 @@
       "summary": "A still image, usually a face or character, posted in reply to something to convey a reaction.",
       "status": "established",
       "sightings_24h": 4,
-      "sightings_7d": 22
+      "sightings_7d": 22,
+      "nsfw": false
     },
     {
       "id": "swole-doge",
@@ -76,7 +80,8 @@
       "summary": "A heavily muscled edit of Doge representing the 'strong, disciplined past' side of a comparison format.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 4
+      "sightings_7d": 4,
+      "nsfw": false
     },
     {
       "id": "swole-doge-vs-cheems",
@@ -93,7 +98,8 @@
       "summary": "A two-panel comparison pitting muscular Swole Doge against weak Cheems to mock generational or lifestyle decline.",
       "status": "established",
       "sightings_24h": 4,
-      "sightings_7d": 16
+      "sightings_7d": 16,
+      "nsfw": false
     },
     {
       "id": "virgin-vs-chad",
@@ -108,7 +114,8 @@
       "summary": "A two-column comparison template contrasting an exaggeratedly pathetic 'virgin' with a confident, idealized 'Chad'.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 8
+      "sightings_7d": 8,
+      "nsfw": false
     },
     {
       "id": "walter",
@@ -123,7 +130,8 @@
       "summary": "An angry-eyebrowed Shiba Inu variant, named for a short-tempered dog character, used for indignant reactions.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 2
+      "sightings_7d": 2,
+      "nsfw": false
     }
   ],
   "family_ids": [
@@ -220,7 +228,8 @@
       "posted_at": "2026-11-14T15:16:13Z",
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "extra-swole-doge-vs-cheems-3",
@@ -232,7 +241,8 @@
       "posted_at": "2026-11-14T15:12:43Z",
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "extra-swole-doge-vs-cheems-0",
@@ -244,7 +254,8 @@
       "posted_at": "2026-11-14T15:09:44Z",
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "extra-swole-doge-vs-cheems-1",
@@ -256,7 +267,8 @@
       "posted_at": "2026-11-14T15:05:57Z",
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "extra-swole-doge-vs-cheems-2",
@@ -268,7 +280,8 @@
       "posted_at": "2026-11-14T14:46:23Z",
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     }
   ],
   "history": [

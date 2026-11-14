@@ -62,6 +62,7 @@ def _node(
         status=status,
         sightings_24h=0,
         sightings_7d=0,
+        nsfw=None,
     )
 
 

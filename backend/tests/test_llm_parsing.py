@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import pytest
+
 from memepedia import llm
 from memepedia.llm import (
+    LLMBlockedError,
     RootInfo,
     _clamp_quote_index,
     _parse_clusters,
@@ -82,6 +85,62 @@ def test_parse_vision_label_keeps_known_structure_class() -> None:
     }
     label = _parse_vision_label(raw, ROOTS)
     assert label.structure_class == "image-macro"
+
+
+def test_parse_vision_label_defaults_nsfw_false_when_missing() -> None:
+    raw = {
+        "is_meme": True,
+        "template_guess": "Doomer",
+        "confidence": 0.9,
+        "structure_class": None,
+        "subjects": [],
+        "overlaid_text": None,
+        "catchphrase": None,
+        "description": "x",
+    }
+    label = _parse_vision_label(raw, ROOTS)
+    assert label.nsfw is False
+    assert label.nsfw_reason is None
+
+
+def test_parse_vision_label_reads_nsfw_true_with_reason() -> None:
+    raw = {
+        "is_meme": True,
+        "template_guess": None,
+        "confidence": 0.2,
+        "structure_class": None,
+        "subjects": [],
+        "overlaid_text": None,
+        "catchphrase": None,
+        "description": "x",
+        "nsfw": True,
+        "nsfw_reason": "graphic injury",
+    }
+    label = _parse_vision_label(raw, ROOTS)
+    assert label.nsfw is True
+    assert label.nsfw_reason == "graphic injury"
+
+
+def test_vision_label_treats_a_safety_block_as_nsfw(monkeypatch: pytest.MonkeyPatch) -> None:
+    def blocked(*args: object, **kwargs: object) -> str:
+        raise LLMBlockedError("Gemini returned no text (likely blocked by safety filters)")
+
+    monkeypatch.setattr(llm, "_generate", blocked)
+    label = llm.vision_label(b"bytes", "image/png", title=None, roots=ROOTS)
+    assert label.nsfw is True
+    assert label.nsfw_reason is not None
+    assert label.is_meme is False
+    assert label.template_guess is None
+
+
+def test_label_nsfw_only_treats_a_safety_block_as_nsfw(monkeypatch: pytest.MonkeyPatch) -> None:
+    def blocked(*args: object, **kwargs: object) -> str:
+        raise LLMBlockedError("Gemini returned no text (likely blocked by safety filters)")
+
+    monkeypatch.setattr(llm, "_generate", blocked)
+    nsfw, reason = llm.label_nsfw_only(b"bytes", "image/png")
+    assert nsfw is True
+    assert reason is not None
 
 
 def test_parse_draft_chain_drops_links_with_unknown_names() -> None:

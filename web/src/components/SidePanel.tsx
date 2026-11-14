@@ -53,10 +53,13 @@ export function SidePanel({ nodeId, sightings, history, onCited }: Props) {
 }
 
 function SightingsList({ sightings }: { sightings: Sighting[] }) {
-  if (sightings.length === 0) return <p className="font-type text-lg">No recent sightings of this meme.</p>
+  // Defensive: the backend should never send a sighting that isn't nsfw === false, but
+  // never render one that slips through anyway.
+  const safe = sightings.filter((s) => s.nsfw === false)
+  if (safe.length === 0) return <p className="font-type text-lg">No recent sightings of this meme.</p>
   return (
     <ul className="m-0 list-none space-y-3 p-0">
-      {sightings.map((s) => (
+      {safe.map((s) => (
         <li key={s.id} className="flex gap-3">
           <img src={s.image_url} alt="" loading="lazy" className="h-20 w-20 shrink-0 border border-ink object-cover" />
           <div className="min-w-0">

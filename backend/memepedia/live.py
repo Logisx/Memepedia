@@ -390,6 +390,8 @@ def identify(image: bytes, mime_type: str) -> IdentifyResponse:
     label = llm_module.vision_label(
         image, mime_type, title=None, roots=roots, known_names=known_names
     )
+    if label.nsfw:
+        return IdentifyResponse(node_id=None, trace_query=None, guess=None, overlaid_text=None)
     node_id = None
     settings = get_settings()
     if label.template_guess and label.confidence >= settings.vision_min_confidence:

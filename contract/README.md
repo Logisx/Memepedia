@@ -34,6 +34,24 @@ Memepedia is built as two independent halves that meet only here.
 - Errors are `{ "error": "<message>" }` with a 4xx or 5xx status.
 - The backend allows cross-origin requests from any origin during the hackathon.
 
+## NSFW policy
+
+`nsfw: boolean | null` lives on `MemeNode` and `Sighting` (`null` = not yet labelled). The archive
+is shown to judges on a big screen, so the bar is deliberately stricter than a normal content
+filter. NSFW means: nudity or sexual content/innuendo-heavy imagery; gore or graphic injury;
+violence against real people; slurs or hate symbols; drugs depicted favourably; graphic bodily
+fluids; or anything a reasonable person wouldn't show at a work presentation. Ordinary mild
+swearing and dark-but-not-graphic humour are SFW. (The single source of truth for this definition
+is the vision prompt in `backend/memepedia/llm.py`; this paragraph mirrors it.)
+
+- **Sightings**: the backend never returns a sighting anywhere (`/api/wall`, the week view, SSE
+  live events, `/api/tree/{id}`) unless its `nsfw` is exactly `false` — `true` and `null` (not yet
+  labelled) are both excluded. The frontend defensively hides any sighting with `nsfw !== false`
+  that slips through anyway.
+- **Nodes** are never removed (that would break family trees). The frontend blurs a node's image
+  with a click-to-reveal overlay whenever `nsfw` is `true` or `null`, and only shows it plainly
+  once a human or the backfill has set it `false`.
+
 ## Changing the contract
 
 Say so in the team chat first, then change `types.ts` and the affected fixture in the same commit.

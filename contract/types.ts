@@ -34,6 +34,11 @@ export interface MemeNode {
   status: "established" | "specimen";
   sightings_24h: number;
   sightings_7d: number;
+  /**
+   * null = not yet labelled. The frontend blurs the image (click-to-reveal) when this is
+   * true OR null; nodes are never removed, only sightings are. See README "NSFW policy".
+   */
+  nsfw: boolean | null;
 }
 
 export interface Link {
@@ -61,6 +66,12 @@ export interface Sighting {
   node_id: string | null;
   node_name: string | null;
   state: "resolved" | "pending" | "unclassified";
+  /**
+   * null = not yet labelled. The backend never returns a sighting where this is not
+   * exactly `false` (wall, week, tree, SSE); the frontend defensively hides any that slip
+   * through. See README "NSFW policy".
+   */
+  nsfw: boolean | null;
 }
 
 export interface HistoryItem {

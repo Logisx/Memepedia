@@ -52,7 +52,13 @@ def local_url(dbname: str = "memepedia") -> str:
 
 
 def is_local_url(url: str) -> bool:
-    """True only for a unix-socket connection into the local dev server's backend/.pgdata."""
+    """True only for a unix-socket connection into the local dev server's backend/.pgdata.
+
+    The socket directory is normally PGDATA_DIR itself, but pgserver falls back to a short
+    path under /run/user/<uid>/python_PostgresServer/<hash> when PGDATA_DIR's own path is too
+    long for a unix socket (e.g. a deeply nested git worktree); comparing against the actual
+    running local server's socket, rather than assuming it equals PGDATA_DIR, covers both.
+    """
     try:
         params = conninfo_to_dict(url)
     except psycopg.ProgrammingError:
@@ -60,7 +66,13 @@ def is_local_url(url: str) -> bool:
     host = params.get("host")
     if "hostaddr" in params or not isinstance(host, str) or not host.startswith("/"):
         return False
-    return Path(host).resolve() == PGDATA_DIR.resolve()
+    if Path(host).resolve() == PGDATA_DIR.resolve():
+        return True
+    try:
+        local_host = conninfo_to_dict(_local_server_uri()).get("host")
+    except Exception:
+        return False
+    return isinstance(local_host, str) and Path(host).resolve() == Path(local_host).resolve()
 
 
 def configure(url: str) -> None:
