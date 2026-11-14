@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterator
+from collections.abc import Callable, Generator, Iterator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from concurrent.futures import TimeoutError as FutureTimeoutError
 from datetime import date
@@ -33,6 +33,21 @@ _VERIFY_DEADLINE_S = 60.0
 _IMAGE_WORKERS = 4
 _IMAGE_DEADLINE_S = 8.0
 _WEB_CONTEXT_CHARS = 1500
+_HEARTBEAT_S = 8.0
+_HEARTBEAT_MESSAGE = "Still thinking…"
+
+
+def _run_with_heartbeat[T](fn: Callable[[], T], *, message: str) -> Generator[TraceEvent, None, T]:
+    """Runs `fn` in a thread, yielding a heartbeat `StatusEvent` every `_HEARTBEAT_S` while it
+    runs, so a slow call (e.g. a Gemini draft) never leaves the SSE stream silent; returns
+    `fn`'s result once it finishes, or re-raises whatever `fn` raised."""
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(fn)
+        while True:
+            try:
+                return future.result(timeout=_HEARTBEAT_S)
+            except FutureTimeoutError:
+                yield StatusEvent(message=message)
 
 
 def _domain(url: str) -> str:
@@ -283,11 +298,18 @@ def trace(
         candidates = [
             llm.Candidate(n.id, n.name, n.kind, tuple(n.aliases)) for n in store.all_nodes()
         ]
-        draft = llm.draft_chain(query, context=context, candidates=candidates, roots=roots)
+        draft = yield from _run_with_heartbeat(
+            lambda: llm.draft_chain(query, context=context, candidates=candidates, roots=roots),
+            message=_HEARTBEAT_MESSAGE,
+        )
         if not draft.known and context is None:
             yield StatusEvent(message="Unfamiliar. Reading the open web…")
-            draft = llm.draft_chain(
-                query, context=_web_context(query), candidates=candidates, roots=roots
+            web_context = _web_context(query)
+            draft = yield from _run_with_heartbeat(
+                lambda: llm.draft_chain(
+                    query, context=web_context, candidates=candidates, roots=roots
+                ),
+                message=_HEARTBEAT_MESSAGE,
             )
         if not draft.subject or not draft.nodes:
             yield ErrorEvent(message="Could not find or hypothesise a lineage for this meme.")
@@ -309,6 +331,9 @@ def trace(
         inferred = [link for link in chain_links if link.status == "inferred"]
         yield from _verify_links(inferred, nodes_by_id)
         yield DoneEvent(node_id=subject_id)
+    except llm.LLMError:
+        logger.exception("trace failed for query %r", query)
+        yield ErrorEvent(message="The model took too long to answer — please try again.")
     except Exception:
         logger.exception("trace failed for query %r", query)
         yield ErrorEvent(message="Something went wrong while tracing this meme.")

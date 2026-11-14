@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from collections.abc import Iterator
 from datetime import date
 from typing import Any
@@ -250,6 +251,44 @@ def test_materialise_sets_specimen_status_and_todays_date(cleanup: list[str]) ->
     assert node.first_seen == date.today()
 
 
+# --- _run_with_heartbeat ----------------------------------------------------------------------
+
+
+def test_run_with_heartbeat_yields_status_events_while_waiting(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(trace, "_HEARTBEAT_S", 0.05)
+
+    def slow() -> str:
+        time.sleep(0.2)
+        return "done"
+
+    events = list(trace._run_with_heartbeat(slow, message="Still thinking…"))
+    assert len(events) >= 2
+    assert all(e.type == "status" and e.message == "Still thinking…" for e in events)
+
+
+def test_run_with_heartbeat_returns_the_function_result(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(trace, "_HEARTBEAT_S", 0.05)
+
+    def gen() -> Iterator[Any]:
+        result = yield from trace._run_with_heartbeat(lambda: "the result", message="x")
+        yield result
+
+    assert list(gen())[-1] == "the result"
+
+
+def test_run_with_heartbeat_reraises_the_function_s_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(trace, "_HEARTBEAT_S", 0.05)
+
+    def boom() -> str:
+        time.sleep(0.1)
+        raise LLMError("boom")
+
+    with pytest.raises(LLMError):
+        list(trace._run_with_heartbeat(boom, message="x"))
+
+
 # --- trace() -------------------------------------------------------------------------------------
 
 
@@ -306,6 +345,47 @@ def test_trace_failure_yields_exactly_one_error_event(monkeypatch: pytest.Monkey
     errors = [e for e in events if e.type == "error"]
     assert len(errors) == 1
     assert events[-1].type == "error"
+
+
+def test_trace_llm_timeout_gives_a_specific_error_message(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def boom(*a: Any, **kw: Any) -> DraftChain:
+        raise LLMError("504 DEADLINE_EXCEEDED")
+
+    monkeypatch.setattr(llm, "draft_chain", boom)
+    events = list(trace.trace("A Totally Unknown Meme Name Xyzzy"))
+    assert events[-1].type == "error"
+    assert events[-1].message == "The model took too long to answer — please try again."
+
+
+def test_trace_emits_heartbeats_during_a_slow_draft(
+    monkeypatch: pytest.MonkeyPatch, cleanup: list[str]
+) -> None:
+    root = _make(cleanup, _node("t-root-heartbeat", "Test Root Heartbeat", kind="format_class"))
+    monkeypatch.setattr(trace, "_HEARTBEAT_S", 0.05)
+    draft = DraftChain(
+        subject="Slow Chain Test",
+        known=True,
+        nodes=[
+            _draft_node("Slow Chain Test"),
+            _draft_node(root.name, existing_id=root.id, kind="format_class"),
+        ],
+        links=[DraftLink(child="Slow Chain Test", parent=root.name, axis="character")],
+    )
+
+    def slow_draft(*a: Any, **kw: Any) -> DraftChain:
+        time.sleep(0.2)
+        return draft
+
+    monkeypatch.setattr(llm, "draft_chain", slow_draft)
+    monkeypatch.setattr(images, "find_image", lambda *a, **kw: None)
+    monkeypatch.setattr(verify, "find_evidence", lambda *a, **kw: None)
+    events = list(trace.trace("Slow Chain Test"))
+    cleanup.append("slow-chain-test")
+    heartbeats = [e for e in events if e.type == "status" and e.message == "Still thinking…"]
+    assert len(heartbeats) >= 2
+    assert events[-1].type == "done"
 
 
 # --- propose ---------------------------------------------------------------------------------

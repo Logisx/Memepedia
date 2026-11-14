@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from memepedia import llm
 from memepedia.llm import (
     RootInfo,
     _clamp_quote_index,
@@ -15,6 +16,12 @@ ROOTS = [
     RootInfo(id="drawn-character", name="Drawn Character", summary="Hand-drawn recurring figure."),
     RootInfo(id="image-macro", name="Image Macro", summary="Captioned photo."),
 ]
+
+
+def test_generate_timeout_gives_a_realistic_deadline() -> None:
+    """One retry at the old 20s budget raced a ~40s observed live failure; 60s per attempt
+    gives a complex draft call a real chance to finish before Gemini's own deadline hits."""
+    assert llm._TIMEOUT_MS == 60_000
 
 
 def test_parse_vision_label_clamps_confidence_above_one() -> None:

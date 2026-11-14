@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from memepedia.config import get_settings
 from memepedia.models import DraftChain, DraftLink, DraftNode, Kind, VisionLabel
 
-_TIMEOUT_MS = 20_000
+_TIMEOUT_MS = 60_000
 _BACKOFF_SECONDS = 2.0
 
 
