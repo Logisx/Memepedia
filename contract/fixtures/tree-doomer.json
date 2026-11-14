@@ -14,7 +14,8 @@
       "summary": "An older, content Wojak variant coined as the cheerful counterpart to the Doomer.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 2
+      "sightings_7d": 2,
+      "nsfw": false
     },
     {
       "id": "brainlet",
@@ -29,7 +30,8 @@
       "summary": "A Wojak variant with a tiny brain drawn above the head, mocking oversimplified takes.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 2
+      "sightings_7d": 2,
+      "nsfw": false
     },
     {
       "id": "coomer",
@@ -44,7 +46,8 @@
       "summary": "A puffy-eyed, unshaven Wojak variant depicting compulsive overconsumption, usually of adult content.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 3
+      "sightings_7d": 3,
+      "nsfw": false
     },
     {
       "id": "doomer",
@@ -59,7 +62,8 @@
       "summary": "A black-beanie, black-hoodie Wojak variant signifying nihilistic pessimism about the future.",
       "status": "established",
       "sightings_24h": 3,
-      "sightings_7d": 14
+      "sightings_7d": 14,
+      "nsfw": false
     },
     {
       "id": "doomer-girl",
@@ -74,7 +78,8 @@
       "summary": "The female counterpart to Doomer, drawn with a beanie and messy hair, sharing the same nihilistic affect.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 3
+      "sightings_7d": 3,
+      "nsfw": false
     },
     {
       "id": "drawn-character",
@@ -89,7 +94,8 @@
       "summary": "Hand- or crudely-drawn recurring characters used as stand-ins for a mood or social type.",
       "status": "established",
       "sightings_24h": 5,
-      "sightings_7d": 27
+      "sightings_7d": 27,
+      "nsfw": false
     },
     {
       "id": "npc-wojak",
@@ -107,7 +113,8 @@
       "summary": "A grey, featureless Wojak variant used to mock people depicted as running on social scripts rather than thinking.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 4
+      "sightings_7d": 4,
+      "nsfw": false
     },
     {
       "id": "soyjak",
@@ -124,7 +131,8 @@
       "summary": "An open-mouthed, wide-eyed Wojak variant used to caricature naive enthusiasm, nicknamed for soy milk drinkers.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 8
+      "sightings_7d": 8,
+      "nsfw": false
     },
     {
       "id": "thirty-year-old-boomer",
@@ -139,7 +147,8 @@
       "summary": "A Wojak variant mocking a young adult who already behaves and complains like a retiree.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 1
+      "sightings_7d": 1,
+      "nsfw": false
     },
     {
       "id": "trad-girl",
@@ -154,7 +163,8 @@
       "summary": "A braided-hair, modestly-dressed female character paired with Yes Chad to represent traditionalist values online.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 1
+      "sightings_7d": 1,
+      "nsfw": false
     },
     {
       "id": "wojak",
@@ -171,7 +181,8 @@
       "summary": "A crudely drawn bald, wide-mouthed everyman face, originally from a Polish forum, used to express raw unfiltered feeling.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 10
+      "sightings_7d": 10,
+      "nsfw": false
     },
     {
       "id": "yes-chad",
@@ -189,7 +200,8 @@
       "summary": "A square-jawed, confident counterpart to Wojak who answers awkward questions with a flat, proud 'yes'.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 7
+      "sightings_7d": 7,
+      "nsfw": false
     },
     {
       "id": "zoomer",
@@ -204,7 +216,8 @@
       "summary": "A Wojak variant with a man-bun and piercing representing Gen Z online culture.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 5
+      "sightings_7d": 5,
+      "nsfw": false
     }
   ],
   "family_ids": [
@@ -352,7 +365,8 @@
       "posted_at": "2026-11-14T15:35:00Z",
       "node_id": "doomer",
       "node_name": "Doomer",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "extra-doomer-0",
@@ -364,7 +378,8 @@
       "posted_at": "2026-11-14T15:32:30Z",
       "node_id": "doomer",
       "node_name": "Doomer",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "extra-doomer-2",
@@ -376,7 +391,8 @@
       "posted_at": "2026-11-14T15:05:22Z",
       "node_id": "doomer",
       "node_name": "Doomer",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s024",
@@ -388,7 +404,8 @@
       "posted_at": "2026-11-14T14:49:50Z",
       "node_id": "doomer",
       "node_name": "Doomer",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "extra-doomer-1",
@@ -400,7 +417,8 @@
       "posted_at": "2026-11-14T14:16:46Z",
       "node_id": "doomer",
       "node_name": "Doomer",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     }
   ],
   "history": [

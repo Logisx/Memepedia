@@ -3,7 +3,7 @@ import { Link as RouterLink, useSearchParams } from 'react-router'
 import type { MemeNode, RelatedResponse } from '@contract/types'
 import { MemePicker } from '../components/MemePicker'
 import { PathDiagram } from '../components/PathDiagram'
-import { getRelated, usingFixtures } from '../data'
+import { getRelated } from '../data'
 
 type Load =
   | { status: 'idle' }
@@ -11,7 +11,7 @@ type Load =
   | { status: 'error'; message: string }
   | { status: 'ready'; related: RelatedResponse }
 
-// Only these pairs have mock data; offered as one-click examples when running on fixtures.
+// One-click examples. Both pairs exist in the fixtures and on the live backend.
 const EXAMPLES = [
   { a: 'doomer', b: 'yes-chad', label: 'Doomer and Yes Chad' },
   { a: 'swole-doge-vs-cheems', b: 'yes-chad', label: 'Swole Doge vs. Cheems and Yes Chad' },
@@ -62,12 +62,22 @@ export default function Related() {
   )
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6">
+    <div className="max-w-6xl px-6 py-6">
       <h1 className="m-0 mb-4 text-3xl font-extrabold">How are two memes related?</h1>
       <div className="flex flex-wrap items-end gap-4">
         <MemePicker label="First meme" value={value(a)} onPick={pick('a')} />
-        <span aria-hidden className="font-type pb-2 text-2xl">
-          &amp;
+        <span aria-hidden className="flex flex-col items-center pb-1">
+          <span className="text-4xl font-extrabold">&amp;</span>
+          {a !== '' && b !== '' && (
+            <button
+              type="button"
+              onClick={() => setParams(new URLSearchParams({ a: b, b: a }))}
+              className="font-type cursor-pointer border-0 bg-transparent p-0 text-sm underline"
+              aria-label="Swap the two memes"
+            >
+              swap
+            </button>
+          )}
         </span>
         <MemePicker label="Second meme" value={value(b)} onPick={pick('b')} />
       </div>
@@ -75,8 +85,7 @@ export default function Related() {
       {load.status === 'idle' && (
         <div className="mt-6">
           <p className="font-type text-xl">Pick two memes to see where their families meet.</p>
-          {usingFixtures && (
-            <p className="font-type text-lg">
+          <p className="font-type text-lg">
               Try:{' '}
               {EXAMPLES.map((ex, i) => (
                 <span key={ex.a + ex.b}>
@@ -85,7 +94,6 @@ export default function Related() {
                 </span>
               ))}
             </p>
-          )}
         </div>
       )}
       {load.status === 'loading' && <p className="font-type mt-6 text-xl">Comparing the two family trees…</p>}
@@ -93,16 +101,10 @@ export default function Related() {
       {load.status === 'ready' && (
         <div className="mt-6 space-y-5">
           <p className="m-0 text-3xl font-extrabold leading-snug">{load.related.sentence}</p>
-          {load.related.character ? (
-            <PathDiagram title="By character" path={load.related.character} nodes={nodes} />
-          ) : (
-            <p className="font-type m-0 text-lg">No shared character ancestor.</p>
-          )}
-          {load.related.format ? (
-            <PathDiagram title="By format" path={load.related.format} nodes={nodes} />
-          ) : (
-            <p className="font-type m-0 text-lg">No shared format ancestor.</p>
-          )}
+          {load.related.character && <PathDiagram title="By character" path={load.related.character} nodes={nodes} />}
+          {load.related.format && <PathDiagram title="By format" path={load.related.format} nodes={nodes} />}
+          {!load.related.character && <p className="font-type m-0 text-lg text-ink-soft">No shared character ancestor.</p>}
+          {!load.related.format && <p className="font-type m-0 text-lg text-ink-soft">No shared format ancestor.</p>}
         </div>
       )}
     </div>

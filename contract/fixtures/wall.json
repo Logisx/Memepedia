@@ -10,7 +10,8 @@
       "posted_at": "2026-11-14T15:56:08Z",
       "node_id": "npc-wojak",
       "node_name": "NPC Wojak",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s002",
@@ -22,7 +23,8 @@
       "posted_at": "2026-11-14T15:40:23Z",
       "node_id": "pepe-the-frog",
       "node_name": "Pepe the Frog",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s003",
@@ -34,7 +36,8 @@
       "posted_at": "2026-11-14T15:39:27Z",
       "node_id": "brainlet",
       "node_name": "Brainlet",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s004",
@@ -46,7 +49,8 @@
       "posted_at": "2026-11-14T15:34:51Z",
       "node_id": "drake-hotline-bling",
       "node_name": "Drake Hotline Bling",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s005",
@@ -58,7 +62,8 @@
       "posted_at": "2026-11-14T15:34:40Z",
       "node_id": "virgin-vs-chad",
       "node_name": "Virgin vs. Chad",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s006",
@@ -70,7 +75,8 @@
       "posted_at": "2026-11-14T15:33:40Z",
       "node_id": "doomer-girl",
       "node_name": "Doomer Girl",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s007",
@@ -82,7 +88,8 @@
       "posted_at": "2026-11-14T15:32:30Z",
       "node_id": "thirty-year-old-boomer",
       "node_name": "Thirty-Year-Old Boomer",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s008",
@@ -94,7 +101,8 @@
       "posted_at": "2026-11-14T15:30:24Z",
       "node_id": "zoomer",
       "node_name": "Zoomer",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s009",
@@ -106,7 +114,8 @@
       "posted_at": "2026-11-14T15:28:28Z",
       "node_id": "soyjak",
       "node_name": "Soyjak",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s010",
@@ -118,7 +127,8 @@
       "posted_at": "2026-11-14T15:28:12Z",
       "node_id": "doge",
       "node_name": "Doge",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s011",
@@ -130,7 +140,8 @@
       "posted_at": "2026-11-14T15:27:57Z",
       "node_id": "pepe-the-frog",
       "node_name": "Pepe the Frog",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s012",
@@ -142,7 +153,8 @@
       "posted_at": "2026-11-14T15:27:52Z",
       "node_id": "bloomer",
       "node_name": "Bloomer",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s013",
@@ -154,7 +166,8 @@
       "posted_at": "2026-11-14T15:22:14Z",
       "node_id": "walter",
       "node_name": "Walter",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s014",
@@ -166,7 +179,8 @@
       "posted_at": "2026-11-14T15:22:08Z",
       "node_id": "apu-apustaja",
       "node_name": "Apu Apustaja",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s015",
@@ -178,7 +192,8 @@
       "posted_at": "2026-11-14T15:16:13Z",
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s016",
@@ -190,7 +205,8 @@
       "posted_at": "2026-11-14T15:15:34Z",
       "node_id": "distracted-boyfriend",
       "node_name": "Distracted Boyfriend",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s017",
@@ -202,7 +218,8 @@
       "posted_at": "2026-11-14T15:14:27Z",
       "node_id": "cheems",
       "node_name": "Cheems",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s018",
@@ -214,7 +231,8 @@
       "posted_at": "2026-11-14T15:12:31Z",
       "node_id": "trad-girl",
       "node_name": "Trad Girl",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s019",
@@ -226,7 +244,8 @@
       "posted_at": "2026-11-14T15:12:04Z",
       "node_id": "npc-wojak",
       "node_name": "NPC Wojak",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s020",
@@ -238,7 +257,8 @@
       "posted_at": "2026-11-14T15:04:56Z",
       "node_id": "doge",
       "node_name": "Doge",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s021",
@@ -250,7 +270,8 @@
       "posted_at": "2026-11-14T14:58:51Z",
       "node_id": "doomer-girl",
       "node_name": "Doomer Girl",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s022",
@@ -262,7 +283,8 @@
       "posted_at": "2026-11-14T14:53:09Z",
       "node_id": "apu-apustaja",
       "node_name": "Apu Apustaja",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s023",
@@ -274,7 +296,8 @@
       "posted_at": "2026-11-14T14:52:38Z",
       "node_id": "drake-hotline-bling",
       "node_name": "Drake Hotline Bling",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s024",
@@ -286,7 +309,8 @@
       "posted_at": "2026-11-14T14:49:50Z",
       "node_id": "doomer",
       "node_name": "Doomer",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s025",
@@ -298,7 +322,8 @@
       "posted_at": "2026-11-14T14:46:54Z",
       "node_id": "wojak",
       "node_name": "Wojak",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s026",
@@ -310,7 +335,8 @@
       "posted_at": "2026-11-14T14:43:43Z",
       "node_id": "bloomer",
       "node_name": "Bloomer",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s027",
@@ -322,7 +348,8 @@
       "posted_at": "2026-11-14T14:43:12Z",
       "node_id": "sad-frog",
       "node_name": "Sad Frog",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s028",
@@ -334,7 +361,8 @@
       "posted_at": "2026-11-14T14:42:14Z",
       "node_id": "yes-chad",
       "node_name": "Yes Chad",
-      "state": "resolved"
+      "state": "resolved",
+      "nsfw": false
     },
     {
       "id": "s029",
@@ -346,7 +374,8 @@
       "posted_at": "2026-11-14T14:41:20Z",
       "node_id": null,
       "node_name": null,
-      "state": "pending"
+      "state": "pending",
+      "nsfw": false
     },
     {
       "id": "s030",
@@ -358,7 +387,8 @@
       "posted_at": "2026-11-14T14:37:50Z",
       "node_id": null,
       "node_name": null,
-      "state": "pending"
+      "state": "pending",
+      "nsfw": false
     },
     {
       "id": "s031",
@@ -370,7 +400,8 @@
       "posted_at": "2026-11-14T14:32:30Z",
       "node_id": null,
       "node_name": null,
-      "state": "pending"
+      "state": "pending",
+      "nsfw": false
     },
     {
       "id": "s032",
@@ -382,7 +413,8 @@
       "posted_at": "2026-11-14T14:26:52Z",
       "node_id": null,
       "node_name": null,
-      "state": "pending"
+      "state": "pending",
+      "nsfw": false
     },
     {
       "id": "s033",
@@ -394,7 +426,8 @@
       "posted_at": "2026-11-14T14:18:51Z",
       "node_id": null,
       "node_name": null,
-      "state": "pending"
+      "state": "pending",
+      "nsfw": false
     },
     {
       "id": "s034",
@@ -406,7 +439,8 @@
       "posted_at": "2026-11-14T14:14:50Z",
       "node_id": null,
       "node_name": null,
-      "state": "pending"
+      "state": "pending",
+      "nsfw": false
     },
     {
       "id": "s035",
@@ -418,7 +452,8 @@
       "posted_at": "2026-11-14T14:12:15Z",
       "node_id": null,
       "node_name": null,
-      "state": "pending"
+      "state": "pending",
+      "nsfw": false
     },
     {
       "id": "s036",
@@ -430,7 +465,8 @@
       "posted_at": "2026-11-14T14:10:15Z",
       "node_id": null,
       "node_name": null,
-      "state": "pending"
+      "state": "pending",
+      "nsfw": false
     },
     {
       "id": "s037",
@@ -442,7 +478,8 @@
       "posted_at": "2026-11-14T14:07:36Z",
       "node_id": null,
       "node_name": null,
-      "state": "unclassified"
+      "state": "unclassified",
+      "nsfw": false
     },
     {
       "id": "s038",
@@ -454,7 +491,8 @@
       "posted_at": "2026-11-14T14:06:51Z",
       "node_id": null,
       "node_name": null,
-      "state": "unclassified"
+      "state": "unclassified",
+      "nsfw": false
     },
     {
       "id": "s039",
@@ -466,7 +504,8 @@
       "posted_at": "2026-11-14T14:01:15Z",
       "node_id": null,
       "node_name": null,
-      "state": "unclassified"
+      "state": "unclassified",
+      "nsfw": false
     },
     {
       "id": "s040",
@@ -478,7 +517,8 @@
       "posted_at": "2026-11-14T14:00:17Z",
       "node_id": null,
       "node_name": null,
-      "state": "unclassified"
+      "state": "unclassified",
+      "nsfw": false
     }
   ],
   "server_time": "2026-11-14T16:00:00Z",

@@ -95,6 +95,7 @@ def _resolve_draft_node(draft: DraftChain, draft_node: DraftNode, *, as_specimen
             status=status,
             sightings_24h=0,
             sightings_7d=0,
+            nsfw=None,
         )
     )
     return node_id

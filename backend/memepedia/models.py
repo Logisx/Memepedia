@@ -37,6 +37,7 @@ class MemeNode(ContractModel):
     status: NodeStatus
     sightings_24h: int
     sightings_7d: int
+    nsfw: bool | None
 
 
 class Link(ContractModel):
@@ -60,6 +61,7 @@ class Sighting(ContractModel):
     node_id: str | None
     node_name: str | None
     state: SightingState
+    nsfw: bool | None
 
 
 class HistoryItem(ContractModel):
@@ -204,6 +206,8 @@ class VisionLabel(BaseModel):
     overlaid_text: str | None
     catchphrase: str | None
     description: str
+    nsfw: bool
+    nsfw_reason: str | None
 
 
 class DraftNode(BaseModel):

@@ -14,7 +14,8 @@
         "summary": "A black-beanie, black-hoodie Wojak variant signifying nihilistic pessimism about the future.",
         "status": "established",
         "sightings_24h": 3,
-        "sightings_7d": 14
+        "sightings_7d": 14,
+        "nsfw": false
       },
       "count_24h": 22,
       "daily_mean_prior": 9.5
@@ -35,7 +36,8 @@
         "summary": "An open-mouthed, wide-eyed Wojak variant used to caricature naive enthusiasm, nicknamed for soy milk drinkers.",
         "status": "established",
         "sightings_24h": 2,
-        "sightings_7d": 8
+        "sightings_7d": 8,
+        "nsfw": false
       },
       "count_24h": 15,
       "daily_mean_prior": 4.0
@@ -56,7 +58,8 @@
         "summary": "A two-panel comparison pitting muscular Swole Doge against weak Cheems to mock generational or lifestyle decline.",
         "status": "established",
         "sightings_24h": 4,
-        "sightings_7d": 16
+        "sightings_7d": 16,
+        "nsfw": false
       },
       "count_24h": 19,
       "daily_mean_prior": 7.0
@@ -78,7 +81,8 @@
         "summary": "A square-jawed, confident counterpart to Wojak who answers awkward questions with a flat, proud 'yes'.",
         "status": "established",
         "sightings_24h": 2,
-        "sightings_7d": 7
+        "sightings_7d": 7,
+        "nsfw": false
       },
       "count_24h": 11,
       "daily_mean_prior": 3.5
@@ -97,7 +101,8 @@
         "summary": "A smaller, dumber-looking Shiba Inu derived from Doge, used as the 'weak' side of strength comparisons.",
         "status": "established",
         "sightings_24h": 2,
-        "sightings_7d": 9
+        "sightings_7d": 9,
+        "nsfw": false
       },
       "count_24h": 13,
       "daily_mean_prior": 5.0
@@ -117,7 +122,8 @@
       "summary": "A newly spotted Wojak-style figure slumped in an office chair, recurring across several unrelated posts this week without a settled name yet.",
       "status": "specimen",
       "sightings_24h": 6,
-      "sightings_7d": 6
+      "sightings_7d": 6,
+      "nsfw": false
     },
     {
       "id": "specimen-glitch-label",
@@ -132,7 +138,8 @@
       "summary": "A newly detected object-labelling layout where the labels themselves appear corrupted or glitched, seen spreading across three platforms.",
       "status": "specimen",
       "sightings_24h": 4,
-      "sightings_7d": 4
+      "sightings_7d": 4,
+      "nsfw": false
     }
   ]
 }

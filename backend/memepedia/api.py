@@ -17,7 +17,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from memepedia import db, graph, live, store, trace
+from memepedia import db, graph, live, static, store, trace
 from memepedia.config import get_settings
 from memepedia.llm import LLMError
 from memepedia.models import (
@@ -275,3 +275,7 @@ async def post_context_webhook(request: Request, background: BackgroundTasks) ->
 def get_health() -> dict[str, Any]:
     """Not in the contract; a quick deploy check."""
     return {"ok": True, **store.counts()}
+
+
+# Last, so it only answers what no API route claimed. A no-op when the web app is not built.
+static.install(app, static.default_dist())

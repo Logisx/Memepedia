@@ -13,7 +13,8 @@
       "summary": "The broad family of pictures overlaid with bold captioned text, the ancestral format of most internet memes.",
       "status": "established",
       "sightings_24h": 3,
-      "sightings_7d": 19
+      "sightings_7d": 19,
+      "nsfw": false
     },
     {
       "id": "object-labelling",
@@ -28,7 +29,8 @@
       "summary": "A format where parts of a single image are labelled with arrows or captions to map them onto an unrelated idea.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 11
+      "sightings_7d": 11,
+      "nsfw": false
     },
     {
       "id": "reaction-image",
@@ -43,7 +45,8 @@
       "summary": "A still image, usually a face or character, posted in reply to something to convey a reaction.",
       "status": "established",
       "sightings_24h": 4,
-      "sightings_7d": 22
+      "sightings_7d": 22,
+      "nsfw": false
     },
     {
       "id": "drawn-character",
@@ -58,7 +61,8 @@
       "summary": "Hand- or crudely-drawn recurring characters used as stand-ins for a mood or social type.",
       "status": "established",
       "sightings_24h": 5,
-      "sightings_7d": 27
+      "sightings_7d": 27,
+      "nsfw": false
     },
     {
       "id": "comparison",
@@ -73,7 +77,8 @@
       "summary": "Two-or-more-panel formats that juxtapose options, people or outcomes side by side.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 9
+      "sightings_7d": 9,
+      "nsfw": false
     },
     {
       "id": "exploitable",
@@ -88,7 +93,8 @@
       "summary": "A source image loose enough in composition that it gets edited and recontextualized endlessly.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 6
+      "sightings_7d": 6,
+      "nsfw": false
     },
     {
       "id": "wojak",
@@ -105,7 +111,8 @@
       "summary": "A crudely drawn bald, wide-mouthed everyman face, originally from a Polish forum, used to express raw unfiltered feeling.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 10
+      "sightings_7d": 10,
+      "nsfw": false
     },
     {
       "id": "npc-wojak",
@@ -123,7 +130,8 @@
       "summary": "A grey, featureless Wojak variant used to mock people depicted as running on social scripts rather than thinking.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 4
+      "sightings_7d": 4,
+      "nsfw": false
     },
     {
       "id": "doomer",
@@ -138,7 +146,8 @@
       "summary": "A black-beanie, black-hoodie Wojak variant signifying nihilistic pessimism about the future.",
       "status": "established",
       "sightings_24h": 3,
-      "sightings_7d": 14
+      "sightings_7d": 14,
+      "nsfw": false
     },
     {
       "id": "bloomer",
@@ -153,7 +162,8 @@
       "summary": "An older, content Wojak variant coined as the cheerful counterpart to the Doomer.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 2
+      "sightings_7d": 2,
+      "nsfw": false
     },
     {
       "id": "zoomer",
@@ -168,7 +178,8 @@
       "summary": "A Wojak variant with a man-bun and piercing representing Gen Z online culture.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 5
+      "sightings_7d": 5,
+      "nsfw": false
     },
     {
       "id": "thirty-year-old-boomer",
@@ -183,7 +194,8 @@
       "summary": "A Wojak variant mocking a young adult who already behaves and complains like a retiree.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 1
+      "sightings_7d": 1,
+      "nsfw": false
     },
     {
       "id": "coomer",
@@ -198,7 +210,8 @@
       "summary": "A puffy-eyed, unshaven Wojak variant depicting compulsive overconsumption, usually of adult content.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 3
+      "sightings_7d": 3,
+      "nsfw": false
     },
     {
       "id": "soyjak",
@@ -215,7 +228,8 @@
       "summary": "An open-mouthed, wide-eyed Wojak variant used to caricature naive enthusiasm, nicknamed for soy milk drinkers.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 8
+      "sightings_7d": 8,
+      "nsfw": false
     },
     {
       "id": "brainlet",
@@ -230,7 +244,8 @@
       "summary": "A Wojak variant with a tiny brain drawn above the head, mocking oversimplified takes.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 2
+      "sightings_7d": 2,
+      "nsfw": false
     },
     {
       "id": "doomer-girl",
@@ -245,7 +260,8 @@
       "summary": "The female counterpart to Doomer, drawn with a beanie and messy hair, sharing the same nihilistic affect.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 3
+      "sightings_7d": 3,
+      "nsfw": false
     },
     {
       "id": "yes-chad",
@@ -263,7 +279,8 @@
       "summary": "A square-jawed, confident counterpart to Wojak who answers awkward questions with a flat, proud 'yes'.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 7
+      "sightings_7d": 7,
+      "nsfw": false
     },
     {
       "id": "trad-girl",
@@ -278,7 +295,8 @@
       "summary": "A braided-hair, modestly-dressed female character paired with Yes Chad to represent traditionalist values online.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 1
+      "sightings_7d": 1,
+      "nsfw": false
     },
     {
       "id": "doge",
@@ -295,7 +313,8 @@
       "summary": "A Shiba Inu photographed with a skeptical sideways glance, captioned in broken 'doge speak' like 'such wow'.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 6
+      "sightings_7d": 6,
+      "nsfw": false
     },
     {
       "id": "cheems",
@@ -310,7 +329,8 @@
       "summary": "A smaller, dumber-looking Shiba Inu derived from Doge, used as the 'weak' side of strength comparisons.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 9
+      "sightings_7d": 9,
+      "nsfw": false
     },
     {
       "id": "swole-doge",
@@ -325,7 +345,8 @@
       "summary": "A heavily muscled edit of Doge representing the 'strong, disciplined past' side of a comparison format.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 4
+      "sightings_7d": 4,
+      "nsfw": false
     },
     {
       "id": "walter",
@@ -340,7 +361,8 @@
       "summary": "An angry-eyebrowed Shiba Inu variant, named for a short-tempered dog character, used for indignant reactions.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 2
+      "sightings_7d": 2,
+      "nsfw": false
     },
     {
       "id": "swole-doge-vs-cheems",
@@ -357,7 +379,8 @@
       "summary": "A two-panel comparison pitting muscular Swole Doge against weak Cheems to mock generational or lifestyle decline.",
       "status": "established",
       "sightings_24h": 4,
-      "sightings_7d": 16
+      "sightings_7d": 16,
+      "nsfw": false
     },
     {
       "id": "virgin-vs-chad",
@@ -372,7 +395,8 @@
       "summary": "A two-column comparison template contrasting an exaggeratedly pathetic 'virgin' with a confident, idealized 'Chad'.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 8
+      "sightings_7d": 8,
+      "nsfw": false
     },
     {
       "id": "pepe-the-frog",
@@ -387,7 +411,8 @@
       "summary": "A green anthropomorphic frog from the comic Boy's Club, adopted broadly as a reaction-image mascot online.",
       "status": "established",
       "sightings_24h": 1,
-      "sightings_7d": 5
+      "sightings_7d": 5,
+      "nsfw": false
     },
     {
       "id": "sad-frog",
@@ -402,7 +427,8 @@
       "summary": "A tearful, sulking Pepe variant posted to express melancholy or disappointment.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 2
+      "sightings_7d": 2,
+      "nsfw": false
     },
     {
       "id": "apu-apustaja",
@@ -419,7 +445,8 @@
       "summary": "A chibi, helper-themed Pepe variant drawn as an eager assistant character, popular in Finnish meme circles.",
       "status": "established",
       "sightings_24h": 0,
-      "sightings_7d": 1
+      "sightings_7d": 1,
+      "nsfw": false
     },
     {
       "id": "distracted-boyfriend",
@@ -434,7 +461,8 @@
       "summary": "A stock photo of a man ogling a passing woman while his girlfriend looks on appalled, relabelled to show misplaced attention.",
       "status": "established",
       "sightings_24h": 2,
-      "sightings_7d": 7
+      "sightings_7d": 7,
+      "nsfw": false
     },
     {
       "id": "drake-hotline-bling",
@@ -449,7 +477,8 @@
       "summary": "Two stills of Drake from the 'Hotline Bling' video, rejecting one captioned panel and approving another.",
       "status": "established",
       "sightings_24h": 3,
-      "sightings_7d": 12
+      "sightings_7d": 12,
+      "nsfw": false
     },
     {
       "id": "specimen-chair-doomer",
@@ -464,7 +493,8 @@
       "summary": "A newly spotted Wojak-style figure slumped in an office chair, recurring across several unrelated posts this week without a settled name yet.",
       "status": "specimen",
       "sightings_24h": 6,
-      "sightings_7d": 6
+      "sightings_7d": 6,
+      "nsfw": false
     },
     {
       "id": "specimen-glitch-label",
@@ -479,7 +509,8 @@
       "summary": "A newly detected object-labelling layout where the labels themselves appear corrupted or glitched, seen spreading across three platforms.",
       "status": "specimen",
       "sightings_24h": 4,
-      "sightings_7d": 4
+      "sightings_7d": 4,
+      "nsfw": false
     }
   ]
 }

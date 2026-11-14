@@ -120,3 +120,16 @@ Sources for the live loop, in build order: Lemmy (direct JSON), Reddit RSS throu
 | Vision stamps the wrong family | Confidence threshold; unclassified is better than wrong |
 | Verification is slow | Verify links in parallel; stream the dashed chain first so the wait is visible progress |
 | A source blocks or changes | Every fetcher returns the same `Post` shape; losing one source does not touch the rest |
+
+## 10. Potential work (not scheduled)
+
+### Re-label the NSFW over-flags with the revised prompt
+
+The first backfill (2026-11-14, strict prompt) flagged 14 nodes and 85 sightings. Most node flags look wrong: Pepe and Wojak family nodes (angry-pepe, brainlet, feels-good-man, gigachad, good-guy-greg, monkas, pepe-the-frog, pepehands, pink-wojak, rare-pepe, sad-frog, wojak) were flagged on the character's reputation, not on what the image shows. Only coomer, and possibly virgin-vs-chad, look like real calls. The same bias hides Pepe and Wojak sightings from the live wall.
+
+The prompt was revised on the PR branch (`llm._NSFW_POLICY`: judge the image, not the character's reputation). Production rows were **not** re-labelled.
+
+When scheduled:
+1. Make `scripts/label_nsfw.py` write each result as soon as it is labelled, so a crash does not lose finished labels.
+2. Export production first, then re-label only the rows currently `nsfw = true` (about 99 Gemini calls). This needs a `--only-flagged` option; `--relabel` would redo every row.
+3. Review what is still flagged and override by hand with `scripts/set_nsfw.py <node|sighting> <id> <true|false>`.

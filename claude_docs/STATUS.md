@@ -39,7 +39,7 @@ All commands from `backend/`, with uv.
 | Backfill a week of Lemmy history as sightings | `uv run python scripts/backfill.py [--max-images 120]` |
 | Run the laptop clock (visits feeds in rotation until there is a public URL) | `uv run python scripts/run_loop.py [--every 45] [--once] [--platform lemmy\|reddit\|imgflip]` |
 | Manage Context.dev page monitors (one per feed) | `uv run python scripts/monitors.py create\|list\|delete [--dry-run]` |
-| Deploy to Modal (live, tested 2026-11-14) | from `backend/`: `uv run --with modal modal deploy deploy.py` |
+| Deploy the API and the website to Modal (one URL; the API was live and tested 2026-11-14, the site is new on branch `feature/hosting` and not yet deployed) | `.\backend\deploy.ps1` builds `web/` with an empty `VITE_API_BASE`, then runs `modal deploy`. Set `$env:MEMEPEDIA_APP = "memepedia-staging"` first for a throwaway copy (no warm container, no clock); remove it with `modal app stop memepedia-staging` |
 
 The database is a local PostgreSQL 16 that starts itself on first use (the `pgserver` package, data in `backend/.pgdata/`). Setting `DATABASE_URL` in `.env` switches to a hosted Postgres with no code change. `MEMEPEDIA_DB` picks the local database name (default `memepedia`; tests use `memepedia_test`), and is ignored whenever `DATABASE_URL` is set. The frontend points at the backend with `VITE_API_BASE=http://localhost:8000`.
 

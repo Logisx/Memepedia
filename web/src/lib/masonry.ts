@@ -51,8 +51,14 @@ export function relayout(state: MasonryState, count: number): MasonryState {
 /** Add sightings. The first batch is dealt out by age; later arrivals drop in at the top of one column. */
 export function addSightings(state: MasonryState, incoming: Sighting[], count: number): MasonryState {
   const fresh = incoming.filter((s) => !state.byId.has(s.id))
-  if (fresh.length === 0 && state.columns.length === count) return state
+  // A pending tile can be classified later: swap in the new copy without moving it.
+  const changed = incoming.filter((s) => {
+    const old = state.byId.get(s.id)
+    return old !== undefined && (old.state !== s.state || old.node_id !== s.node_id || old.node_name !== s.node_name)
+  })
+  if (fresh.length === 0 && changed.length === 0 && state.columns.length === count) return state
   const byId = new Map(state.byId)
+  changed.forEach((s) => byId.set(s.id, s))
   fresh.forEach((s) => byId.set(s.id, s))
 
   if (state.columns.length !== count || state.byId.size === 0) {
