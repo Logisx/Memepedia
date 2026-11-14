@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { MemeNode } from '@contract/types'
+import { useShowSensitive } from '../hooks/useShowSensitive'
 import { firstSeenYear } from '../lib/time'
 
 const KIND_LABEL: Record<MemeNode['kind'], string> = {
@@ -42,7 +43,8 @@ function RevealOverlay({ onReveal, compact }: { onReveal: () => void; compact?: 
 export function NodeThumb({ node, className = 'h-14 w-14' }: { node: MemeNode; className?: string }) {
   const [broken, setBroken] = useState(false)
   const [revealed, setRevealed] = useState(false)
-  const sensitive = isSensitive(node) && !revealed
+  const showSensitive = useShowSensitive()
+  const sensitive = isSensitive(node) && !showSensitive && !revealed
   if (node.image_url && !broken) {
     return (
       <span className={`${className} relative block shrink-0 overflow-hidden border border-ink bg-paper-deep`}>
@@ -74,7 +76,8 @@ export function NodeThumb({ node, className = 'h-14 w-14' }: { node: MemeNode; c
 export function SpecimenCard({ node, selected = false }: { node: MemeNode; selected?: boolean }) {
   const [broken, setBroken] = useState(false)
   const [revealed, setRevealed] = useState(false)
-  const sensitive = isSensitive(node) && !revealed
+  const showSensitive = useShowSensitive()
+  const sensitive = isSensitive(node) && !showSensitive && !revealed
   const hasImage = node.image_url !== null && !broken
   const year = firstSeenYear(node)
   const frame = `flex h-full w-full flex-col border-2 bg-paper p-2 ${

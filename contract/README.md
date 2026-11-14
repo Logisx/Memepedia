@@ -50,7 +50,9 @@ is the vision prompt in `backend/memepedia/llm.py`; this paragraph mirrors it.)
   that slips through anyway.
 - **Nodes** are never removed (that would break family trees). The frontend blurs a node's image
   with a click-to-reveal overlay whenever `nsfw` is `true` or `null`, and only shows it plainly
-  once a human or the backfill has set it `false`.
+  once a human or the backfill has set it `false`. A header-level "Sensitive: hidden/shown" toggle
+  (default hidden, persisted in `localStorage`) lets a viewer un-blur node images globally, but it
+  never affects which sightings the backend sends or the wall/side-panel filtering above.
 
 ## Changing the contract
 
