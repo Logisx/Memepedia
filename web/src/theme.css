@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* Natural-history museum of the internet: cream paper, ink rules, specimen labels. */
+@theme {
+  --color-paper: #f4ecd8;
+  --color-paper-deep: #e9dfc4;
+  --color-ink: #1c1a17;
+  --color-ink-soft: #4a4538;
+  --color-rule: #1c1a17;
+  --color-stamp: #a3261d;
+  --color-cited: #1f5c3a;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-type: "Special Elite", "Courier New", monospace;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+a {
+  color: inherit;
+}
+
+/* Thin ink rule used between sections. */
+.rule {
+  border-color: var(--color-rule);
+  border-width: 1px;
+}
