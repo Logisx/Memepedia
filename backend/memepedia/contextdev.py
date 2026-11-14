@@ -180,14 +180,26 @@ def blocked_message(body: Mapping[str, Any]) -> str | None:
 
 
 def scrape(
-    url: str, *, formats: Mapping[str, Any], label: str, timeout: float = 60.0
+    url: str,
+    *,
+    formats: Mapping[str, Any],
+    label: str,
+    timeout: float = 60.0,
+    max_age_ms: int | None = None,
 ) -> ScrapeResult:
-    """Scrape one URL through `/web/scrape`, raising `Blocked` if the site walled the request."""
+    """Scrape one URL through `/web/scrape`, raising `Blocked` if the site walled the request.
+
+    `max_age_ms` caps how old a cached output Context.dev may hand back (its own default is
+    259200000 ms, three days); pass `0` for a guaranteed-fresh capture, as every live feed fetch
+    does, since otherwise a feed can keep serving the same stale snapshot for hours.
+    """
     if blocklist.is_blocked(url):
         raise ContextDevError("knowyourmeme.com may not be scraped (its terms forbid aggregation)")
     _guard(f"scrape {url}")
     t0 = time.time()
-    body = {"url": url, "formats": dict(formats)}
+    body: dict[str, Any] = {"url": url, "formats": dict(formats)}
+    if max_age_ms is not None:
+        body["maxAgeMs"] = max_age_ms
     resp = _request("POST", "/web/scrape", json_body=body, timeout=timeout)
     latency = time.time() - t0
     credits = _header_credits(resp)

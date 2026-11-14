@@ -29,7 +29,13 @@ def _is_image_post(post: dict[str, Any]) -> bool:
 
 
 def _is_clean(post: dict[str, Any]) -> bool:
-    return not (post.get("nsfw") or post.get("removed") or post.get("deleted"))
+    return not (
+        post.get("nsfw")
+        or post.get("removed")
+        or post.get("deleted")
+        or post.get("featured_community")
+        or post.get("featured_local")
+    )
 
 
 def _parse_published(value: str) -> datetime:

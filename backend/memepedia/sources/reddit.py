@@ -25,6 +25,7 @@ def fetch_raw(feed: Feed) -> str:
         _feed_url(feed.target),
         formats={"markdown": True, "html": True},
         label=f"reddit:{feed.target}",
+        max_age_ms=0,
     )
     xml_text = result.html or result.markdown
     if not xml_text:
