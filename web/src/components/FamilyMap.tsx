@@ -4,19 +4,13 @@ import '@xyflow/react/dist/style.css'
 import { useNavigate } from 'react-router'
 import type { MemeNode, TreeResponse } from '@contract/types'
 import { layoutFamily, NODE_H, NODE_W } from '../lib/familyLayout'
+import { abbreviateLatin } from '../lib/latin'
 import { NodeThumb } from './SpecimenCard'
 
 type MemeData = { node: MemeNode; selected: boolean; onPath: boolean }
 type MoreData = { hidden: number }
 type MemeFlowNode = Node<MemeData, 'meme'>
 type MoreFlowNode = Node<MoreData, 'more'>
-
-/** "Wojakus vulgaris" -> "W. vulgaris": the species epithet is the part that differs. */
-function abbreviateLatin(name: string): string {
-  const parts = name.trim().split(/\s+/)
-  if (parts.length < 2) return name
-  return `${parts[0]!.charAt(0)}. ${parts.slice(1).join(' ')}`
-}
 
 const hiddenHandle = { opacity: 0, pointerEvents: 'none' } as const
 
@@ -69,7 +63,7 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
   const navigate = useNavigate()
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
 
-  const { nodes, edges } = useMemo(() => {
+  const { nodes, edges, legend } = useMemo(() => {
     const layout = layoutFamily(tree, expanded)
     const flowNodes: (MemeFlowNode | MoreFlowNode)[] = layout.nodes.map((n) =>
       n.kind === 'meme'
@@ -87,7 +81,8 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
         strokeDasharray: e.inferred ? '8 6' : undefined,
       },
     }))
-    return { nodes: flowNodes, edges: flowEdges }
+    const legend = { cited: layout.edges.some((e) => !e.inferred), inferred: layout.edges.some((e) => e.inferred) }
+    return { nodes: flowNodes, edges: flowEdges, legend }
   }, [tree, expanded])
 
   return (
@@ -98,7 +93,7 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
       edges={edges}
       nodeTypes={nodeTypes}
       fitView
-      fitViewOptions={{ padding: 0.05, maxZoom: 1.1 }}
+      fitViewOptions={{ padding: 0.05, maxZoom: tree.family_ids.length <= 1 ? 0.9 : 1.1 }}
       minZoom={0.15}
       nodesDraggable={false}
       nodesConnectable={false}
@@ -113,14 +108,20 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
       }}
       proOptions={{ hideAttribution: true }}
     />
-    <div className="font-type pointer-events-none absolute right-3 top-3 z-10 border border-ink bg-paper px-2 py-1 text-sm">
-      <div className="flex items-center gap-2">
-        <span className="inline-block w-8 border-t-2 border-ink-soft" /> cited
+    {(legend.cited || legend.inferred) && (
+      <div className="font-type pointer-events-none absolute right-3 top-3 z-10 border border-ink bg-paper px-2 py-1 text-sm">
+        {legend.cited && (
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-8 border-t-2 border-ink-soft" /> cited
+          </div>
+        )}
+        {legend.inferred && (
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-8 border-t-2 border-dashed border-ink-soft" /> citation needed
+          </div>
+        )}
       </div>
-      <div className="flex items-center gap-2">
-        <span className="inline-block w-8 border-t-2 border-dashed border-ink-soft" /> citation needed
-      </div>
-    </div>
+    )}
     </>
   )
 }

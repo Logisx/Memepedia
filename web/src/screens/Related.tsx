@@ -66,8 +66,18 @@ export default function Related() {
       <h1 className="m-0 mb-4 text-3xl font-extrabold">How are two memes related?</h1>
       <div className="flex flex-wrap items-end gap-4">
         <MemePicker label="First meme" value={value(a)} onPick={pick('a')} />
-        <span aria-hidden className="pb-1 text-4xl font-extrabold italic">
-          &amp;
+        <span aria-hidden className="flex flex-col items-center pb-1">
+          <span className="text-4xl font-extrabold">&amp;</span>
+          {a !== '' && b !== '' && (
+            <button
+              type="button"
+              onClick={() => setParams(new URLSearchParams({ a: b, b: a }))}
+              className="font-type cursor-pointer border-0 bg-transparent p-0 text-sm underline"
+              aria-label="Swap the two memes"
+            >
+              swap
+            </button>
+          )}
         </span>
         <MemePicker label="Second meme" value={value(b)} onPick={pick('b')} />
       </div>
@@ -91,16 +101,10 @@ export default function Related() {
       {load.status === 'ready' && (
         <div className="mt-6 space-y-5">
           <p className="m-0 text-3xl font-extrabold leading-snug">{load.related.sentence}</p>
-          {load.related.character ? (
-            <PathDiagram title="By character" path={load.related.character} nodes={nodes} />
-          ) : (
-            <p className="font-type m-0 text-lg">No shared character ancestor.</p>
-          )}
-          {load.related.format ? (
-            <PathDiagram title="By format" path={load.related.format} nodes={nodes} />
-          ) : (
-            <p className="font-type m-0 text-lg">No shared format ancestor.</p>
-          )}
+          {load.related.character && <PathDiagram title="By character" path={load.related.character} nodes={nodes} />}
+          {load.related.format && <PathDiagram title="By format" path={load.related.format} nodes={nodes} />}
+          {!load.related.character && <p className="font-type m-0 text-lg text-ink-soft">No shared character ancestor.</p>}
+          {!load.related.format && <p className="font-type m-0 text-lg text-ink-soft">No shared format ancestor.</p>}
         </div>
       )}
     </div>

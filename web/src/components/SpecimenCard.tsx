@@ -52,6 +52,7 @@ export function SpecimenCard({ node, selected = false }: { node: MemeNode; selec
           <span className="font-type text-sm uppercase tracking-widest text-ink-soft">{KIND_LABEL[node.kind]}</span>
           <span className="mt-1 text-3xl font-extrabold leading-tight">{node.name}</span>
           {node.latin_name && <span className="mt-1 text-lg italic">{node.latin_name}</span>}
+          <span className="font-type mt-4 text-xs uppercase tracking-widest text-ink-soft">no specimen image</span>
         </div>
         <figcaption className="font-type pt-2 text-base">{year ? `first recorded ${year}` : 'date unknown'}</figcaption>
       </figure>

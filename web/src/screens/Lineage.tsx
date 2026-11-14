@@ -47,16 +47,16 @@ function LineageView({ initial }: { initial: TreeResponse }) {
 
   const nodesById = useMemo(() => new Map(tree.nodes.map((n) => [n.id, n])), [tree.nodes])
   const selected = nodesById.get(tree.selected_id)
-  const formatChips = useMemo(
-    () =>
-      tree.links
-        .filter((l) => l.axis === 'format' && l.child_id === tree.selected_id)
-        .flatMap((l) => {
-          const parent = nodesById.get(l.parent_id)
-          return parent ? [{ link: l, parent }] : []
-        }),
-    [tree.links, tree.selected_id, nodesById],
-  )
+  // A format parent already drawn in the visible line needs no extra chip.
+  const formatChips = useMemo(() => {
+    const visible = new Set(tree.descent[axis])
+    return tree.links
+      .filter((l) => l.axis === 'format' && l.child_id === tree.selected_id && !visible.has(l.parent_id))
+      .flatMap((l) => {
+        const parent = nodesById.get(l.parent_id)
+        return parent ? [{ link: l, parent }] : []
+      })
+  }, [tree.links, tree.descent, axis, tree.selected_id, nodesById])
 
   // A proposal that earned a citation flips the matching link in place.
   const markCited = useCallback((updated: Link) => {
@@ -77,7 +77,7 @@ function LineageView({ initial }: { initial: TreeResponse }) {
     <div className="flex h-[calc(100vh-4.25rem)] min-h-[34rem] flex-col">
       <section className="flex h-[45%] min-h-0 flex-col px-6 pt-3">
         <div className="font-type flex flex-wrap items-center gap-x-6 gap-y-1 pb-2 text-lg">
-          <span className="text-2xl font-bold">{selected?.name ?? tree.selected_id}</span>
+          <span className="font-display text-3xl font-extrabold">{selected?.name ?? tree.selected_id}</span>
           {linesDiffer && (
             <div role="group" aria-label="Line of descent" className="flex border-2 border-ink">
               {(['character', 'format'] as const).map((a) => (
@@ -116,7 +116,7 @@ function LineageView({ initial }: { initial: TreeResponse }) {
         >
           <FamilyMap tree={tree} />
           {aloneInFamily && (
-            <p className="font-type pointer-events-none absolute inset-x-0 bottom-4 m-0 text-center text-lg text-ink-soft">
+            <p className="font-type pointer-events-none absolute inset-x-0 top-[calc(50%+4rem)] m-0 text-center text-lg text-ink-soft">
               No relatives on record yet: this meme is the only one in its family so far.
             </p>
           )}

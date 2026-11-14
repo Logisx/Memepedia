@@ -51,6 +51,16 @@ Status: **open** (needs a decision or fix on the contract side), **handled** (fr
 - **Frontend handling:** the wall now replaces an existing tile when its `state`, `node_id` or `node_name` changes, so it works if the backend does re-send it. If the backend never does, tiles stay `UNIDENTIFIED` until reload.
 - **Suggested fix:** state the rule in `contract/README.md`.
 
+### 8. Some generated Latin names read oddly — open
+
+- **What:** names such as `Ignorantia andidwyeri`, `Lassitudo coffeyana` and `Curva midwittensis` seem to blend a Latin genus with an English word or surname.
+- **Suggested fix:** if the jokes are intended, nothing to do. Otherwise tighten the naming prompt in the backend.
+
+### 9. A meme can be both "rising" and a "new specimen" in `/api/week` — handled
+
+- **Frontend handling:** the week strip hides the new-specimen chip when the same node is already in `rising`.
+- **Suggested fix:** decide whether the backend should dedupe the two lists itself.
+
 ## Tooling notes (not contract bugs)
 
 - **TypeScript 7 rejects `baseUrl`.** The scaffold's `create-vite` pulls TypeScript 7; `tsconfig.app.json` therefore uses only `paths` for the `@contract` alias.

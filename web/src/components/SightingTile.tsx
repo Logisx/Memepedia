@@ -1,16 +1,9 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Link as RouterLink } from 'react-router'
-import type { Platform, Sighting } from '@contract/types'
+import type { Sighting } from '@contract/types'
+import { PLATFORM_NAME } from '../lib/platform'
 import { timeAgo } from '../lib/time'
-
-const PLATFORM_NAME: Record<Platform, string> = {
-  lemmy: 'Lemmy',
-  reddit: 'Reddit',
-  imgflip: 'Imgflip',
-  mastodon: 'Mastodon',
-  x: 'X',
-}
 
 /** Scraped titles carry site boilerplate; drop it. */
 function cleanTitle(title: string): string {
@@ -61,7 +54,7 @@ export function SightingTile({ sighting, now, arriving }: Props) {
       alt={sighting.title}
       loading="lazy"
       onError={() => setBroken(true)}
-      className="block w-full bg-paper-deep"
+      className={`block w-full bg-paper-deep ${sighting.state === 'unclassified' ? 'opacity-70 grayscale-[30%]' : ''}`}
     />
   )
 

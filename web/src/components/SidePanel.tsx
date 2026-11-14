@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { HistoryItem, Link, ProposalResponse, Sighting } from '@contract/types'
 import { propose } from '../data'
+import { PLATFORM_NAME } from '../lib/platform'
 import { timeAgo } from '../lib/time'
 
 type Tab = 'sightings' | 'history' | 'suggest'
@@ -52,6 +53,19 @@ export function SidePanel({ nodeId, sightings, history, onCited }: Props) {
   )
 }
 
+/** Cross-posts of the same picture and title collapse into one row. */
+function groupSightings(sightings: Sighting[]): { latest: Sighting; others: Sighting[] }[] {
+  const groups = new Map<string, Sighting[]>()
+  for (const s of sightings) {
+    const key = `${s.image_url}|${s.title}`
+    groups.set(key, [...(groups.get(key) ?? []), s])
+  }
+  return [...groups.values()].map((list) => {
+    const sorted = [...list].sort((a, b) => b.posted_at.localeCompare(a.posted_at))
+    return { latest: sorted[0]!, others: sorted.slice(1) }
+  })
+}
+
 function SightingsList({ sightings }: { sightings: Sighting[] }) {
   if (sightings.length === 0)
     return (
@@ -64,7 +78,7 @@ function SightingsList({ sightings }: { sightings: Sighting[] }) {
     )
   return (
     <ul className="m-0 list-none space-y-3 p-0">
-      {sightings.map((s) => (
+      {groupSightings(sightings).map(({ latest: s, others }) => (
         <li key={s.id} className="flex gap-3">
           <img src={s.image_url} alt="" loading="lazy" className="h-20 w-20 shrink-0 border border-ink object-cover" />
           <div className="min-w-0">
@@ -72,8 +86,17 @@ function SightingsList({ sightings }: { sightings: Sighting[] }) {
               {s.title}
             </a>
             <div className="font-type text-sm">
-              {timeAgo(s.posted_at)} on {s.platform}
+              {timeAgo(s.posted_at)} on {PLATFORM_NAME[s.platform]}
               {s.author ? ` · ${s.author}` : ''}
+              {others.length > 0 && (
+                <span className="text-ink-soft">
+                  {' '}
+                  · ×{others.length + 1}
+                  {others.some((o) => o.author)
+                    ? `, also ${[...new Set(others.flatMap((o) => (o.author ? [o.author] : [])))].join(', ')}`
+                    : ''}
+                </span>
+              )}
             </div>
           </div>
         </li>
