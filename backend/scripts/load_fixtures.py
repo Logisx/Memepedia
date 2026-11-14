@@ -1,4 +1,4 @@
-"""Fill the configured database with the mock archive fixtures.
+"""Fill the local dev database with the mock archive fixtures; refused on any other database.
 
 Usage: uv run python scripts/load_fixtures.py [--reset]
 """
@@ -110,7 +110,8 @@ def _load_history(history: list[dict[str, Any]], offset: timedelta) -> int:
 
 
 def load(reset: bool = False) -> dict[str, int]:
-    """Fill the database from the fixtures; returns a row count per table."""
+    """Fill the local dev database from the fixtures; returns a row count per table."""
+    db.require_local("Loading mock fixtures")
     db.reset_schema() if reset else db.init_schema()
     nodes = _collect_nodes()
     trees = _tree_files()

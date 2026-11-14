@@ -4,6 +4,7 @@ With DATABASE_URL set the backend talks to that server (Aiven in production). Wi
 a local Postgres from the `pgserver` dev dependency is started under backend/.pgdata and
 MEMEPEDIA_DB names the database on it (default "memepedia").
 Tests call `configure(local_url("memepedia_test"))` so they can never touch DATABASE_URL.
+`reset_schema` refuses to run on anything but the local dev server.
 """
 
 from __future__ import annotations
@@ -15,7 +16,7 @@ from typing import Any
 
 import psycopg
 from psycopg import sql
-from psycopg.conninfo import make_conninfo
+from psycopg.conninfo import conninfo_to_dict, make_conninfo
 from psycopg.rows import DictRow, dict_row
 from psycopg_pool import ConnectionPool
 
@@ -26,6 +27,10 @@ Params = Sequence[Any] | dict[str, Any]
 
 _SCHEMA = Path(__file__).with_name("schema.sql")
 _state: dict[str, Any] = {"url": None, "pool": None, "server": None}
+
+
+class NotLocalDatabaseError(RuntimeError):
+    """A dev-only action was asked of a database other than the local development server."""
 
 
 def _local_server_uri() -> str:
@@ -46,6 +51,18 @@ def local_url(dbname: str = "memepedia") -> str:
     return make_conninfo(admin, dbname=dbname)
 
 
+def is_local_url(url: str) -> bool:
+    """True only for a unix-socket connection into the local dev server's backend/.pgdata."""
+    try:
+        params = conninfo_to_dict(url)
+    except psycopg.ProgrammingError:
+        return False
+    host = params.get("host")
+    if "hostaddr" in params or not isinstance(host, str) or not host.startswith("/"):
+        return False
+    return Path(host).resolve() == PGDATA_DIR.resolve()
+
+
 def configure(url: str) -> None:
     """Point the pool at an explicit database, closing any pool already open."""
     close()
@@ -58,6 +75,15 @@ def database_url() -> str:
         settings = get_settings()
         _state["url"] = settings.database_url or local_url(settings.local_db_name)
     return str(_state["url"])
+
+
+def require_local(action: str) -> None:
+    """Refuse `action` unless the active database is the local dev server; never connects."""
+    if not is_local_url(database_url()):
+        raise NotLocalDatabaseError(
+            f"{action} refused: the active database is not the local development server "
+            "(backend/.pgdata). DATABASE_URL, when set, takes precedence over MEMEPEDIA_DB."
+        )
 
 
 def _configure_connection(conn: psycopg.Connection[DictRow]) -> None:
@@ -101,7 +127,8 @@ def init_schema() -> None:
 
 
 def reset_schema() -> None:
-    """Drop every table and recreate the schema. For tests and fixture reloads only."""
+    """Drop every table and recreate the schema; only ever on the local dev server."""
+    require_local("Resetting the schema")
     with connection() as conn:
         conn.execute("DROP TABLE IF EXISTS history, sightings, links, nodes CASCADE")
     init_schema()
