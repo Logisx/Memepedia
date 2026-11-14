@@ -66,6 +66,21 @@
         "url_content_type": "image/png"
       },
       "creator": { "name": "Quilotoa" }
+    },
+    {
+      "post": {
+        "id": 6,
+        "name": "Pinned rules image, ignore the date",
+        "url": "https://lemmy.world/pictrs/image/pinned.png",
+        "published": "2024-11-08T15:23:49.627118Z",
+        "deleted": false,
+        "nsfw": false,
+        "removed": false,
+        "featured_community": true,
+        "ap_id": "https://lemmy.world/post/6",
+        "url_content_type": "image/png"
+      },
+      "creator": { "name": "The_Picard_Maneuver" }
     }
   ]
 }

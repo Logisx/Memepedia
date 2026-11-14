@@ -25,6 +25,7 @@ def fetch_raw(feed: Feed) -> contextdev.ScrapeResult:
         _stream_url(feed.target),
         formats={"images": True, "html": True},
         label=f"imgflip:{feed.target}",
+        max_age_ms=0,
     )
 
 
