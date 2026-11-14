@@ -34,6 +34,7 @@ class Settings:
     webhook_secret: str | None = None
     vision_exact_min_confidence: float = 0.7
     match_subjects: bool = True
+    read_only: bool = False
 
 
 _TRUTHY = {"1", "true", "on", "yes"}
@@ -65,4 +66,5 @@ def get_settings() -> Settings:
         webhook_secret=_first("CONTEXTDEV_WEBHOOK_SECRET"),
         vision_exact_min_confidence=float(_first("VISION_EXACT_MIN_CONFIDENCE") or 0.7),
         match_subjects=_flag("VISION_MATCH_SUBJECTS", True),
+        read_only=_flag("MEMEPEDIA_READ_ONLY", False),
     )

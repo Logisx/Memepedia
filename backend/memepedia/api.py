@@ -7,7 +7,7 @@ import logging
 import threading
 import time
 from collections import deque
-from collections.abc import AsyncGenerator, Iterator
+from collections.abc import AsyncGenerator, Awaitable, Callable, Iterator
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any
@@ -15,7 +15,7 @@ from typing import Any
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 
 from memepedia import db, graph, live, static, store, trace
 from memepedia.config import get_settings
@@ -45,11 +45,29 @@ MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    db.init_schema()
+    if not get_settings().read_only:
+        db.init_schema()
     yield
 
 
 app = FastAPI(title="Memepedia API", lifespan=_lifespan)
+
+# MEMEPEDIA_READ_ONLY (the frozen staging copy): every API route that is not a read answers 503,
+# so the copy can never trace, call Gemini or Context.dev, or write. Added before CORS so the
+# refusal still carries CORS headers.
+_READ_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
+READ_ONLY_MESSAGE = "This is a read-only backup copy of Memepedia: tracing and uploads are off."
+
+
+@app.middleware("http")
+async def _refuse_writes_when_read_only(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    writing = request.method not in _READ_METHODS and request.url.path.startswith("/api/")
+    if writing and get_settings().read_only:
+        return _error(READ_ONLY_MESSAGE, 503)
+    return await call_next(request)
+
 
 app.add_middleware(
     CORSMiddleware,
