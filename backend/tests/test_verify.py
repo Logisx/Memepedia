@@ -251,6 +251,68 @@ def test_find_evidence_rejects_knowyourmeme_hit(monkeypatch: pytest.MonkeyPatch)
     assert verify.find_evidence(child, parent, "character") is None
 
 
+def test_find_evidence_rejects_hit_whose_title_mentions_know_your_meme(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Reproduces the production incident: a Reddit mirror of a Know Your Meme page. The URL is
+    reddit.com (not knowyourmeme.com), but the page's title names the r/KnowYourMeme subreddit, so
+    the quote it would supply still amounts to citing Know Your Meme and must be refused."""
+
+    def fake_search(query: str, **kw: Any) -> list[SearchHit]:
+        return [
+            SearchHit(
+                url="https://www.reddit.com/r/KnowYourMeme/comments/1f89lij/x/",
+                title="r/KnowYourMeme on Reddit: What Is The Doomer Meme?",
+                markdown="Doomer is a drawn character, descended from Wojak, a tired figure.",
+            )
+        ]
+
+    monkeypatch.setattr(contextdev, "search", fake_search)
+    monkeypatch.setattr(llm, "pick_quote", lambda claim, sentences: 0)
+    child, parent = _node("Doomer"), _node("Wojak")
+    assert verify.find_evidence(child, parent, "character") is None
+
+
+def test_evidence_in_page_rejects_title_mentioning_know_your_meme(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(llm, "pick_quote", lambda claim, sentences: 0)
+    child, parent = _node("Doomer"), _node("Wojak")
+    markdown = "Doomer is a drawn character, directly descended from Wojak, a tired figure."
+    result = verify.evidence_in_page(
+        child,
+        parent,
+        "character",
+        markdown=markdown,
+        url="https://www.reddit.com/r/KnowYourMeme/comments/x/",
+        title="r/KnowYourMeme on Reddit: What Is The Doomer Meme?",
+    )
+    assert result is None
+
+
+def test_find_evidence_rejects_quote_that_names_know_your_meme(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Even when url and title are clean, a picked quote that itself cites Know Your Meme by
+    name must still be refused (the final-step backstop)."""
+
+    def fake_search(query: str, **kw: Any) -> list[SearchHit]:
+        return [
+            SearchHit(
+                url="https://example.com/discussion",
+                title="A forum discussion",
+                markdown=(
+                    "According to Know Your Meme, Doomer is a drawn character descended from Wojak."
+                ),
+            )
+        ]
+
+    monkeypatch.setattr(contextdev, "search", fake_search)
+    monkeypatch.setattr(llm, "pick_quote", lambda claim, sentences: 0)
+    child, parent = _node("Doomer"), _node("Wojak")
+    assert verify.find_evidence(child, parent, "character") is None
+
+
 def test_find_evidence_search_error_returns_none(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_search(*a: Any, **kw: Any) -> list[SearchHit]:
         raise ContextDevError("boom")

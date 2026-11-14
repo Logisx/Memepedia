@@ -9,7 +9,7 @@ from concurrent.futures import TimeoutError as FutureTimeoutError
 from datetime import date
 from urllib.parse import urlparse
 
-from memepedia import contextdev, graph, images, llm, resolver, store, verify
+from memepedia import blocklist, contextdev, graph, images, llm, resolver, store, verify
 from memepedia.contextdev import ContextDevError
 from memepedia.models import (
     Axis,
@@ -389,7 +389,7 @@ def propose(node_id: str, url: str, note: str) -> ProposalResponse:
         return ProposalResponse(
             accepted=False, message="Please provide a valid http(s) URL.", link=None
         )
-    if "knowyourmeme.com" in url:
+    if blocklist.is_blocked(url):
         return ProposalResponse(
             accepted=False,
             message="Know Your Meme can't be used as a source; please link a different page.",
