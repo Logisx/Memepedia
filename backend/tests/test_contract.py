@@ -11,7 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
 
-from memepedia import store
+from memepedia import db, store
 from memepedia.models import (
     IdentifyResponse,
     NodesResponse,
@@ -114,6 +114,45 @@ def test_health_endpoint(client: TestClient) -> None:
     body = response.json()
     assert body["ok"] is True
     assert body["nodes"] > 0
+
+
+def test_tree_endpoint_includes_flagged_sightings_only_when_asked(client: TestClient) -> None:
+    def post(name: str) -> Post:
+        return Post(
+            platform="lemmy",
+            source="test",
+            post_url=f"https://tree-sensitive.test/{name}",
+            image_url=f"https://tree-sensitive.test/{name}.png",
+            title=name,
+            author="tester",
+            posted_at=datetime.now(UTC),
+        )
+
+    sfw = store.insert_sighting(post("sfw"), None, "doomer", "resolved", nsfw=False)
+    flagged = store.insert_sighting(post("flagged"), None, "doomer", "resolved", nsfw=True)
+    unlabelled = store.insert_sighting(post("unlabelled"), None, "doomer", "resolved")
+    try:
+        default = client.get("/api/tree/doomer")
+        assert default.status_code == 200
+        default_ids = {
+            x["id"]
+            for x in TreeResponse.model_validate(default.json()).model_dump(mode="json")[
+                "sightings"
+            ]
+        }
+        assert sfw in default_ids
+        assert flagged not in default_ids
+        assert unlabelled not in default_ids
+
+        asked = client.get("/api/tree/doomer", params={"sensitive": "true"})
+        assert asked.status_code == 200
+        asked_ids = {
+            x["id"]
+            for x in TreeResponse.model_validate(asked.json()).model_dump(mode="json")["sightings"]
+        }
+        assert {sfw, flagged, unlabelled} <= asked_ids
+    finally:
+        db.execute("DELETE FROM sightings WHERE post_url LIKE 'https://tree-sensitive.test/%%'")
 
 
 def test_tree_unknown_id_is_404(client: TestClient) -> None:

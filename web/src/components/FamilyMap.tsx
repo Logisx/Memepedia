@@ -3,6 +3,7 @@ import { Handle, Position, ReactFlow, type Edge, type Node, type NodeProps } fro
 import '@xyflow/react/dist/style.css'
 import { useNavigate } from 'react-router'
 import type { MemeNode, TreeResponse } from '@contract/types'
+import { useIsNarrow } from '../hooks/useIsNarrow'
 import { layoutFamily, NODE_H, NODE_W } from '../lib/familyLayout'
 import { abbreviateLatin } from '../lib/latin'
 import { NodeThumb } from './SpecimenCard'
@@ -61,6 +62,7 @@ const nodeTypes = { meme: MemeBox, more: MoreBox }
 /** The whole character-line family as a top-to-bottom map. Click a meme to open it. */
 export function FamilyMap({ tree }: { tree: TreeResponse }) {
   const navigate = useNavigate()
+  const narrow = useIsNarrow()
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
 
   const { nodes, edges, legend } = useMemo(() => {
@@ -85,15 +87,22 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
     return { nodes: flowNodes, edges: flowEdges, legend }
   }, [tree, expanded])
 
+  // Fitting a wide family into a phone screen shrinks every card past reading: open on the
+  // selected meme at a readable zoom instead, and let the reader pan to the relatives.
+  const focusSelected = narrow && nodes.some((n) => n.id === tree.selected_id)
+  const fitViewOptions = focusSelected
+    ? { nodes: [{ id: tree.selected_id }], minZoom: 0.75, maxZoom: 0.75 }
+    : { padding: 0.05, maxZoom: tree.family_ids.length <= 1 ? 0.9 : 1.1 }
+
   return (
     <>
     <ReactFlow
-      key={expanded.size} // refit the view after "+N" expands
+      key={`${expanded.size}:${focusSelected}`} // refit after "+N" expands or the screen changes shape
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
       fitView
-      fitViewOptions={{ padding: 0.05, maxZoom: tree.family_ids.length <= 1 ? 0.9 : 1.1 }}
+      fitViewOptions={fitViewOptions}
       minZoom={0.15}
       nodesDraggable={false}
       nodesConnectable={false}

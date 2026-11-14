@@ -37,6 +37,7 @@ All commands from `backend/`, with uv.
 | Live-check one tick on one feed | `uv run python scripts/smoke_live.py --feed <key>` |
 | Build the real archive: curated families, Imgflip templates, images, link verification | `uv run python scripts/seed.py [--reset] [--steps families,templates,images,verify] [--limit N] [--workers N] [--families wojak,doge]` (`--families` narrows the verify step to those families, in that order) |
 | Backfill a week of Lemmy history as sightings | `uv run python scripts/backfill.py [--max-images 120]` |
+| Re-match pending sightings against the archive as it is now, from their saved vision labels. Dry run unless `--apply`; no Gemini call unless `--llm`, then at most `--max-llm` (default 50). Prints its target database first | `uv run python scripts/rematch.py [--apply] [--hours N] [--llm] [--max-llm 50]` |
 | Run the laptop clock (visits feeds in rotation until there is a public URL) | `uv run python scripts/run_loop.py [--every 45] [--once] [--platform lemmy\|reddit\|imgflip]` |
 | Manage Context.dev page monitors (one per feed) | `uv run python scripts/monitors.py create\|list\|delete [--dry-run]` |
 | Deploy the API and the website to Modal (one URL; both are live in production as of 2026-11-14 at `https://aleksandr-shishkov-work--memepedia-web.us-east.modal.run`) | `.\backend\deploy.ps1` builds `web/` with an empty `VITE_API_BASE`, then runs `modal deploy`. On Linux/WSL (no `deploy.ps1`): from `web/`, `VITE_API_BASE= npm run build`, then from `backend/`, `uv run --with modal modal deploy deploy.py`. `.env` lives at the repo root. Prefix `MEMEPEDIA_APP=memepedia-staging` first for a throwaway copy (no warm container, no clock); remove it with `modal app stop memepedia-staging`. `modal deploy` replaces the whole app, so deploy only from an up-to-date `main` |
@@ -74,7 +75,7 @@ The database is a local PostgreSQL 16 that starts itself on first use (the `pgse
 
 ## In progress
 
-- **Modern memes**: adding a shortlist the owner approved — Skibidi Toilet, Chill Guy, Moo Deng, Grimace Shake, Nihilist Penguin, Shrimp Jesus, Studio Ghibli AI filter, Bombardiro Crocodilo, Tralalero Tralala, Absolute Cinema, optionally Labubu and 100 Men vs 1 Gorilla. Candidates tracked in `backend/.data/modern_memes_candidates.json`.
+- **Modern memes**: adding a shortlist the owner approved — Skibidi Toilet, Chill Guy, Moo Deng, Grimace Shake, Nihilist Penguin, Shrimp Jesus, Studio Ghibli AI filter, Bombardiro Crocodilo, Tralalero Tralala, Absolute Cinema, optionally Labubu and 100 Men vs 1 Gorilla. Candidates tracked in `backend/.data/modern_memes_candidates.json`. The ten shortlisted memes are in production but had no relatives; on `bugfix/various-fixes`, `seed.json` gives most of them a family (19 new memes, 39 new links: Italian Brainrot, Skibidi Toilet, Grimace, That's Not Cinema, Moo Deng, Despicable Me, Baby Yoda, Duckroll, Labubu, and IQ Bell Curve under Wojak). Chill Guy, Nihilist Penguin, Shrimp Jesus and the Ghibli filter still have none. Not seeded into production yet: see `claude_docs/TODO_WITH_ENV.md` (what needs the `.env`) and `claude_docs/plans/2026-11-14_stamping-rollout_plan.md` (the same, as steps for a Claude session).
 
 ## Not done
 
@@ -82,7 +83,7 @@ The database is a local PostgreSQL 16 that starts itself on first use (the `pgse
 - The week backfill: `scripts/backfill.py` has not been run.
 - Context.dev monitors are not set up yet; the webhook signing secret has not been created either (the owner asked for an explanation of what it is before proceeding) — see "Still open".
 - NSFW re-label: the prompt was revised to judge the image, not the character's reputation (`llm._NSFW_POLICY`), but production labels are still from the first strict backfill — see "Still open" and §10 of `claude_docs/plans/2026-11-14_backend-pipeline_plan.md`.
-- Known orphan node `big-bird-in-a-meeting` (no link to anything) — an orphan bug in `trace.materialise` / `_attach_rootless`, not yet fixed. The owner says individual-meme bugs like this are low priority for now.
+- Orphan node `big-bird-in-a-meeting` is still in production with no link to anything. The code bug behind it is fixed (`trace.materialise` now deletes the nodes it created when it cannot place a meme), but the existing row needs a person to delete it or give it a link (it has no image or date, so deleting is the simple choice).
 - The 3-minute demo script and a backup video are still not written/recorded.
 
 ## Decisions made
@@ -101,7 +102,10 @@ The database is a local PostgreSQL 16 that starts itself on first use (the `pgse
 - Advice Animals on the family map (owner, 2026-11-14): left as it is for now. They show as single nodes; the demo families are unaffected.
 - Clock schedule (owner, option 3, 2026-11-14): the Modal clock is switchable via `MEMEPEDIA_CLOCK` and is currently paused rather than running every minute; turn it on deliberately when wanted.
 - NSFW policy (owner, 2026-11-14): strict and demo-safe. NSFW sightings are removed from the wall; nodes with an NSFW or unlabelled image are hidden/blurred until a person reveals them by clicking.
+- "Rising today" rule (2026-11-14; `store.spike_baseline`): the strip showed memes with only two posts, one post cross-posted to two communities counted twice, and the usual rate was averaged over days the archive had not been collecting. A meme now rises only with at least 3 distinct posts (by title) in 24 hours, at least twice its usual daily rate over the prior days actually observed, and only once the archive has been collecting for 3 days. Until then the strip is empty on purpose; the week backfill (`scripts/backfill.py`, seen_at = post time) is what gives it history sooner. "New specimens" is unchanged: it lists memes the archive added in the last 7 days, which includes old well-known templates the clock traced for the first time.
+- SFW/NSFW toggle (owner, 2026-11-14; was labelled "Sensitive"; the label shows the current mode, with the same emoji, and SFW is the default): the header toggle also reveals flagged and unlabelled sightings. `/api/wall` and `/api/tree/{id}` both take `sensitive=true`; the wall refetches when it is flipped, and so does a meme's Sightings tab (only the sightings are replaced). Default off, so the demo stays safe.
 - Modern memes shortlist (owner, 2026-11-14): approved — see "In progress".
+- Stamping more sightings (owner, 2026-11-14; plan in `claude_docs/plans/2026-11-14_identification-recall_plan.md`): a guess that exactly equals an archive name or alias is stamped from confidence 0.7 (`VISION_EXACT_MIN_CONFIDENCE`); any other guess still needs 0.85 (`VISION_MIN_CONFIDENCE`). A post with no usable guess is stamped by the one *character* node its `subjects` name exactly (no fuzzy match, no LLM; two characters or a template means no stamp; a few generic one-word names such as Walter and Cameraman are skipped). `VISION_MATCH_SUBJECTS=0` turns that off. Code in `live.match_label` and `resolver.Matcher`. Written and tested (276 tests pass on Linux), **not yet deployed**.
 - Cloudinary (owner, 2026-11-14): was only an optional idea in the original plan (an image host plus a side challenge); never implemented, and now dropped. Images stay hotlinked from their original sources (nodes mostly `i.imgflip.com`; sightings from Lemmy CDNs and `i.redd.it`).
 - Priorities (owner, 2026-11-14): fix only important breaking bugs for now; speed is not a priority (a trace taking a few minutes is acceptable). Next step after the work in progress is for the owner to check the app end to end and prepare the demo.
 
@@ -155,18 +159,18 @@ The database is a local PostgreSQL 16 that starts itself on first use (the `pgse
 - Snapshots in `backend/.data/` (git-ignored): `aiven_before_templates.json` (17:18), `after_templates_trial.json` (17:24, the restore source), `step2_consolidated_repairs.json` (the quote repairs), `aiven_wiped_state.json` (the mock data that was served, kept as a record), `aiven_restored.json` (18:09, after the restore and the two fixes).
 - Further data cleanup on the production (Aiven) database, done after the above: an export `backend/.data/aiven_before_option3.json` was taken first; the junk nodes `piaget-s-conservation-of-volume` and `for-the-better-right` were deleted; 23 clock-made nodes were demoted to `specimen`. Counts after cleanup are roughly 103 nodes (80 `established`, including the new `rickroll`, plus 23 `specimen`).
 - Specimen expiry (`store.expire_specimens(days=7)`): deletes a `specimen` node older than 7 days with no sighting in the last 7 days. The earliest any of the current specimens can be removed by this is 2026-11-21.
-- Known orphan: `big-bird-in-a-meeting` has no link to anything (an orphan bug in `trace.materialise`/`_attach_rootless`, not yet fixed; low priority per the owner).
+- Known orphan: `big-bird-in-a-meeting` has no link to anything. The cause (an unplaceable draft left its new nodes behind) is fixed in code; the row itself is still in production.
 - The week backfill has not been run. On the laptop the live loop is not running; the Modal clock is paused (see "Decisions made").
 - Context.dev credits: the backend ledger `backend/.data/credits.jsonl` shows 598 credits since 15:59 on 2026-11-14 (585 on quote verification, 13 on Reddit and Imgflip fetches), on top of roughly 55 from the feasibility tests. About 85 of those were wasted by re-checking 13 demo-family links that had already failed once.
 
 ## Still open
 
+- Tests need Linux/WSL: the database guard refuses the local test database on Windows (it accepts only a unix-socket server), so `uv run pytest -q` runs there only. `uv` is installed in WSL (`~/.local/bin`), but the repo's own `.venv` and `.pgdata` are Windows builds, so run from an isolated copy in the WSL home with `UV_PROJECT_ENVIRONMENT` pointing outside the repo. On 2026-11-14 the whole suite passed there: 276 tests, none needing a Gemini key.
 - Context.dev monitors and the webhook signing secret (not created; owner asked for an explanation first — see "Decisions waiting on the owner").
 - The week backfill (`scripts/backfill.py` not run).
 - The Imgflip top-100 templates step of the seed.
 - Sixteen uncertain seed facts (see "Decisions waiting on the owner" #3 for which commit touched these).
 - Three seed memes missing images (Consoomer, Foul Bachelor Frog, Ridiculously Photogenic Guy).
 - `mypy memepedia tests` reports pre-existing errors in 6 test files; `mypy memepedia scripts` is clean.
-- Five tests in `backend/tests/test_trace.py` (the `materialise_*` and trace event-order/heartbeat tests) call real Gemini via the resolver → `llm.same_or_new` when a key is present in `.env`, and fail without one — they should be mocked.
 - NSFW re-label: the prompt now judges the image rather than the character's reputation, but production labels still come from the first strict backfill (14 nodes, 85 sightings flagged, 31 unlabelled) — deferred, see §10 of `claude_docs/plans/2026-11-14_backend-pipeline_plan.md`.
 - `pipeline` has docs/seed commits not yet on `main` (STATUS updates, the 10 modern memes in `seed.json` — their data is already in production).

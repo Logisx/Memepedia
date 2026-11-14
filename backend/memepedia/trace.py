@@ -68,12 +68,15 @@ def _web_context(query: str) -> str:
     return "\n\n".join(parts)
 
 
-def _resolve_draft_node(draft: DraftChain, draft_node: DraftNode, *, as_specimen: bool) -> str:
+def _resolve_draft_node(
+    draft: DraftChain, draft_node: DraftNode, *, as_specimen: bool
+) -> tuple[str, bool]:
+    """The archive id for a drafted node, and whether this call had to create it."""
     if draft_node.existing_id and store.get_node(draft_node.existing_id) is not None:
-        return draft_node.existing_id
+        return draft_node.existing_id, False
     hit = resolver.resolve(draft_node.name, hint=draft_node.summary)
     if hit is not None:
-        return hit
+        return hit, False
     node_id = resolver.free_id(draft_node.name)
     is_subject = draft_node.name == draft.subject
     status = "specimen" if (is_subject and as_specimen) else "established"
@@ -98,22 +101,26 @@ def _resolve_draft_node(draft: DraftChain, draft_node: DraftNode, *, as_specimen
             nsfw=None,
         )
     )
-    return node_id
+    return node_id, True
 
 
 def _materialise_nodes(
     draft: DraftChain, *, as_specimen: bool
-) -> tuple[dict[str, str], dict[str, MemeNode]]:
+) -> tuple[dict[str, str], dict[str, MemeNode], list[str]]:
+    """Resolves or creates every drafted node; the last item lists the ids created here."""
     name_to_id: dict[str, str] = {}
     nodes_by_id: dict[str, MemeNode] = {}
+    created: list[str] = []
     for draft_node in draft.nodes:
-        node_id = _resolve_draft_node(draft, draft_node, as_specimen=as_specimen)
+        node_id, was_created = _resolve_draft_node(draft, draft_node, as_specimen=as_specimen)
+        if was_created:
+            created.append(node_id)
         node = store.get_node(node_id)
         if node is None:
             continue
         name_to_id[draft_node.name] = node_id
         nodes_by_id[node_id] = node
-    return name_to_id, nodes_by_id
+    return name_to_id, nodes_by_id, created
 
 
 def _materialise_links(
@@ -182,16 +189,22 @@ def _attach_rootless(subject_id: str, links: list[Link], root_id: str | None) ->
 
 
 def materialise(draft: DraftChain, *, as_specimen: bool = False) -> str | None:
-    """Writes a draft into the archive; returns the subject's node id, or None if unusable."""
+    """Writes a draft into the archive; returns the subject's node id, or None if unusable.
+
+    Returning None leaves nothing behind: nodes created for the draft are removed again (with
+    their links), so a draft that cannot be placed never leaves link-less orphans in the archive.
+    """
     if not draft.subject or not draft.nodes:
         return None
-    name_to_id, nodes_by_id = _materialise_nodes(draft, as_specimen=as_specimen)
+    name_to_id, nodes_by_id, created = _materialise_nodes(draft, as_specimen=as_specimen)
     subject_id = name_to_id.get(draft.subject)
     if subject_id is None:
+        store.delete_nodes(created)
         return None
     links = _materialise_links(draft, name_to_id, nodes_by_id)
     root_id = _draft_root_id(draft, name_to_id)
     if not _attach_rootless(subject_id, links, root_id):
+        store.delete_nodes(created)
         return None
     subject = store.get_node(subject_id)
     assert subject is not None

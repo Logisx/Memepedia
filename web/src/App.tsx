@@ -23,15 +23,15 @@ function SensitiveToggle() {
     <button
       type="button"
       aria-pressed={showSensitive}
-      aria-label={showSensitive ? 'Hide sensitive memes' : 'Show sensitive memes'}
-      title={showSensitive ? 'Hide sensitive memes' : 'Show sensitive memes'}
+      aria-label={showSensitive ? 'NSFW is on: switch to SFW' : 'SFW is on: switch to NSFW'}
+      title={showSensitive ? 'Showing NSFW. Click to go back to SFW' : 'SFW only. Click to show NSFW'}
       onClick={toggle}
-      className="font-type ml-auto flex shrink-0 items-center gap-1.5 border border-ink px-2 py-1 text-sm uppercase tracking-widest hover:bg-paper-deep"
+      className="font-type ml-auto flex min-w-[5.5rem] shrink-0 items-center justify-center gap-1.5 border border-ink px-2 py-1 text-sm uppercase tracking-widest hover:bg-paper-deep"
     >
       <span aria-hidden className={wiggling ? 'animate-emoji-wiggle inline-block' : 'inline-block'}>
         {showSensitive ? '👀' : '🙈'}
       </span>
-      Sensitive
+      {showSensitive ? 'NSFW' : 'SFW'}
     </button>
   )
 }
@@ -39,11 +39,11 @@ function SensitiveToggle() {
 export default function App() {
   return (
     <BrowserRouter>
-      <header className="flex flex-wrap items-baseline gap-6 border-b border-ink px-6 py-3">
-        <Link to="/" className="text-3xl font-extrabold no-underline">
+      <header className="flex flex-wrap items-baseline gap-x-4 gap-y-2 border-b border-ink px-4 py-3 md:gap-6 md:px-6">
+        <Link to="/" className="text-2xl font-extrabold no-underline md:text-3xl">
           Memepedia
         </Link>
-        <nav className="font-type flex gap-6 text-xl">
+        <nav className="font-type flex gap-4 text-lg md:gap-6 md:text-xl">
           {[
             { to: '/', label: 'Wall', end: true },
             { to: '/related', label: 'Compare two memes', end: false },

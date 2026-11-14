@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link as RouterLink, useSearchParams } from 'react-router'
 import type { MemeNode, RelatedResponse } from '@contract/types'
 import { MemePicker } from '../components/MemePicker'
@@ -23,7 +23,14 @@ export default function Related() {
   const a = params.get('a') ?? ''
   const b = params.get('b') ?? ''
   const [names, setNames] = useState<Record<string, string>>({})
+  // What the two boxes hold. Picking only fills a box; the Compare button (or a link that sets
+  // the address) is what starts the comparison.
+  const [draft, setDraft] = useState({ a, b })
   const [load, setLoad] = useState<Load>({ status: 'idle' })
+
+  useEffect(() => {
+    setDraft({ a, b })
+  }, [a, b])
 
   useEffect(() => {
     if (a === '' || b === '') {
@@ -51,9 +58,13 @@ export default function Related() {
 
   const pick = (side: 'a' | 'b') => (node: MemeNode) => {
     setNames((prev) => ({ ...prev, [node.id]: node.name }))
-    const next = new URLSearchParams(params)
-    next.set(side, node.id)
-    setParams(next)
+    setDraft((prev) => ({ ...prev, [side]: node.id }))
+  }
+  const bothPicked = draft.a !== '' && draft.b !== ''
+  const same = bothPicked && draft.a === draft.b
+  const compare = (e: FormEvent) => {
+    e.preventDefault()
+    if (bothPicked && !same) setParams(new URLSearchParams({ a: draft.a, b: draft.b }))
   }
   const value = (id: string) => (id === '' ? null : { id, name: names[id] ?? id })
   const nodes = useMemo(
@@ -62,16 +73,16 @@ export default function Related() {
   )
 
   return (
-    <div className="max-w-6xl px-6 py-6">
-      <h1 className="m-0 mb-4 text-3xl font-extrabold">How are two memes related?</h1>
-      <div className="flex flex-wrap items-end gap-4">
-        <MemePicker label="First meme" value={value(a)} onPick={pick('a')} />
+    <div className="max-w-6xl px-4 py-6 md:px-6">
+      <h1 className="m-0 mb-4 text-2xl font-extrabold md:text-3xl">How are two memes related?</h1>
+      <form onSubmit={compare} className="flex flex-wrap items-end gap-4">
+        <MemePicker label="First meme" value={value(draft.a)} onPick={pick('a')} />
         <span aria-hidden className="flex flex-col items-center pb-1">
           <span className="text-4xl font-extrabold">&amp;</span>
-          {a !== '' && b !== '' && (
+          {bothPicked && (
             <button
               type="button"
-              onClick={() => setParams(new URLSearchParams({ a: b, b: a }))}
+              onClick={() => setParams(new URLSearchParams({ a: draft.b, b: draft.a }))}
               className="font-type cursor-pointer border-0 bg-transparent p-0 text-sm underline"
               aria-label="Swap the two memes"
             >
@@ -79,12 +90,20 @@ export default function Related() {
             </button>
           )}
         </span>
-        <MemePicker label="Second meme" value={value(b)} onPick={pick('b')} />
-      </div>
+        <MemePicker label="Second meme" value={value(draft.b)} onPick={pick('b')} />
+        <button
+          type="submit"
+          disabled={!bothPicked || same}
+          className="font-type w-full cursor-pointer border-2 border-ink bg-ink px-6 py-2 text-xl text-paper disabled:cursor-not-allowed disabled:opacity-40 md:w-auto"
+        >
+          Compare
+        </button>
+      </form>
+      {same && <p className="font-type mt-2 text-lg text-stamp">Pick two different memes to compare.</p>}
 
       {load.status === 'idle' && (
         <div className="mt-6">
-          <p className="font-type text-xl">Pick two memes to see where their families meet.</p>
+          <p className="font-type text-xl">Pick two memes, then press Compare to see where their families meet.</p>
           <p className="font-type text-lg">
               Try:{' '}
               {EXAMPLES.map((ex, i) => (
@@ -100,7 +119,7 @@ export default function Related() {
       {load.status === 'error' && <p className="mt-6 text-2xl text-stamp">{load.message}</p>}
       {load.status === 'ready' && (
         <div className="mt-6 space-y-5">
-          <p className="m-0 text-3xl font-extrabold leading-snug">{load.related.sentence}</p>
+          <p className="m-0 text-2xl font-extrabold leading-snug md:text-3xl">{load.related.sentence}</p>
           {load.related.character && <PathDiagram title="By character" path={load.related.character} nodes={nodes} />}
           {load.related.format && <PathDiagram title="By format" path={load.related.format} nodes={nodes} />}
           {!load.related.character && <p className="font-type m-0 text-lg text-ink-soft">No shared character ancestor.</p>}

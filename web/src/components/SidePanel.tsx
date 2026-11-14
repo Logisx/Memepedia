@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { HistoryItem, Link, ProposalResponse, Sighting } from '@contract/types'
 import { propose } from '../data'
+import { useShowSensitive } from '../hooks/useShowSensitive'
 import { PLATFORM_NAME } from '../lib/platform'
 import { timeAgo } from '../lib/time'
 
@@ -30,7 +31,7 @@ interface Props {
 export function SidePanel({ nodeId, sightings, history, onCited }: Props) {
   const [tab, setTab] = useState<Tab>('sightings')
   return (
-    <aside className="flex h-full min-h-0 w-[26rem] shrink-0 flex-col border-l border-ink">
+    <aside className="flex w-full shrink-0 flex-col border-t border-ink lg:h-full lg:min-h-0 lg:w-[26rem] lg:border-l lg:border-t-0">
       <div role="tablist" className="font-type flex border-b border-ink text-lg">
         {TABS.map((t) => (
           <button
@@ -44,7 +45,7 @@ export function SidePanel({ nodeId, sightings, history, onCited }: Props) {
           </button>
         ))}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-3">
+      <div className="min-h-[14rem] p-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
         {tab === 'sightings' && <SightingsList sightings={sightings} />}
         {tab === 'history' && <HistoryList history={history} />}
         {tab === 'suggest' && <SuggestForm nodeId={nodeId} onCited={onCited} />}
@@ -67,9 +68,10 @@ function groupSightings(sightings: Sighting[]): { latest: Sighting; others: Sigh
 }
 
 function SightingsList({ sightings }: { sightings: Sighting[] }) {
-  // Defensive: the backend should never send a sighting that isn't nsfw === false, but
-  // never render one that slips through anyway.
-  const safe = sightings.filter((s) => s.nsfw === false)
+  // The backend only sends a sighting that isn't nsfw === false when the viewer asked to see
+  // sensitive ones; unless that toggle is on, never render one that slips through anyway.
+  const showSensitive = useShowSensitive()
+  const safe = showSensitive ? sightings : sightings.filter((s) => s.nsfw === false)
   if (safe.length === 0)
     return (
       <div className="flex flex-col items-start gap-2">

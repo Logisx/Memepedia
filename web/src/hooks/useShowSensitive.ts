@@ -33,6 +33,11 @@ export function setShowSensitive(value: boolean): void {
   listeners.forEach((listener) => listener())
 }
 
+/** The flag's current value, for code that fetches outside a render. */
+export function getShowSensitive(): boolean {
+  return showSensitive
+}
+
 /** Whether to show sensitive node images un-blurred everywhere, default off, persisted. */
 export function useShowSensitive(): boolean {
   return useSyncExternalStore(subscribe, getSnapshot)

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { Link as RouterLink, useParams } from 'react-router'
 import type { Axis, Link, TreeResponse } from '@contract/types'
@@ -6,8 +6,9 @@ import { DescentStrip, flipDuration } from '../components/DescentStrip'
 import { FamilyMap } from '../components/FamilyMap'
 import { SidePanel } from '../components/SidePanel'
 import { getTree } from '../data'
+import { getShowSensitive, useShowSensitive } from '../hooks/useShowSensitive'
 
-type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; tree: TreeResponse }
+type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; tree: TreeResponse; sensitive: boolean }
 
 /** Route wrapper: loads the tree for `/meme/:id`, then hands it to the view. */
 export default function Lineage() {
@@ -18,8 +19,11 @@ export default function Lineage() {
   useEffect(() => {
     let cancelled = false
     setLoad({ status: 'loading' })
-    getTree(id).then(
-      (tree) => !cancelled && setLoad({ status: 'ready', tree }),
+    // Which sightings come back depends on the Sensitive toggle; LineageView refetches them
+    // if it is flipped later, so remember what this load asked for.
+    const sensitive = getShowSensitive()
+    getTree(id, sensitive).then(
+      (tree) => !cancelled && setLoad({ status: 'ready', tree, sensitive }),
       (e: unknown) => !cancelled && setLoad({ status: 'error', message: e instanceof Error ? e.message : String(e) }),
     )
     return () => {
@@ -38,12 +42,33 @@ export default function Lineage() {
       </div>
     )
   }
-  return <LineageView key={id} initial={load.tree} />
+  return <LineageView key={id} initial={load.tree} loadedSensitive={load.sensitive} />
 }
 
-function LineageView({ initial }: { initial: TreeResponse }) {
+function LineageView({ initial, loadedSensitive }: { initial: TreeResponse; loadedSensitive: boolean }) {
   const [tree, setTree] = useState(initial)
   const [axis, setAxis] = useState<Axis>('character')
+  const showSensitive = useShowSensitive()
+  const sightingsFetchedWith = useRef(loadedSensitive)
+
+  // The tree endpoint filters flagged sightings on the server, so flipping the Sensitive toggle
+  // needs a fresh fetch. Only the sightings are replaced: the axis, the map and any citation
+  // added from the panel stay as they are.
+  useEffect(() => {
+    if (showSensitive === sightingsFetchedWith.current) return
+    let cancelled = false
+    getTree(tree.selected_id, showSensitive).then(
+      (fresh) => {
+        if (cancelled) return
+        sightingsFetchedWith.current = showSensitive
+        setTree((prev) => ({ ...prev, sightings: fresh.sightings }))
+      },
+      () => undefined, // keep what is on screen; the panel still filters by the toggle
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [showSensitive, tree.selected_id])
 
   const nodesById = useMemo(() => new Map(tree.nodes.map((n) => [n.id, n])), [tree.nodes])
   const selected = nodesById.get(tree.selected_id)
@@ -73,11 +98,12 @@ function LineageView({ initial }: { initial: TreeResponse }) {
   const linesDiffer = tree.descent.character.join('>') !== tree.descent.format.join('>')
   const aloneInFamily = tree.family_ids.length <= 1
 
+  // Phones and tablets stack the sections and let the page scroll; from lg up it is one screen.
   return (
-    <div className="flex h-[calc(100vh-4.25rem)] min-h-[34rem] flex-col">
-      <section className="flex h-[45%] min-h-0 flex-col px-6 pt-3">
-        <div className="font-type flex flex-wrap items-center gap-x-6 gap-y-1 pb-2 text-lg">
-          <span className="font-display text-3xl font-extrabold">{selected?.name ?? tree.selected_id}</span>
+    <div className="flex flex-col lg:h-[calc(100dvh-4.25rem)] lg:min-h-[34rem]">
+      <section className="flex flex-col px-4 pt-3 lg:h-[45%] lg:min-h-0 lg:px-6">
+        <div className="font-type flex flex-wrap items-center gap-x-4 gap-y-2 pb-2 text-lg lg:gap-x-6 lg:gap-y-1">
+          <span className="font-display min-w-0 break-words text-2xl font-extrabold lg:text-3xl">{selected?.name ?? tree.selected_id}</span>
           {linesDiffer && (
             <div role="group" aria-label="Line of descent" className="flex border-2 border-ink">
               {(['character', 'format'] as const).map((a) => (
@@ -102,21 +128,21 @@ function LineageView({ initial }: { initial: TreeResponse }) {
             </RouterLink>
           ))}
         </div>
-        <div className="min-h-0 flex-1">
+        <div className="h-[24rem] lg:h-auto lg:min-h-0 lg:flex-1">
           <DescentStrip axis={axis} descent={tree.descent[axis]} nodesById={nodesById} links={tree.links} />
         </div>
       </section>
 
-      <section className="flex h-[55%] min-h-0 border-t border-ink">
+      <section className="flex flex-col border-t border-ink lg:h-[55%] lg:min-h-0 lg:flex-row">
         <motion.div
-          className="relative min-w-0 flex-1"
+          className="relative h-[26rem] min-w-0 lg:h-auto lg:flex-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: mapDelay, duration: 0.6 }}
         >
           <FamilyMap tree={tree} />
           {aloneInFamily && (
-            <p className="font-type pointer-events-none absolute inset-x-0 top-[calc(50%+4rem)] m-0 text-center text-lg text-ink-soft">
+            <p className="font-type pointer-events-none absolute inset-x-0 top-[calc(50%+4rem)] m-0 px-4 text-center text-lg text-ink-soft">
               No relatives on record yet: this meme is the only one in its family so far.
             </p>
           )}

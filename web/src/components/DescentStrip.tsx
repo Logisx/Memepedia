@@ -1,7 +1,8 @@
-import { Fragment } from 'react'
+import { Fragment, useEffect, useRef } from 'react'
 import { motion } from 'motion/react'
 import { Link as RouterLink } from 'react-router'
 import type { Axis, Link, MemeNode } from '@contract/types'
+import { useIsNarrow } from '../hooks/useIsNarrow'
 import { LinkConnector } from './LinkConnector'
 import { SpecimenCard } from './SpecimenCard'
 
@@ -26,13 +27,23 @@ interface Props {
 export function DescentStrip({ axis, descent, nodesById, links, checking = false }: Props) {
   const ordered = [...descent].reverse() // oldest first
   const count = ordered.length
+  const narrow = useIsNarrow()
+  const scroller = useRef<HTMLDivElement>(null)
+  const chain = descent.join('>')
+
+  // On a phone the strip is wider than the screen and the selected meme is its last card:
+  // start at that end instead of on the oldest ancestor.
+  useEffect(() => {
+    const el = scroller.current
+    if (narrow && el) el.scrollLeft = el.scrollWidth
+  }, [narrow, chain])
 
   if (count === 0) {
     return <p className="font-type self-center p-4 text-xl">No recorded {axis} line for this meme.</p>
   }
 
   return (
-    <div className="flex h-full items-stretch overflow-x-auto pb-3 pr-3 pt-1">
+    <div ref={scroller} className="flex h-full items-stretch overflow-x-auto pb-3 pr-3 pt-1">
       {ordered.map((id, index) => {
         const node = nodesById.get(id)
         if (!node) return null

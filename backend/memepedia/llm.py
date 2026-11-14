@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 import time
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Literal, cast
 
@@ -191,9 +191,10 @@ confidence is your 0 to 1 confidence in template_guess specifically; be conserva
 unstamped sighting is better than a wrongly stamped one. structure_class must be exactly one of
 the given root ids, or null if none fits. overlaid_text is the text written on the image, verbatim
 and trimmed (null if none). catchphrase is the reusable spoken phrase if this meme is phrase-driven
-(null otherwise). subjects lists the depicted characters, people or things. description is one
-neutral sentence describing the reusable visual STRUCTURE of the image (not this post's specific
-joke) — it is used as a search query and to group unidentified memes.
+(null otherwise). subjects lists the depicted characters, people or things; when one of them is a
+known name below, write that name verbatim. description is one neutral sentence describing the
+reusable visual STRUCTURE of the image (not this post's specific joke) — it is used as a search
+query and to group unidentified memes.
 
 {nsfw_policy}
 
@@ -259,6 +260,25 @@ def _parse_vision_label(raw: dict[str, Any], roots: Sequence[RootInfo]) -> Visio
         template_guess=raw.get("template_guess") or None,
         confidence=confidence,
         structure_class=structure_class,
+        subjects=[str(s) for s in (raw.get("subjects") or [])],
+        overlaid_text=raw.get("overlaid_text") or None,
+        catchphrase=raw.get("catchphrase") or None,
+        description=str(raw.get("description") or ""),
+        nsfw=bool(raw.get("nsfw", False)),
+        nsfw_reason=raw.get("nsfw_reason") or None,
+    )
+
+
+def parse_stored_vision(raw: Mapping[str, Any]) -> VisionLabel:
+    """Rebuilds a VisionLabel from the JSON saved with a sighting.
+
+    Tolerant of rows written before a field existed: a missing key takes its default.
+    """
+    return VisionLabel(
+        is_meme=bool(raw.get("is_meme", False)),
+        template_guess=raw.get("template_guess") or None,
+        confidence=max(0.0, min(1.0, float(raw.get("confidence") or 0.0))),
+        structure_class=raw.get("structure_class") or None,
         subjects=[str(s) for s in (raw.get("subjects") or [])],
         overlaid_text=raw.get("overlaid_text") or None,
         catchphrase=raw.get("catchphrase") or None,

@@ -11,7 +11,7 @@ import hashlib
 import hmac
 import logging
 import time
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any, Literal
@@ -20,7 +20,7 @@ import httpx
 
 from memepedia import contextdev, db, resolver, sources, store
 from memepedia import llm as llm_module
-from memepedia.config import get_settings
+from memepedia.config import Settings, get_settings
 from memepedia.llm import Cluster, PendingItem, RootInfo
 from memepedia.models import IdentifyResponse, Post, SightingState, VisionLabel
 from memepedia.sources import FEEDS, Feed, SourceError
@@ -115,22 +115,57 @@ def _look_one(post: Post, roots: Sequence[RootInfo], known_names: Sequence[str])
     return _Looked(post, vision, None)
 
 
-def _resolve(name: str, hint: str | None) -> str | None:
-    return resolver.resolve(name, hint=hint)
+@dataclass(frozen=True)
+class Thresholds:
+    """How sure the vision model must be before a label may stamp a sighting."""
+
+    exact: float  # the guess equals an archive name or alias
+    near: float  # any other guess: a close spelling confirmed by the LLM
+    subjects: bool  # whether a depicted character may stamp a post with no usable guess
+
+    @classmethod
+    def from_settings(cls, settings: Settings) -> Thresholds:
+        return cls(
+            exact=settings.vision_exact_min_confidence,
+            near=settings.vision_min_confidence,
+            subjects=settings.match_subjects,
+        )
+
+
+@dataclass(frozen=True)
+class LabelMatch:
+    """The node a label matched and how: its guess exactly, near, or by a depicted character."""
+
+    node_id: str
+    via: Literal["exact", "near", "subject"]
+
+
+def match_label(label: VisionLabel, t: Thresholds, m: resolver.Matcher) -> LabelMatch | None:
+    """The archive node a vision label points at, or None. The first of three rules that fits.
+
+    An exact guess passes at the lower threshold, any other guess needs the higher one, and the
+    depicted characters are tried last. Confidence belongs to the template guess only, so the
+    subject rule ignores it.
+    """
+    guess = label.template_guess
+    if guess and label.confidence >= t.exact and (node_id := m.exact(guess)) is not None:
+        return LabelMatch(node_id, "exact")
+    if guess and label.confidence >= t.near and (node_id := m.near(guess, label.description)):
+        return LabelMatch(node_id, "near")
+    if t.subjects and (node_id := m.subject(label.subjects)) is not None:
+        return LabelMatch(node_id, "subject")
+    return None
 
 
 def classify(
-    label: VisionLabel,
-    min_confidence: float,
-    resolve: Callable[[str, str | None], str | None],
+    label: VisionLabel, t: Thresholds, m: resolver.Matcher
 ) -> tuple[str | None, SightingState]:
     """Decides a sighting's node and state from its vision label; never stamps a weak guess."""
     if not label.is_meme:
         return None, "unclassified"
-    if label.template_guess and label.confidence >= min_confidence:
-        node_id = resolve(label.template_guess, label.description)
-        if node_id is not None:
-            return node_id, "resolved"
+    match = match_label(label, t, m)
+    if match is not None:
+        return match.node_id, "resolved"
     return None, "pending"
 
 
@@ -145,7 +180,7 @@ def _fresh_batch(feed: Feed, cap: int) -> tuple[list[Post], int, int]:
 
 
 def _save_looked(
-    looked: Sequence[_Looked], min_confidence: float, errors: list[str]
+    looked: Sequence[_Looked], thresholds: Thresholds, matcher: resolver.Matcher, errors: list[str]
 ) -> tuple[int, int, int, list[tuple[str, str]]]:
     """Classifies and saves each LOOK result; returns counts and auto-trace candidate pairs."""
     resolved = pending = unclassified = 0
@@ -157,7 +192,7 @@ def _save_looked(
         node_id, state = (
             (None, "unclassified")
             if result.vision is None
-            else classify(result.vision, min_confidence, _resolve)
+            else classify(result.vision, thresholds, matcher)
         )
         sid = store.insert_sighting(result.post, result.vision, node_id, state)
         if sid is None:
@@ -237,7 +272,7 @@ def _tick(feed_key: str) -> TickReport:
         looked = [f.result() for f in futures]
 
     resolved, pending, unclassified, candidates = _save_looked(
-        looked, settings.vision_min_confidence, errors
+        looked, Thresholds.from_settings(settings), resolver.Matcher.from_store(), errors
     )
     traced = _auto_trace(candidates, settings.auto_traces_per_tick, errors)
     return TickReport(
@@ -392,10 +427,10 @@ def identify(image: bytes, mime_type: str) -> IdentifyResponse:
     )
     if label.nsfw:
         return IdentifyResponse(node_id=None, trace_query=None, guess=None, overlaid_text=None)
-    node_id = None
-    settings = get_settings()
-    if label.template_guess and label.confidence >= settings.vision_min_confidence:
-        node_id = resolver.resolve(label.template_guess, hint=label.description)
+    match = match_label(
+        label, Thresholds.from_settings(get_settings()), resolver.Matcher.from_store()
+    )
+    node_id = match.node_id if match else None
     guess = label.template_guess or label.description or None
     trace_query = None if node_id is not None else guess
     return IdentifyResponse(
