@@ -203,6 +203,5 @@ def test_expire_specimens_removes_only_stale_ones(client: TestClient) -> None:
         "SELECT node_id, state FROM sightings WHERE post_url = %s", ("https://x.test/stale",)
     )
     assert orphan == {"node_id": None, "state": "unclassified"}
-    for node_id in ("live-specimen", "new-specimen"):
-        db.execute("DELETE FROM nodes WHERE id = %s", (node_id,))
     db.execute("DELETE FROM sightings WHERE post_url LIKE 'https://x.test/%%'")
+    db.execute("DELETE FROM nodes WHERE id = ANY(%s)", (["live-specimen", "new-specimen"],))
