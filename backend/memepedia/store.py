@@ -365,20 +365,27 @@ def insert_sighting(
     return row["id"] if row else None
 
 
-def _wall_query(since: datetime | None, limit: int) -> tuple[str, db.Params]:
-    """Only nsfw = false sightings: null (unlabelled) and true are both kept off the wall."""
-    if since is None:
-        return _WALL_SELECT + " WHERE s.nsfw = false ORDER BY s.posted_at DESC LIMIT %s", (limit,)
-    return (
-        _WALL_SELECT
-        + " WHERE s.nsfw = false AND s.seen_at > %s ORDER BY s.posted_at DESC LIMIT %s",
-        (since, limit),
-    )
+def _wall_query(
+    since: datetime | None, limit: int, include_sensitive: bool
+) -> tuple[str, db.Params]:
+    """By default only nsfw = false sightings: null (unlabelled) and true are kept off the wall.
+
+    `include_sensitive` drops that filter entirely, for a viewer who asked to see them.
+    """
+    clauses = [] if include_sensitive else ["s.nsfw = false"]
+    params: list[object] = []
+    if since is not None:
+        clauses.append("s.seen_at > %s")
+        params.append(since)
+    where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
+    params.append(limit)
+    return _WALL_SELECT + f"{where} ORDER BY s.posted_at DESC LIMIT %s", tuple(params)
 
 
-def wall(since: datetime | None, limit: int) -> list[Sighting]:
+def wall(since: datetime | None, limit: int, include_sensitive: bool = False) -> list[Sighting]:
     """Sightings for the wall: newest by posted_at, or only those ingested after `since`."""
-    return [_row_to_sighting(r) for r in db.fetch_all(*_wall_query(since, limit))]
+    query = _wall_query(since, limit, include_sensitive)
+    return [_row_to_sighting(r) for r in db.fetch_all(*query)]
 
 
 def _ceil_ms(moment: datetime) -> datetime:
@@ -386,7 +393,9 @@ def _ceil_ms(moment: datetime) -> datetime:
     return moment + timedelta(microseconds=1000 - extra) if extra else moment
 
 
-def wall_page(since: datetime | None, limit: int) -> tuple[list[Sighting], datetime]:
+def wall_page(
+    since: datetime | None, limit: int, include_sensitive: bool = False
+) -> tuple[list[Sighting], datetime]:
     """Wall sightings plus the cursor to pass back as `since` on the next poll.
 
     The cursor is the newest ingestion time in the same snapshot as the rows, taken
@@ -399,7 +408,7 @@ def wall_page(since: datetime | None, limit: int) -> tuple[list[Sighting], datet
         newest = conn.execute(
             "SELECT COALESCE(max(seen_at), now()) AS at FROM sightings"
         ).fetchone()
-        rows = conn.execute(*_wall_query(since, limit)).fetchall()
+        rows = conn.execute(*_wall_query(since, limit, include_sensitive)).fetchall()
     cursor: datetime = newest["at"] if newest else datetime.now(UTC)
     return [_row_to_sighting(r) for r in rows], _ceil_ms(cursor)
 
