@@ -60,6 +60,8 @@ export default function Related() {
     setNames((prev) => ({ ...prev, [node.id]: node.name }))
     setDraft((prev) => ({ ...prev, [side]: node.id }))
   }
+  // Typed away from the picked meme without choosing a new one: Compare must not use the stale pick.
+  const clear = (side: 'a' | 'b') => () => setDraft((prev) => ({ ...prev, [side]: '' }))
   const bothPicked = draft.a !== '' && draft.b !== ''
   const same = bothPicked && draft.a === draft.b
   const compare = (e: FormEvent) => {
@@ -76,7 +78,7 @@ export default function Related() {
     <div className="max-w-6xl px-4 py-6 md:px-6">
       <h1 className="m-0 mb-4 text-2xl font-extrabold md:text-3xl">How are two memes related?</h1>
       <form onSubmit={compare} className="flex flex-wrap items-end gap-4">
-        <MemePicker label="First meme" value={value(draft.a)} onPick={pick('a')} />
+        <MemePicker label="First meme" value={value(draft.a)} onPick={pick('a')} onClear={clear('a')} />
         <span aria-hidden className="flex flex-col items-center pb-1">
           <span className="text-4xl font-extrabold">&amp;</span>
           {bothPicked && (
@@ -90,7 +92,7 @@ export default function Related() {
             </button>
           )}
         </span>
-        <MemePicker label="Second meme" value={value(draft.b)} onPick={pick('b')} />
+        <MemePicker label="Second meme" value={value(draft.b)} onPick={pick('b')} onClear={clear('b')} />
         <button
           type="submit"
           disabled={!bothPicked || same}
