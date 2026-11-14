@@ -174,14 +174,43 @@ def _save_looked(
     return resolved, pending, unclassified, candidates
 
 
+def _has_second_sighting(guess: str, pending_rows: Sequence[db.Row]) -> bool:
+    """Whether `guess`'s template was also seen, within the window, from another author.
+
+    Counts distinct authors among pending rows whose own template guess normalises to the
+    same name as `guess` (the resolver's own normalisation, so aliasing and casing match);
+    a missing author counts as one author regardless of how many anonymous rows there are.
+    """
+    key = resolver.normalize(guess)
+    named_authors: set[str] = set()
+    anon = False
+    for row in pending_rows:
+        vision = row.get("vision") or {}
+        template_guess = vision.get("template_guess")
+        if not template_guess or resolver.normalize(template_guess) != key:
+            continue
+        author = row.get("author")
+        if author is None:
+            anon = True
+        else:
+            named_authors.add(author)
+    return len(named_authors) + (1 if anon else 0) >= 2
+
+
 def _auto_trace(candidates: Sequence[tuple[str, str]], cap: int, errors: list[str]) -> list[str]:
-    """Runs `trace.run` on up to `cap` pending candidates, attaching any that resolve."""
+    """Traces, as specimens, up to `cap` pending candidates seen from a second author."""
     from memepedia import trace
 
+    if not candidates:
+        return []
+    pending_rows = store.pending_sightings(hours=_PENDING_WINDOW_HOURS)
+    qualifying = [
+        (sid, guess) for sid, guess in candidates if _has_second_sighting(guess, pending_rows)
+    ][:cap]
     traced: list[str] = []
-    for sid, guess in candidates[:cap]:
+    for sid, guess in qualifying:
         try:
-            node_id = trace.run(guess)
+            node_id = trace.run(guess, as_specimen=True)
         except Exception as exc:  # trace.run should not raise; guard the tick anyway
             errors.append(f"auto-trace {guess!r}: {exc}")
             continue

@@ -263,8 +263,8 @@ def test_tick_auto_trace_attaches_and_respects_cap(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     now = datetime.now(UTC)
-    post_a = _post("https://t.test/autotrace-a", posted_at=now)
-    post_b = _post("https://t.test/autotrace-b", posted_at=now - timedelta(seconds=1))
+    post_a = _post("https://t.test/autotrace-a", posted_at=now, author="alice")
+    post_b = _post("https://t.test/autotrace-b", posted_at=now - timedelta(seconds=1), author="bob")
     monkeypatch.setattr(sources, "fetch", lambda feed: [post_a, post_b])
     monkeypatch.setattr(live, "get_settings", lambda: _settings(auto_traces_per_tick=1))
     monkeypatch.setattr(live, "_download_image", lambda url: (b"data-" + url.encode(), "image/png"))
@@ -275,12 +275,12 @@ def test_tick_auto_trace_attaches_and_respects_cap(
     )
     monkeypatch.setattr(resolver, "resolve", lambda name, *, hint=None: None)
 
-    calls: list[str] = []
+    calls: list[tuple[str, bool]] = []
 
     def fake_trace_run(
         query: str, *, context: str | None = None, as_specimen: bool = False
     ) -> str | None:
-        calls.append(query)
+        calls.append((query, as_specimen))
         return "new-specimen-node"
 
     monkeypatch.setattr(trace, "run", fake_trace_run)
@@ -305,7 +305,7 @@ def test_tick_auto_trace_attaches_and_respects_cap(
     report = live.tick(_FEED_KEY)
 
     assert report.pending == 2
-    assert len(calls) == 1
+    assert calls == [("New Specimen X", True)]
     assert report.traced == ["new-specimen-node"]
     resolved_row = db.fetch_one(
         "SELECT node_id, state FROM sightings WHERE post_url = %s", (post_a.post_url,)
@@ -320,6 +320,77 @@ def test_tick_auto_trace_attaches_and_respects_cap(
         "DELETE FROM sightings WHERE post_url = ANY(%s)", ([post_a.post_url, post_b.post_url],)
     )
     db.execute("DELETE FROM nodes WHERE id = %s", ("new-specimen-node",))
+
+
+def test_tick_auto_trace_single_author_is_not_traced(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """One author posting the same guess twice does not count as a second sighting."""
+    now = datetime.now(UTC)
+    post_a = _post("https://t.test/autotrace-solo-a", posted_at=now, author="solo")
+    post_b = _post(
+        "https://t.test/autotrace-solo-b", posted_at=now - timedelta(seconds=1), author="solo"
+    )
+    monkeypatch.setattr(sources, "fetch", lambda feed: [post_a, post_b])
+    monkeypatch.setattr(live, "get_settings", lambda: _settings(auto_traces_per_tick=2))
+    monkeypatch.setattr(live, "_download_image", lambda url: (b"data-" + url.encode(), "image/png"))
+    monkeypatch.setattr(
+        llm, "vision_label", lambda *a, **kw: _label(template_guess="Solo Thing", confidence=0.95)
+    )
+    monkeypatch.setattr(resolver, "resolve", lambda name, *, hint=None: None)
+
+    calls: list[str] = []
+    monkeypatch.setattr(trace, "run", lambda *a, **kw: (calls.append(a[0]), None)[1])
+
+    report = live.tick(_FEED_KEY)
+
+    assert report.pending == 2
+    assert calls == []
+    assert report.traced == []
+
+    db.execute(
+        "DELETE FROM sightings WHERE post_url = ANY(%s)", ([post_a.post_url, post_b.post_url],)
+    )
+
+
+def test_has_second_sighting_requires_two_distinct_authors() -> None:
+    def row(author: str | None, guess: str) -> dict[str, object]:
+        return {"author": author, "vision": {"template_guess": guess}}
+
+    assert live._has_second_sighting("Doomer", [row("a", "Doomer")]) is False
+    assert live._has_second_sighting("Doomer", [row("a", "Doomer"), row("a", "Doomer")]) is False
+    assert live._has_second_sighting("Doomer", [row("a", "Doomer"), row("b", "Doomer")]) is True
+    assert live._has_second_sighting("Doomer", [row(None, "Doomer"), row(None, "Doomer")]) is False
+    assert live._has_second_sighting("Doomer", [row(None, "Doomer"), row("a", "Doomer")]) is True
+
+
+def test_has_second_sighting_normalises_names_and_ignores_other_guesses() -> None:
+    def row(author: str | None, guess: str | None) -> dict[str, object]:
+        return {"author": author, "vision": {"template_guess": guess}}
+
+    rows = [
+        row("a", "The Doomer Meme"),
+        row("b", "doomer template"),
+        row("c", "unrelated thing"),
+        row("d", None),
+    ]
+    assert live._has_second_sighting("Doomer", rows) is True
+
+
+def test_auto_trace_uses_the_detect_specimens_window(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: dict[str, int] = {}
+
+    def fake_pending_sightings(hours: int = 72) -> list[dict[str, object]]:
+        seen["hours"] = hours
+        return [{"author": "solo", "vision": {"template_guess": "Thing"}}]
+
+    monkeypatch.setattr(store, "pending_sightings", fake_pending_sightings)
+    errors: list[str] = []
+
+    traced = live._auto_trace([("sid-1", "Thing")], 1, errors)
+
+    assert traced == []
+    assert seen["hours"] == live._PENDING_WINDOW_HOURS
 
 
 # --- detect_specimens --------------------------------------------------------------------------
