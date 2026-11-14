@@ -1269,7 +1269,7 @@
     {
       "id": "baby-yoda",
       "name": "Baby Yoda",
-      "aliases": ["Grogu", "The Child"],
+      "aliases": ["Grogu"],
       "kind": "character",
       "latin_name": "Yoda infans",
       "first_seen": "2019-11-12",

@@ -96,8 +96,15 @@ def resolve(name: str, *, hint: str | None = None, allow_llm: bool = True) -> st
 
 
 # One-word character names that are also ordinary words (a job, a food, a first name, a game
-# term), so a depicted "cameraman" or "Walter" must never stamp a sighting on its own.
-_GENERIC_SUBJECTS = frozenset({"cameraman", "cameramen", "haggis", "walter", "npc"})
+# term, a kinship term), so a depicted "cameraman", "Walter" or "child" must never stamp a
+# sighting on its own. This set only governs the subject rule (Matcher.subject), never the
+# template-guess rules (Matcher.exact / Matcher.near), so it is also safe to list generic
+# forms of legitimate character names here: "chad" and "big brain" stop a bare vision-subject
+# from stamping chad/big-brain-wojak, while a post whose own template guess is "Chad" or
+# "Big Brain Wojak" still resolves normally.
+_GENERIC_SUBJECTS = frozenset(
+    {"cameraman", "cameramen", "haggis", "walter", "npc", "child", "chad", "big brain"}
+)
 
 
 class Matcher:

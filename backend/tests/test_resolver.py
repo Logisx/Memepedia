@@ -250,3 +250,51 @@ def test_matcher_subject_skips_generic_names() -> None:
     assert matcher.subject(["Walter"]) is None
     assert matcher.subject(["the Cameraman"]) is None
     assert matcher.subject(["Walter", "Doge"]) == "doge"
+
+
+_BABY_YODA_INDEX = [
+    ("Baby Yoda", "baby-yoda"),
+    ("Grogu", "baby-yoda"),
+    ("Chad", "chad"),
+    ("Big Brain Wojak", "big-brain-wojak"),
+    ("Big Brain", "big-brain-wojak"),
+    ("Doge", "doge"),
+]
+_BABY_YODA_KINDS = {
+    "baby-yoda": "character",
+    "chad": "character",
+    "big-brain-wojak": "character",
+    "doge": "character",
+}
+
+
+@pytest.mark.parametrize(
+    "subjects",
+    [["a child", "teacher"], ["child"], ["the child", "dog"]],
+)
+def test_matcher_subject_does_not_stamp_baby_yoda_for_a_bare_child(
+    subjects: list[str],
+) -> None:
+    matcher = resolver.Matcher(_BABY_YODA_INDEX, _BABY_YODA_KINDS)
+    assert matcher.subject(subjects) is None
+
+
+@pytest.mark.parametrize("subjects", [["Baby Yoda", "teacher"], ["Grogu"]])
+def test_matcher_subject_still_stamps_baby_yoda_by_its_real_name(
+    subjects: list[str],
+) -> None:
+    matcher = resolver.Matcher(_BABY_YODA_INDEX, _BABY_YODA_KINDS)
+    assert matcher.subject(subjects) == "baby-yoda"
+
+
+def test_matcher_subject_does_not_stamp_chad_or_big_brain_wojak_for_generic_subjects() -> None:
+    matcher = resolver.Matcher(_BABY_YODA_INDEX, _BABY_YODA_KINDS)
+    assert matcher.subject(["Chad"]) is None
+    assert matcher.subject(["big brain"]) is None
+
+
+def test_matcher_exact_and_near_still_stamp_chad_and_big_brain_wojak_by_guess() -> None:
+    matcher = resolver.Matcher(_BABY_YODA_INDEX, _BABY_YODA_KINDS)
+    assert matcher.exact("Chad") == "chad"
+    assert matcher.exact("Big Brain Wojak") == "big-brain-wojak"
+    assert matcher.exact("Big Brain") == "big-brain-wojak"
