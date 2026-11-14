@@ -1,0 +1,17 @@
+{
+  "url": "https://old.reddit.com/r/memes/new/",
+  "markdown": {
+    "requested": true,
+    "success": false,
+    "data": null,
+    "error_code": "WEBSITE_BLOCKED",
+    "message": "The site served an anti-bot challenge or access wall instead of the page."
+  },
+  "html": {
+    "requested": true,
+    "success": false,
+    "data": null,
+    "error_code": "WEBSITE_BLOCKED",
+    "message": "The site served an anti-bot challenge or access wall instead of the page."
+  }
+}

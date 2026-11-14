@@ -1,0 +1,523 @@
+{
+  "default_model_results": [
+    {
+      "local_file": "img_00.jpeg",
+      "post_url": "https://lemmy.world/post/54199281",
+      "image_url": "https://media.piefed.world/posts/Pg/X7/PgX729SaCpIDqU3.jpeg",
+      "title": "So Unfair",
+      "label": {
+        "is_meme": true,
+        "template_guess": "Coraline's Dad",
+        "confidence": 0.85,
+        "structure_class": "image-macro",
+        "subjects": [
+          "Charlie Jones",
+          "Coraline's father",
+          "computer"
+        ],
+        "overlaid_text": "NVIDIA EMPLOYEES GOING THROUGH MANDATORY CYBERSECURITY TRAINING\nWHILE THEIR CEO FELL FOR A HONEY TRAP",
+        "catchphrase": null,
+        "description": "An exhausted, gaunt stop-motion man with glasses and deep eye bags sits typing at a desktop computer late at night under a desk lamp."
+      },
+      "latency_s": 12.55
+    },
+    {
+      "local_file": "img_01.jpeg",
+      "post_url": "https://lemmy.world/post/53925128",
+      "image_url": "https://poptalk.scrubbles.tech/pictrs/image/feb4a03a-3b38-4a49-b157-89f562f220bc.jpeg",
+      "title": "Seems like they worked fine for decades before the internet",
+      "label": {
+        "is_meme": true,
+        "template_guess": "Boardroom Meeting Suggestion",
+        "confidence": 0.99,
+        "structure_class": "multi-panel-comic",
+        "subjects": [
+          "boss",
+          "employees",
+          "office workers"
+        ],
+        "overlaid_text": "Our refrigerators and freezers keep getting hacked, ideas?\n\nCall the feds?\nUse AI?\nDisconnect them from the internet?",
+        "catchphrase": null,
+        "description": "A boss asks for suggestions in a boardroom meeting, hears three options from employees, glares angrily at the reasonable third suggestion, and throws that employee out of a high-rise office window."
+      },
+      "latency_s": 5.69
+    },
+    {
+      "local_file": "img_02.jpeg",
+      "post_url": "https://lemmy.world/post/54280238",
+      "image_url": "https://lemmy.world/pictrs/image/cac1c5fa-153e-4ecb-b7cf-ff4230309a58.jpeg",
+      "title": "Not a bad instinct",
+      "label": {
+        "is_meme": true,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": "image-macro",
+        "subjects": [
+          "cat",
+          "shopping cart",
+          "hardware store"
+        ],
+        "overlaid_text": "Trying to bond with my male cat, but idk what men do for fun so I took him to Home Depot",
+        "catchphrase": null,
+        "description": "A close-up photo of a cat sitting inside an orange shopping cart in a hardware store aisle, with caption text overlaid in the center."
+      },
+      "latency_s": 25.21
+    },
+    {
+      "local_file": "img_03.png",
+      "post_url": "https://lemmy.world/post/54101594",
+      "image_url": "https://lemmy.ca/pictrs/image/a4d6828d-a2dc-4a66-a525-ffe8fc19aff5.png",
+      "title": "Pro Tip",
+      "label": {
+        "is_meme": true,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": "image-macro",
+        "subjects": [
+          "hiker",
+          "trail",
+          "forest"
+        ],
+        "overlaid_text": "PRO TIP: IF YOU ARE HIKING WITH PEOPLE THAT ARE IN BETTER SHAPE THAN YOU...\n\nBE THE ONE WITH THE CAR KEYS \ud83d\ude2d\ud83d\ude2e\u200d\ud83d\udca8",
+        "catchphrase": null,
+        "description": "A view following behind a hiker on a wooded trail, overlaid with top and bottom text presenting a humorous tip."
+      },
+      "latency_s": 5.46
+    },
+    {
+      "local_file": "img_04.jpeg",
+      "post_url": "https://lemmy.world/post/54357564",
+      "image_url": "https://lemmy.world/pictrs/image/da327f82-cf72-4874-ae60-bc0ea34d616d.jpeg",
+      "title": "So far...",
+      "label": {
+        "is_meme": true,
+        "template_guess": "The Worst Day of Your Life So Far",
+        "confidence": 0.9,
+        "structure_class": "multi-panel-comic",
+        "subjects": [
+          "Bart Simpson",
+          "Homer Simpson"
+        ],
+        "overlaid_text": "ITS THE MOST DISRUPTIVE EMAIL OUTAGE EVER MOST DISRUPTIVE EMAIL OUTAGE EVER... SO FAR",
+        "catchphrase": "so far",
+        "description": "A two-panel sequence where a dejected Bart Simpson makes a complaint in the top panel, and Homer Simpson leans down to comfortingly yet pessimistically correct him by adding 'so far' in the bottom panel."
+      },
+      "latency_s": 16.11
+    },
+    {
+      "local_file": "img_05.png",
+      "post_url": "https://lemmy.world/post/54154215",
+      "image_url": "https://lemmy.ca/pictrs/image/8ece9f33-fff6-43f8-bc58-5b7b8c842bb4.png",
+      "title": "Oh Clippy",
+      "label": {
+        "is_meme": true,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": "image-macro",
+        "subjects": [
+          "toilet paper holder",
+          "toilet paper roll",
+          "Clippy"
+        ],
+        "overlaid_text": "Oh, clippy...\nFROM DESKTOP TO TRUCK STOP\nThe True Story of Clippy: How a Once-Powerful Tech Icon Fell from Grace.",
+        "catchphrase": null,
+        "description": "A photograph of a metal wire toilet paper holder shaped like the Microsoft Clippy assistant holding an empty cardboard roll, framed with humorous caption text at the top and bottom."
+      },
+      "latency_s": 6.65
+    },
+    {
+      "local_file": "img_06.png",
+      "post_url": "https://lemmy.world/post/53981254",
+      "image_url": "https://lemmy.world/pictrs/image/edfcc624-41c6-4422-bd18-87b385056647.png",
+      "title": "\"Just checking in\"",
+      "label": {
+        "is_meme": true,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": "object-labelling",
+        "subjects": [
+          "cat",
+          "two cats"
+        ],
+        "overlaid_text": "The employee survey is 100% anonymous.\n\nMy manager next day:\n\n*Me\n\n*Manager",
+        "catchphrase": null,
+        "description": "One cat leans its head sideways to closely inspect and glare at another cat sitting calmly next to it."
+      },
+      "latency_s": 13.11
+    },
+    {
+      "local_file": "img_07.jpeg",
+      "post_url": "https://lemmy.world/post/53925910",
+      "image_url": "https://lemmy.world/pictrs/image/bef3997c-1f56-431d-9fa8-8ea1c707fd70.jpeg",
+      "title": "Delay, Deny, Defend",
+      "label": {
+        "is_meme": true,
+        "template_guess": "I Don't Want to Play With You Anymore",
+        "confidence": 0.9,
+        "structure_class": "image-macro",
+        "subjects": [
+          "Andy",
+          "Woody"
+        ],
+        "overlaid_text": "AMERICAN INSURANCE COMPANIES AFTER A PATIENT IS DIAGNOSED WITH CANCER\n\nI don't want to play with you anymore",
+        "catchphrase": "I don't want to play with you anymore",
+        "description": "A low-angle shot of a young boy looking down indifferently as he drops a cowboy doll from his raised hands."
+      },
+      "latency_s": 12.24
+    },
+    {
+      "local_file": "img_08.jpeg",
+      "post_url": "https://lemmy.world/post/54303180",
+      "image_url": "https://lemmy.world/pictrs/image/a875d23c-8537-4c45-827c-6f52ed433c5f.jpeg",
+      "title": "Operation Bear Trap is a go!",
+      "label": {
+        "is_meme": true,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": "reaction-image",
+        "subjects": [
+          "Yao",
+          "Ling",
+          "Chien-Po",
+          "Mulan (Disney film)"
+        ],
+        "overlaid_text": "CIA: You'll never be able to honeypot Peter Thiel or Sam Altman, they're both married to men!\n\nChinese Intelligence:",
+        "catchphrase": null,
+        "description": "A screenshot of male soldiers disguised as women in makeup and kimonos/hanfu from Disney's Mulan, positioned under dialogue as a humorous reaction depicting an unconventional infiltration strategy."
+      },
+      "latency_s": 8.8
+    },
+    {
+      "local_file": "img_09.jpeg",
+      "post_url": "https://lemmy.world/post/54234371",
+      "image_url": "https://media.piefed.zip/posts/om/NF/omNFTjVHRNXzX9t.jpeg",
+      "title": "Poor Yuna Song",
+      "label": {
+        "is_meme": false,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": null,
+        "subjects": [
+          "movie credits",
+          "text"
+        ],
+        "overlaid_text": "Korean Girl YUNA SONG\nHot Korean Girls MICHELLE KIM\nPEENKAY TANG\nLIA LAM\nHAZELTINE GARIZA\nFeel so sorry for Yuna Song",
+        "catchphrase": null,
+        "description": "A photograph of movie credits on a screen with a red circle highlighting a role comparison accompanied by a Snapchat caption bar."
+      },
+      "latency_s": 10.01
+    },
+    {
+      "local_file": "img_10.webp",
+      "post_url": "https://lemmy.world/post/54020417",
+      "image_url": "https://lemmy.ca/pictrs/image/8ab1fc9d-d67e-4fcc-b579-ffb6db289c70.webp",
+      "title": "Let it all hang out",
+      "label": {
+        "is_meme": true,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": "image-macro",
+        "subjects": [
+          "dog sweater",
+          "clothes hanger",
+          "store display"
+        ],
+        "overlaid_text": "\"I guess this is just what the kids are wearing these days\": Me before realizing that this is a sweater for dogs.",
+        "catchphrase": null,
+        "description": "A photograph of an unusual retail item on a hanger accompanied by a top caption providing humorous context or misunderstanding."
+      },
+      "latency_s": 9.92
+    },
+    {
+      "local_file": "img_11.png",
+      "post_url": "https://lemmy.world/post/54155319",
+      "image_url": "https://lemmy.ca/pictrs/image/772ac00d-4f0b-4892-94bb-3ad917db2582.png",
+      "title": "A disaster waiting to happen",
+      "label": {
+        "is_meme": true,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": "image-macro",
+        "subjects": [
+          "medicine bottles",
+          "pill bottles"
+        ],
+        "overlaid_text": "This has disaster written all over it...",
+        "catchphrase": null,
+        "description": "A close-up photo of two nearly identical medicine bottles placed side by side with a caption text overlay above."
+      },
+      "latency_s": 5.56
+    },
+    {
+      "local_file": "img_12.jpeg",
+      "post_url": "https://lemmy.world/post/54373698",
+      "image_url": "https://poptalk.scrubbles.tech/pictrs/image/ca919ecd-93d8-4ec5-9fa1-b0b4c68248f0.jpeg",
+      "title": "I heard it's been 24 hours already",
+      "label": {
+        "is_meme": true,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": null,
+        "subjects": [
+          "Microsoft logo",
+          "Microsoft 365"
+        ],
+        "overlaid_text": "Microsoft 365 4",
+        "catchphrase": null,
+        "description": "The Microsoft 365 logo with the digit 5 crossed out in red and replaced by a handwritten digit 4 above it."
+      },
+      "latency_s": 6.79
+    },
+    {
+      "local_file": "img_13.png",
+      "post_url": "https://lemmy.world/post/54319712",
+      "image_url": "https://lemmy.ca/pictrs/image/980dc2d2-7931-47b0-9817-2d6f2dc647b0.png",
+      "title": "Great nap",
+      "label": {
+        "is_meme": false,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": null,
+        "subjects": [
+          "toddlers",
+          "babies",
+          "playpen",
+          "blanket"
+        ],
+        "overlaid_text": "WOW, WHAT A GREAT NAP\u2014\nI SLEPT LIKE AN OLD MAN\nIN FRONT OF A TV.",
+        "catchphrase": null,
+        "description": "A single-panel comic strip depicting a toddler sitting awake under a blanket in a playpen next to a sleeping baby, with a speech bubble above."
+      },
+      "latency_s": 5.24
+    },
+    {
+      "local_file": "img_14.jpeg",
+      "post_url": "https://lemmy.world/post/54215471",
+      "image_url": "https://lemmy.world/pictrs/image/46d8bd66-bb9d-4140-8191-0960843b4c68.jpeg",
+      "title": "The jacket stays on",
+      "label": {
+        "is_meme": true,
+        "template_guess": "Domino Effect",
+        "confidence": 0.95,
+        "structure_class": "object-labelling",
+        "subjects": [
+          "Jensen Huang",
+          "dominoes",
+          "Stephen Morris"
+        ],
+        "overlaid_text": "the entire AI trade collapses\nJensen Huang signs some boobs",
+        "catchphrase": null,
+        "description": "A man sets off a chain of sequentially larger dominoes, showing how a small initial action leads to a massive consequence, preceded by a photo illustrating the initial action."
+      },
+      "latency_s": 5.94
+    },
+    {
+      "local_file": "img_15.jpeg",
+      "post_url": "https://lemmy.world/post/53940566",
+      "image_url": "https://lemmy.world/pictrs/image/fc32b8e4-129c-4e31-ade6-865f6fac84c6.jpeg",
+      "title": "This would be cool in a gameroom",
+      "label": {
+        "is_meme": true,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": "image-macro",
+        "subjects": [
+          "arcade carpet",
+          "movie theater",
+          "interior"
+        ],
+        "overlaid_text": "BRING BACK THE\nTHE CARPETING",
+        "catchphrase": null,
+        "description": "An image macro depicting nostalgic 1990s or 2000s neon-patterned arcade/movie theater carpeting with bold top and bottom text."
+      },
+      "latency_s": 5.4
+    },
+    {
+      "local_file": "img_16.jpeg",
+      "post_url": "https://lemmy.world/post/54386023",
+      "image_url": "https://media.piefed.world/posts/iY/s4/iYs49e8IL8qdqm6.jpeg",
+      "title": "Silver Lining",
+      "label": {
+        "is_meme": true,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": "image-macro",
+        "subjects": [
+          "Jensen Huang"
+        ],
+        "overlaid_text": "I WAS CHEATING ON MY WIFE.\n\nBUT I WAS DOING IT WITH ADULTS.",
+        "catchphrase": null,
+        "description": "Nvidia CEO Jensen Huang in a leather jacket gestures with both hands raised on a presentation stage, formatted with bold top and bottom caption text."
+      },
+      "latency_s": 6.57
+    },
+    {
+      "local_file": "img_17.jpeg",
+      "post_url": "https://lemmy.ml/post/55257429",
+      "image_url": "https://lemmy.ml/pictrs/image/715362c5-09db-4882-97ea-0468d56c6983.jpeg",
+      "title": "abortolly problem",
+      "label": {
+        "is_meme": false,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": null,
+        "subjects": [],
+        "overlaid_text": "yrichme 1d\nwhat if your mom had aborted you?\nmiss.amy.liz 9h\nMy mom could have prevented 3 abortions by aborting me so now how do you feel about it\ntoastyglow\nbabe wake up new trolley problem dropped",
+        "catchphrase": null,
+        "description": "A screenshot of a social media exchange featuring a question about abortion, a comedic retort, and a reblog comment referencing the trolley problem."
+      },
+      "latency_s": 4.65
+    },
+    {
+      "local_file": "img_18.png",
+      "post_url": "https://lemmy.world/post/54277951",
+      "image_url": "https://lemmy.ca/pictrs/image/15bf61af-d80f-4e79-995c-78703710abfa.png",
+      "title": "I answer to no one",
+      "label": {
+        "is_meme": true,
+        "template_guess": null,
+        "confidence": 0.0,
+        "structure_class": "multi-panel-comic",
+        "subjects": [
+          "bald man",
+          "woman on couch",
+          "box"
+        ],
+        "overlaid_text": "TWONKS\nI ANSWER TO NO ONE!\nLATER\nHOW WAS YOUR FIRST DAY AT THE CALL CENTRE?\nNOT GREAT",
+        "catchphrase": null,
+        "description": "A multi-panel comic where a character makes a defiant proclamation, followed by returning home defeated holding a cardboard box of belongings after their first day at an ill-fitting job."
+      },
+      "latency_s": 5.89
+    },
+    {
+      "local_file": "img_19.png",
+      "post_url": "https://lemmy.world/post/54370433",
+      "image_url": "https://lemmy.world/pictrs/image/fca0dd2c-7390-49cd-9b7d-1fb0e52ec177.png",
+      "title": "I\u2019d say it\u2019s a good day",
+      "label": {
+        "is_meme": true,
+        "template_guess": "Magic 8 Ball",
+        "confidence": 0.8,
+        "structure_class": "image-macro",
+        "subjects": [
+          "hands",
+          "Magic 8 Ball"
+        ],
+        "overlaid_text": "Magic 8 Ball, will I have a good day at the office today?\nOUTLOOK NOT SO GOOD",
+        "catchphrase": null,
+        "description": "Two hands holding a Magic 8 Ball showing a message in the triangular window under a top question caption."
+      },
+      "latency_s": 7.61
+    }
+  ],
+  "cheap_model_comparison": [
+    {
+      "local_file": "img_00.jpeg",
+      "model": "gemini-3.5-flash-lite",
+      "label": {
+        "is_meme": true,
+        "template_guess": "Waiting Skeleton",
+        "confidence": 0.85,
+        "structure_class": "image-macro",
+        "subjects": [
+          "exhausted character at a computer",
+          "skeleton",
+          "computer"
+        ],
+        "overlaid_text": "NVIDIA EMPLOYEES GOING THROUGH MANDATORY CYBERSECURITY TRAINING WHILE THEIR CEO FELL FOR A HONEY TRAP",
+        "catchphrase": null,
+        "description": "An exhausted, skeletal-looking animated character sitting in front of a computer screen with caption text overlaid at the top and bottom."
+      },
+      "latency_s": 1.66
+    },
+    {
+      "local_file": "img_01.jpeg",
+      "model": "gemini-3.5-flash-lite",
+      "label": {
+        "is_meme": true,
+        "template_guess": "Boardroom Meeting Suggestion",
+        "confidence": 0.99,
+        "structure_class": "multi-panel-comic",
+        "subjects": [
+          "boss",
+          "employees"
+        ],
+        "overlaid_text": "Our refrigerators and freezers keep getting hacked, ideas? Call the feds? Use AI? Disconnect them from the internet?",
+        "catchphrase": null,
+        "description": "A three-panel comic showing a boss asking employees for ideas in a meeting; an employee suggests a sensible idea and is thrown out the window."
+      },
+      "latency_s": 1.18
+    },
+    {
+      "local_file": "img_02.jpeg",
+      "model": "gemini-3.5-flash-lite",
+      "label": {
+        "is_meme": true,
+        "template_guess": "Image Macro",
+        "confidence": 0.8,
+        "structure_class": "image-macro",
+        "subjects": [
+          "cat",
+          "shopping cart"
+        ],
+        "overlaid_text": "Trying to bond with my male cat, but idk what men do for fun so I took him to Home Depot",
+        "catchphrase": null,
+        "description": "A photo of a tabby and white cat sitting inside an orange shopping cart inside a store, with humorous caption text overlaid on the image."
+      },
+      "latency_s": 1.51
+    },
+    {
+      "local_file": "img_03.png",
+      "model": "gemini-3.5-flash-lite",
+      "label": {
+        "is_meme": true,
+        "template_guess": "Image Macro",
+        "confidence": 0.8,
+        "structure_class": "image-macro",
+        "subjects": [
+          "hiker",
+          "forest trail"
+        ],
+        "overlaid_text": "PRO TIP: IF YOU ARE HIKING WITH PEOPLE THAT ARE IN BETTER SHAPE THAN YOU... BE THE ONE WITH THE CAR KEYS \ud83d\ude2d\ud83e\udd71",
+        "catchphrase": null,
+        "description": "A blurry photo of a hiker on a trail with bold caption text overlaid at the top and bottom."
+      },
+      "latency_s": 1.77
+    },
+    {
+      "local_file": "img_04.jpeg",
+      "model": "gemini-3.5-flash-lite",
+      "label": {
+        "is_meme": true,
+        "template_guess": "say the line bart! simpsons",
+        "confidence": 0.95,
+        "structure_class": "image-macro",
+        "subjects": [
+          "Bart Simpson",
+          "Homer Simpson"
+        ],
+        "overlaid_text": "ITS THE MOST DISRUPTIVE EMAIL OUTAGE EVER\n\nMOST DISRUPTIVE EMAIL OUTAGE EVER... SO FAR",
+        "catchphrase": "most ... ever ... so far",
+        "description": "Two panel image macro featuring Bart Simpson looking tired in the first panel, and Homer talking to Bart in the second panel with text about something happening so far."
+      },
+      "latency_s": 1.87
+    }
+  ],
+  "scores": {
+    "failed_calls": [],
+    "confident_truth_count": 5,
+    "named_correctly": 5,
+    "named_correctly_pct": 100.0,
+    "confident_wrong": 1,
+    "resolves_to_known": 2
+  },
+  "median_latency_s": 6.720000000000001,
+  "scores_first_pass_with_shifted_labels": {
+    "failed_calls": [],
+    "confident_truth_count": 3,
+    "named_correctly": 2,
+    "named_correctly_pct": 66.66666666666666,
+    "confident_wrong": 4,
+    "resolves_to_known": 2
+  }
+}
