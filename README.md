@@ -3,7 +3,6 @@
 ### The open family tree of internet culture. Every meme has ancestors. We cite them.
 
 ![Junction 2026](https://img.shields.io/badge/Junction-2026-ff4f00?style=flat-square)
-![Challenge: Context.dev](https://img.shields.io/badge/challenge-Context.dev-1f5c3a?style=flat-square)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776ab?style=flat-square&logo=python&logoColor=white)
 ![React 19](https://img.shields.io/badge/react-19-149eca?style=flat-square&logo=react&logoColor=white)
 ![Gemini](https://img.shields.io/badge/vision-Gemini-8e75b2?style=flat-square)
@@ -56,8 +55,6 @@ When a brand-new meme starts showing up across several authors, it is catalogued
 **specimen** until someone confirms it.
 
 ## 🧠 How the citations work
-
-The expanding-brain version:
 
 | | |
 |---|---|
@@ -195,6 +192,6 @@ honest, current list is in [`claude_docs/STATUS.md`](claude_docs/STATUS.md).
 
 ---
 
-Built at **Junction 2026** by a team of two, with a lot of help from Claude. 🤖
+Built at **Junction 2026** by a team of two.
 
 *No memes were harmed in the making of this family tree. A few were blurred.*
