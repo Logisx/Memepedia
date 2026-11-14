@@ -170,6 +170,18 @@ def _format_candidates(candidates: Sequence[Candidate]) -> str:
     return "\n".join(lines)
 
 
+_NSFW_POLICY = """nsfw: this archive is shown on a big screen in front of a conference audience.
+Judge what THIS image actually shows, not the reputation of the character or template in it.
+Set nsfw=true if the image itself shows any of: nudity or sexual content/innuendo-heavy imagery;
+gore or graphic injury; violence against real people; written slurs; hate symbols drawn in the
+image (swastikas, SS runes, KKK hoods, Nazi salutes and similar); drugs depicted favourably;
+graphic bodily fluids. Well-known meme characters and templates (Pepe the Frog and its variants,
+Wojak and its variants, Chad, Doge, Trollface and similar) are SFW in themselves: flag them only
+when this particular image adds one of the things listed above. Ordinary mild swearing,
+sadness, smugness, anger and dark-but-not-graphic humour are SFW (nsfw=false). nsfw_reason is a
+short (few words) description of what in the image is unsafe when nsfw=true, else null."""
+
+
 _VISION_PROMPT = """You label one meme image with structure, not prose, for a meme genealogy
 archive. Return is_meme=false for a plain photo, a screenshot of text, news, or non-meme art.
 template_guess is the single most widely used name of the meme template or character used in the
@@ -183,13 +195,7 @@ and trimmed (null if none). catchphrase is the reusable spoken phrase if this me
 neutral sentence describing the reusable visual STRUCTURE of the image (not this post's specific
 joke) — it is used as a search query and to group unidentified memes.
 
-nsfw: this archive is shown to an audience on a big screen, so the bar is deliberately stricter
-than a normal content filter. Set nsfw=true if the image shows ANY of: nudity or sexual
-content/innuendo-heavy imagery; gore or graphic injury; violence against real people; slurs or
-hate symbols; drugs depicted favourably; graphic bodily fluids; or anything a reasonable person
-would not show at a work presentation. Ordinary mild swearing and dark-but-not-graphic humour are
-SFW (nsfw=false). When unsure, prefer nsfw=true — a hidden or blurred meme is safer than an
-embarrassing one on screen. nsfw_reason is a short (few words) reason when nsfw=true, else null.
+{nsfw_policy}
 
 Format-class roots:
 {roots}
@@ -211,6 +217,7 @@ def vision_label(
 ) -> VisionLabel:
     """Labels one meme image with structure via a single Gemini vision call."""
     prompt = _VISION_PROMPT.format(
+        nsfw_policy=_NSFW_POLICY,
         roots=_format_roots(roots),
         known_names=", ".join(known_names) if known_names else "(none)",
         title=title or "(no title)",
@@ -266,14 +273,7 @@ class _NsfwOnlyResponse(BaseModel):
     nsfw_reason: str | None
 
 
-_NSFW_ONLY_PROMPT = """Decide only whether this image is safe to show on a big screen in front of
-a work/conference audience (NSFW) or not. The bar is deliberately stricter than a normal content
-filter. Set nsfw=true if the image shows ANY of: nudity or sexual content/innuendo-heavy imagery;
-gore or graphic injury; violence against real people; slurs or hate symbols; drugs depicted
-favourably; graphic bodily fluids; or anything a reasonable person would not show at a work
-presentation. Ordinary mild swearing and dark-but-not-graphic humour are SFW (nsfw=false). When
-unsure, prefer nsfw=true. nsfw_reason is a short (few words) reason when nsfw=true, else null.
-"""
+_NSFW_ONLY_PROMPT = "Decide only whether this image is safe to show.\n\n" + _NSFW_POLICY
 
 
 def label_nsfw_only(image: bytes, mime_type: str) -> tuple[bool, str | None]:
