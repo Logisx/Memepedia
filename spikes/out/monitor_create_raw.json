@@ -1,0 +1,34 @@
+{
+  "mode": "web",
+  "id": "mon_dce632a0271642578d63d8efb2d79eac",
+  "name": "meme-genealogy spike - lemmy memes",
+  "tags": [],
+  "policies": [],
+  "change_detection": {
+    "type": "exact"
+  },
+  "schedule": {
+    "type": "interval",
+    "frequency": 10,
+    "unit": "minutes"
+  },
+  "webhook": null,
+  "status": "active",
+  "last_run_at": null,
+  "last_change_at": null,
+  "next_run_at": "2026-11-14T13:32:09.617Z",
+  "last_error": null,
+  "webhook_failure": null,
+  "created_at": "2026-11-14T13:24:56.459Z",
+  "updated_at": "2026-11-14T13:24:56.459Z",
+  "target": {
+    "type": "page",
+    "url": "https://lemmy.world/c/memes?dataType=Post&sort=New"
+  },
+  "initial_run_id": "run_4e3d2f845b0e4c088a3a2f6a5fe9ac0d",
+  "key_metadata": {
+    "credits_consumed": 0,
+    "credits_remaining": 50949
+  },
+  "request_id": "b65c5f93-47a3-46e4-8740-2978b871b73f"
+}

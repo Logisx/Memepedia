@@ -1,0 +1,42 @@
+{
+  "data": [
+    {
+      "id": "run_1992a680ecef441f94835fba68b81f47",
+      "monitor_id": "mon_dce632a0271642578d63d8efb2d79eac",
+      "status": "skipped",
+      "run_type": "scheduled",
+      "target_type": "page",
+      "change_detection_type": "exact",
+      "started_at": null,
+      "completed_at": "2026-11-14T13:25:02.614Z",
+      "change_detected": false,
+      "baseline_created": false,
+      "credits_charged": 0,
+      "skip_reason": "superseded",
+      "error": null
+    },
+    {
+      "id": "run_4e3d2f845b0e4c088a3a2f6a5fe9ac0d",
+      "monitor_id": "mon_dce632a0271642578d63d8efb2d79eac",
+      "status": "completed",
+      "run_type": "baseline",
+      "target_type": "page",
+      "change_detection_type": "exact",
+      "started_at": "2026-11-14T13:24:57.133Z",
+      "completed_at": "2026-11-14T13:25:08.393Z",
+      "change_detected": false,
+      "change_id": null,
+      "baseline_created": true,
+      "credits_charged": 1,
+      "skip_reason": null,
+      "error": null
+    }
+  ],
+  "has_more": false,
+  "next_cursor": null,
+  "key_metadata": {
+    "credits_consumed": 0,
+    "credits_remaining": 50948
+  },
+  "request_id": "c6fbf7b2-e123-4021-9e82-9ed2191e5884"
+}

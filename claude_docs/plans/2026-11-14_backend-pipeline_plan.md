@@ -76,7 +76,21 @@ If time runs short, cut from the bottom of B4 upward: proposals, then related, t
 | Verify step on 5 known links | A verbatim supporting sentence for at least 3 | Loosen to "a page about the child mentions the parent" |
 | Monitor create, run, read changes | Works; payload shape recorded | Scheduled function on the host as the clock |
 
-The Context.dev tests are already running as throwaway scripts in `spikes/`. The vision test needs the Gemini key.
+The vision test needs the Gemini key and is still to do.
+
+### Results of the Context.dev tests (run 2026-11-14, about 55 credits)
+
+Full numbers, request bodies and samples: `spikes/P0_RESULTS.md` and `spikes/out/`.
+
+| Test | Result | What it means for the build |
+|---|---|---|
+| Reddit | `old.reddit.com` and the `.json` endpoint are blocked (a login wall that sometimes still returns HTTP 200). `reddit.com/r/<sub>/new/.rss` through Context.dev scrape works: 2.5 s, 1 credit, 25 of 25 posts with title, timestamp, author and image. | Reddit is a live source. Build the fetcher on the RSS form. Detect blocks by content, not by status code. |
+| Imgflip | JSON-schema extraction misses images because it reads the page as text. `formats: {images: true, html: true}` returns image URLs and alt text for 1 credit. No timestamps; alt text is a tag list, not a clean template name; `?sort=hot` redirects to `/m/fun`. | Usable as a second image source with "seen at" as the time. The vision model still has to name the template. |
+| X trends (trends24.in) | Clean extraction of 24 time buckets, 5 credits, but 46 s and mixed countries. | Background job only, never in a request path. Low priority. |
+| Verify step | Supporting sentence found for 4 of 5 links. One `/web/search` call with `markdownOptions.enabled` returns page content inline: 3 to 21 s, 4 to 6 credits per link. The miss was a format link (Swole Doge vs. Cheems, Virgin vs. Chad). | The trace design holds. Run link checks in parallel. Expect format links to stay "inferred" more often than character links. |
+| Monitors | Create, run, read changes and delete all work with a minimal page-monitor body at a 10-minute interval. A run triggered while the first baseline run is in flight is skipped. Credits appear in the response body, not the header. | Monitors can be the clock. Wait for the baseline run before the first on-demand run. |
+
+Sources for the live loop, in build order: Lemmy (direct JSON), Reddit RSS through Context.dev, Imgflip through Context.dev. That meets the threshold of two image sources with timestamps, one of them through Context.dev.
 
 ## 6. How independence is kept
 
