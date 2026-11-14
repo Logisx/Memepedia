@@ -6,10 +6,22 @@ Written 2026-11-14. Read `claude_docs/STATUS.md` and `claude_docs/plans/2026-11-
 ## What is being rolled out (already built and committed on `bugfix/various-fixes`)
 
 1. **The stamping change**: exact guesses stamp from confidence 0.7, a depicted character can stamp a
-   post with no guess, and `scripts/rematch.py` re-matches old pending posts.
-2. **New seed families** in `backend/memepedia/data/seed.json`: 19 new nodes and 43 links (Italian
-   Brainrot, Skibidi Toilet, Grimace, That's Not Cinema, Moo Deng, Despicable Me, Baby Yoda, Duckroll,
-   Labubu, plus IQ Bell Curve under Wojak).
+   post with no guess, and `scripts/rematch.py` re-matches old pending posts. `deploy.py` sends the
+   three `VISION_*` settings to Modal.
+2. **New seed families** in `backend/memepedia/data/seed.json`: 19 new nodes and 39 links that
+   production does not have yet (Italian Brainrot, Skibidi Toilet, Grimace, That's Not Cinema, Moo Deng,
+   Despicable Me, Baby Yoda, Duckroll, Labubu, plus IQ Bell Curve under Wojak). The seed lists 43 new
+   links, but 4 of them copy format links production already has.
+3. **Trace orphan fix**: `trace.materialise` deletes the nodes it created when it cannot place a meme
+   (`store.delete_nodes`). The orphan it already left, `big-bird-in-a-meeting`, is still in production.
+4. **Frontend**: the meme page works on phones; the Compare page has a Compare button; the content
+   toggle is labelled SFW / NSFW (SFW by default).
+5. **Sightings tab follows the toggle**: `GET /api/tree/{id}` takes `sensitive=true`, and the meme page
+   sends it. Backend and frontend must go out together, which one deploy does.
+6. **"Rising today" rule** (`store.spike_baseline`): at least 3 distinct posts in 24 hours, twice the
+   usual rate, and 3 days of archive history. After the deploy the row is **empty** until that history
+   exists; that is expected, not a bug.
+7. A README with screenshots (nothing to roll out).
 
 Goal: they are live on production, the new families show on the site, and old pending posts are
 re-stamped where that is right.
@@ -40,7 +52,8 @@ re-stamped where that is right.
 
 ### 0. Orient (read-only)
 
-- [ ] Confirm you are on `bugfix/various-fixes` and it contains `bf245dd`: `git log --oneline -6`.
+- [ ] Confirm you are on `bugfix/various-fixes` and it contains `fa2bcb2` or later: `git log --oneline -10`.
+      The branch may not be on GitHub yet; if `git pull` finds nothing, ask the owner to push it.
 - [ ] Confirm the tools: repo-root `.env` exists (do not print it); `uv --version`;
       `uv run --with modal modal profile current` shows the `aleksandr-shishkov-work` workspace;
       `gh auth status` works (needed for the PR).
@@ -69,7 +82,9 @@ re-stamped where that is right.
 
 ### 2. Back up production (read-only on the database)
 
-- [ ] If `pg_dump` is installed: `pg_dump -Fc "$DATABASE_URL" -f backend/.data/before_rollout_<date>.dump`.
+- [ ] `pg_dump` ships inside the backend's environment (`backend/.venv/Lib/site-packages/pgserver/pginstall/bin/pg_dump.exe`
+      on Windows, `.../lib/python3.12/site-packages/pgserver/pginstall/bin/pg_dump` on Linux):
+      `pg_dump -Fc "$DATABASE_URL" -f backend/.data/before_rollout_<date>.dump`.
       Otherwise export JSON with a short `uv run python -` snippet that reads `nodes`, `links`, `sightings`
       (all columns including `vision`) and `history` through `memepedia.db.fetch_all` and writes
       `backend/.data/before_rollout_<date>.json` (use `json.dump(..., default=str)`). Both paths are git-ignored.
@@ -77,7 +92,7 @@ re-stamped where that is right.
 
 ### 3. Seed the new families  — CHECKPOINT A
 
-- [ ] Show the owner the backup path and what will be added: the 19 new node ids and 43 new links are
+- [ ] Show the owner the backup path and what will be added: the 19 new node ids and 39 new links are
       the ones in `seed.json` that production does not have (compare against `GET /api/nodes?limit=1000`).
       Wait for the go-ahead.
 - [ ] `uv run python scripts/seed.py --steps families` (does not need credits). Expect the counts line and
@@ -94,10 +109,15 @@ re-stamped where that is right.
 - [ ] Ask the owner about the orphan `big-bird-in-a-meeting` (no links, image or date; the code bug that
       made it is fixed in this branch). If they agree, delete it with `store.delete_nodes(["big-bird-in-a-meeting"])`
       (a one-off `uv run python -` snippet) and say so in the report. Its sightings, if any, become unclassified.
+- [ ] Ask the owner about Wojak: it is flagged `nsfw = true` in production, so it is blurred everywhere
+      (including the README screenshot). If they say its image is fine:
+      `uv run python scripts/set_nsfw.py node wojak false`.
+- [ ] Note for the owner: the families step also promotes `sad-baby-yoda` and `iq-bell-curve` from
+      `specimen` to `established` (on purpose: specimens start expiring on 2026-11-21).
 
 ### 4. Cite the new links (optional, costs credits)  — CHECKPOINT B
 
-- [ ] Ask the owner whether to spend credits (about 6 to 7 per link, roughly 250 to 300 for all 43; the
+- [ ] Ask the owner whether to spend credits (about 6 to 7 per link, roughly 230 to 270 for all 39; the
       demo families alone, Italian Brainrot, Skibidi Toilet and Despicable Me, are roughly 100).
 - [ ] If yes, **always narrow with `--families`**; without it `verify` re-checks every inferred link in
       the archive, including ones that already failed:
@@ -109,8 +129,9 @@ re-stamped where that is right.
 ### 5. Open the PR
 
 - [ ] `git push -u origin bugfix/various-fixes`; `gh pr create --base main --head bugfix/various-fixes`
-      with a short description of the two changes, the test result (265 passed), and the new `VISION_*` settings. Do not add attribution lines to the description
-      unless the owner asks.
+      with a short description of the changes listed at the top of this plan, the test result (276
+      passed), the new `VISION_*` settings, and that "Rising today" will be empty until there are 3 days of
+      history. Do not add attribution lines to the description unless the owner asks.
 
 ### 6. Merge into `main`  — CHECKPOINT C
 
@@ -129,8 +150,14 @@ re-stamped where that is right.
       paused; do not turn it on).
 - [ ] Windows: `.\backend\deploy.ps1`. Linux/WSL: from `web/` run `npm ci` then `VITE_API_BASE= npm run
       build`, then from `backend/` run `uv run --with modal modal deploy deploy.py`.
-- [ ] Verify: `GET <PUBLIC_BASE_URL>/api/health` returns 200; `/api/wall` and `/api/nodes` respond; the
-      home page loads; `/api/tree/tung-tung-tung-sahur` returns a family of more than one node.
+- [ ] Verify (read-only):
+      - `GET <PUBLIC_BASE_URL>/api/health` returns 200; `/api/wall` and `/api/nodes` respond; the home page loads.
+      - `/api/tree/tung-tung-tung-sahur` returns `family_ids` with 7 entries.
+      - `/api/tree/doomer?sensitive=true` returns 200 (the old code ignored the parameter; the new code
+        includes flagged sightings).
+      - `/api/week` answers; an empty `rising` list is expected (see change 6 at the top).
+      - The site at phone width (390 px): the meme page stacks with no sideways scrolling, and the
+        Compare page has a Compare button. The header button reads "🙈 SFW" in a fresh browser.
 - [ ] If the deploy fails or the site is broken: redeploy the previous `main` commit
       (`git checkout <previous merge commit>` then the same deploy command) and report. Do not touch the database.
 
