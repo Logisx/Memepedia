@@ -372,26 +372,62 @@ def insert_sighting(
     return row["id"] if row else None
 
 
+WallCursor = tuple[datetime, str]
+
+
+def encode_wall_cursor(posted_at: datetime, sighting_id_: str) -> str:
+    """Turn a (posted_at, id) keyset position into the opaque `before`/`next_before` string."""
+    return f"{posted_at.isoformat()}_{sighting_id_}"
+
+
+def decode_wall_cursor(cursor: str) -> WallCursor:
+    """Parse a `before` cursor; raises ValueError on anything malformed (the route answers 400)."""
+    ts, sep, sid = cursor.rpartition("_")
+    if not sep or not ts or not sid:
+        raise ValueError("Malformed wall cursor.")
+    try:
+        return datetime.fromisoformat(ts), sid
+    except ValueError as exc:
+        raise ValueError("Malformed wall cursor.") from exc
+
+
 def _wall_query(
-    since: datetime | None, limit: int, include_sensitive: bool
+    since: datetime | None,
+    before: WallCursor | None,
+    limit: int,
+    include_sensitive: bool,
 ) -> tuple[str, db.Params]:
     """By default only nsfw = false sightings: null (unlabelled) and true are kept off the wall.
 
     `include_sensitive` drops that filter entirely, for a viewer who asked to see them.
+    `since` (ingestion time) picks up live arrivals; `before` is a keyset cursor over the
+    sort order itself (posted_at, id both DESC, so ties on posted_at are broken deterministically)
+    that picks up older pages. Either, both or neither may be set.
     """
     clauses = [] if include_sensitive else ["s.nsfw = false"]
     params: list[object] = []
     if since is not None:
         clauses.append("s.seen_at > %s")
         params.append(since)
+    if before is not None:
+        clauses.append("(s.posted_at, s.id) < (%s, %s)")
+        params.extend(before)
     where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
     params.append(limit)
-    return _WALL_SELECT + f"{where} ORDER BY s.posted_at DESC LIMIT %s", tuple(params)
+    return (
+        _WALL_SELECT + f"{where} ORDER BY s.posted_at DESC, s.id DESC LIMIT %s",
+        tuple(params),
+    )
 
 
-def wall(since: datetime | None, limit: int, include_sensitive: bool = False) -> list[Sighting]:
-    """Sightings for the wall: newest by posted_at, or only those ingested after `since`."""
-    query = _wall_query(since, limit, include_sensitive)
+def wall(
+    since: datetime | None,
+    limit: int,
+    include_sensitive: bool = False,
+    before: WallCursor | None = None,
+) -> list[Sighting]:
+    """Sightings for the wall: newest by posted_at (id DESC tiebreak), filtered by since/before."""
+    query = _wall_query(since, before, limit, include_sensitive)
     return [_row_to_sighting(r) for r in db.fetch_all(*query)]
 
 
@@ -401,23 +437,36 @@ def _ceil_ms(moment: datetime) -> datetime:
 
 
 def wall_page(
-    since: datetime | None, limit: int, include_sensitive: bool = False
-) -> tuple[list[Sighting], datetime]:
-    """Wall sightings plus the cursor to pass back as `since` on the next poll.
+    since: datetime | None,
+    limit: int,
+    include_sensitive: bool = False,
+    before: WallCursor | None = None,
+) -> tuple[list[Sighting], datetime, str | None]:
+    """Wall sightings, the `since` cursor for the next poll, and `before` for the next older page.
 
-    The cursor is the newest ingestion time in the same snapshot as the rows, taken
+    The `since` cursor is the newest ingestion time in the same snapshot as the rows, taken
     from the database clock, so a poll neither misses nor repeats a sighting when the
     API host's clock differs. It is rounded up to a millisecond because browsers
     drop microseconds when they round-trip a timestamp.
+
+    The `before` cursor (`next_before`) is the keyset position of the oldest row returned,
+    to pass back as `before` on the next request; it is `None` once the wall is exhausted.
+    One extra row is fetched (never returned) just to tell exhaustion apart from a page that
+    happens to end exactly on the limit.
     """
     with db.connection() as conn:
         conn.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
         newest = conn.execute(
             "SELECT COALESCE(max(seen_at), now()) AS at FROM sightings"
         ).fetchone()
-        rows = conn.execute(*_wall_query(since, limit, include_sensitive)).fetchall()
+        rows = conn.execute(*_wall_query(since, before, limit + 1, include_sensitive)).fetchall()
     cursor: datetime = newest["at"] if newest else datetime.now(UTC)
-    return [_row_to_sighting(r) for r in rows], _ceil_ms(cursor)
+    has_more = len(rows) > limit
+    page = rows[:limit]
+    next_before = (
+        encode_wall_cursor(page[-1]["posted_at"], page[-1]["id"]) if has_more and page else None
+    )
+    return [_row_to_sighting(r) for r in page], _ceil_ms(cursor), next_before
 
 
 def counts() -> dict[str, int]:

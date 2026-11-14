@@ -16,6 +16,7 @@ Memepedia is built as two independent halves that meet only here.
 | Method and path | Returns | Fixture |
 |---|---|---|
 | `GET /api/wall?since=<iso>&limit=60` | `WallResponse` | `wall.json` |
+| `GET /api/wall?before=<cursor>&limit=N` (N ≤ 100) | `WallResponse` (older page) | `wall.json` |
 | `GET /api/nodes?q=<text>&limit=20` | `NodesResponse` | `nodes.json` |
 | `GET /api/nodes/random` | `RandomResponse` | pick from `nodes.json` |
 | `GET /api/tree/{id}` | `TreeResponse` | `tree-<id>.json` |
@@ -30,6 +31,10 @@ Memepedia is built as two independent halves that meet only here.
 - Dates are ISO strings in UTC. `first_seen` is a date; `posted_at` and `ts` are datetimes.
 - A missing image is `null`, never an empty string. The UI draws a typeset specimen card when there is no image.
 - The wall is polled: the frontend calls `/api/wall` with the `server_time` of the previous response as `since`, every 5 seconds.
+- The wall also pages backwards: every `WallResponse` carries `next_before`, an opaque cursor over
+  older sightings (null once exhausted). Scrolling near the bottom of the wall calls
+  `/api/wall?before=<next_before>&limit=N` (N capped at 100) to append the next older page; this
+  never affects the `since` poll above, so new arrivals and older pages are independent.
 - An inferred link has `quote`, `source_url` and `source_title` all `null`.
 - Errors are `{ "error": "<message>" }` with a 4xx or 5xx status.
 - The backend allows cross-origin requests from any origin during the hackathon.
