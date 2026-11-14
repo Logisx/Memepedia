@@ -32,6 +32,16 @@ class Settings:
     vision_min_confidence: float
     auto_traces_per_tick: int
     webhook_secret: str | None = None
+    vision_exact_min_confidence: float = 0.7
+    match_subjects: bool = True
+
+
+_TRUTHY = {"1", "true", "on", "yes"}
+
+
+def _flag(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    return default if value is None else value.strip().lower() in _TRUTHY
 
 
 def _first(*names: str) -> str | None:
@@ -53,4 +63,6 @@ def get_settings() -> Settings:
         vision_min_confidence=float(_first("VISION_MIN_CONFIDENCE") or 0.85),
         auto_traces_per_tick=int(_first("AUTO_TRACES_PER_TICK") or 1),
         webhook_secret=_first("CONTEXTDEV_WEBHOOK_SECRET"),
+        vision_exact_min_confidence=float(_first("VISION_EXACT_MIN_CONFIDENCE") or 0.7),
+        match_subjects=_flag("VISION_MATCH_SUBJECTS", True),
     )

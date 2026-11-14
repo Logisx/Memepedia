@@ -15,6 +15,7 @@ from memepedia.models import (
     Evidence,
     HistoryItem,
     HistoryType,
+    Kind,
     Link,
     MemeNode,
     NodeStatus,
@@ -185,6 +186,12 @@ def name_index() -> list[tuple[str, str]]:
         pairs.append((row["name"], row["id"]))
         pairs.extend((alias, row["id"]) for alias in row["aliases"])
     return pairs
+
+
+def node_kinds() -> dict[str, Kind]:
+    """Every node id with its kind; cheaper than `all_nodes`, which joins the sighting counts."""
+    rows = db.fetch_all("SELECT id, kind FROM nodes")
+    return {row["id"]: row["kind"] for row in rows}
 
 
 def root_nodes() -> list[MemeNode]:
@@ -444,6 +451,23 @@ def pending_sightings(hours: int = 72) -> list[db.Row]:
         ORDER BY seen_at
         """,
         (hours,),
+    )
+
+
+def pending_with_vision(hours: int | None = None) -> list[db.Row]:
+    """Pending sightings that carry a saved vision label (id, vision), oldest first.
+
+    `hours` limits them to those seen that recently; None means every one, however old.
+    """
+    where = ""
+    params: tuple[int, ...] = ()
+    if hours is not None:
+        where = " AND seen_at > now() - (%s || ' hours')::interval"
+        params = (hours,)
+    return db.fetch_all(
+        "SELECT id, vision FROM sightings"
+        f" WHERE state = 'pending' AND vision IS NOT NULL{where} ORDER BY seen_at",
+        params,
     )
 
 

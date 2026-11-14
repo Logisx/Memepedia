@@ -14,11 +14,12 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 
-from memepedia import db, resolver, store
+from memepedia import db, store
 from memepedia.config import get_settings
-from memepedia.live import _archive_context, _look_one, classify
+from memepedia.live import Thresholds, _archive_context, _look_one, classify
 from memepedia.llm import RootInfo
 from memepedia.models import Post, SightingState
+from memepedia.resolver import Matcher
 from memepedia.sources import FEEDS, Feed
 from memepedia.sources.lemmy import fetch_lemmy
 
@@ -51,7 +52,11 @@ def _gather(max_images: int) -> list[Post]:
 
 
 def _save_one(
-    post: Post, roots: list[RootInfo], known_names: list[str], min_confidence: float
+    post: Post,
+    roots: list[RootInfo],
+    known_names: list[str],
+    thresholds: Thresholds,
+    matcher: Matcher,
 ) -> str:
     looked = _look_one(post, roots, known_names)
     if looked.error is not None:
@@ -59,7 +64,7 @@ def _save_one(
     node_id, state = (
         (None, "unclassified")
         if looked.vision is None
-        else classify(looked.vision, min_confidence, lambda n, h: resolver.resolve(n, hint=h))
+        else classify(looked.vision, thresholds, matcher)
     )
     sid = store.insert_sighting(post, looked.vision, node_id, state, seen_at=post.posted_at)
     return state if sid is not None else "duplicate"
@@ -71,7 +76,8 @@ def backfill(max_images: int) -> dict[str, int]:
         raise ValueError(f"--max-images may not exceed {_MAX_LIMIT}")
     batch = _gather(max_images)
     roots, known_names = _archive_context()
-    settings = get_settings()
+    thresholds = Thresholds.from_settings(get_settings())
+    matcher = Matcher.from_store()
     tally: dict[str, int] = {
         "resolved": 0,
         "pending": 0,
@@ -81,8 +87,7 @@ def backfill(max_images: int) -> dict[str, int]:
     }
     with ThreadPoolExecutor(max_workers=4) as pool:
         futures = [
-            pool.submit(_save_one, post, roots, known_names, settings.vision_min_confidence)
-            for post in batch
+            pool.submit(_save_one, post, roots, known_names, thresholds, matcher) for post in batch
         ]
         for future in futures:
             tally[future.result()] += 1

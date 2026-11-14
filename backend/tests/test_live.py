@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -67,41 +67,127 @@ def _member(sid: str, author: str | None, image: str, text: str | None) -> live.
 # --- classify -----------------------------------------------------------------------------
 
 
-def test_classify_not_a_meme_is_unclassified() -> None:
-    label = _label(is_meme=False)
-    assert live.classify(label, 0.7, lambda n, h: "doomer") == (None, "unclassified")
+_INDEX = [
+    ("Doomer", "doomer"),
+    ("Wojak", "wojak"),
+    ("Pepe the Frog", "pepe"),
+    ("Drake Hotline Bling", "drake"),
+    ("Haggis", "haggis"),
+]
+_KINDS = {
+    "doomer": "character",
+    "wojak": "character",
+    "pepe": "character",
+    "drake": "template",
+    "haggis": "character",
+}
+_T = live.Thresholds(exact=0.7, near=0.85, subjects=True)
 
 
-def test_classify_confident_guess_resolves() -> None:
-    label = _label(confidence=0.9)
-    assert live.classify(label, 0.7, lambda n, h: "doomer") == ("doomer", "resolved")
+def _matcher() -> resolver.Matcher:
+    return resolver.Matcher(_INDEX, _KINDS, allow_llm=False)
 
 
-def test_classify_confident_guess_without_a_match_stays_pending() -> None:
-    label = _label(confidence=0.9)
-    assert live.classify(label, 0.7, lambda n, h: None) == (None, "pending")
+def _stub_resolution(monkeypatch: pytest.MonkeyPatch, answer: Callable[[str], str | None]) -> None:
+    """Replaces the near-match step so no test reaches the real LLM; exact matches still work."""
+    monkeypatch.setattr(resolver, "_resolve_in", lambda index, name, hint, allow_llm: answer(name))
 
 
-def test_classify_low_confidence_never_asks_the_resolver() -> None:
-    label = _label(confidence=0.5)
+def _near_calls(monkeypatch: pytest.MonkeyPatch, answer: str | None = None) -> list[str]:
+    """Replaces the near-match step; returns the guesses that were put to it."""
     asked: list[str] = []
 
-    def resolve(name: str, hint: str | None) -> str | None:
+    def fake(index: object, name: str, hint: str | None, allow_llm: bool) -> str | None:
         asked.append(name)
-        return "doomer"
+        return answer
 
-    assert live.classify(label, 0.7, resolve) == (None, "pending")
+    monkeypatch.setattr(resolver, "_resolve_in", fake)
+    return asked
+
+
+def test_classify_not_a_meme_is_unclassified(monkeypatch: pytest.MonkeyPatch) -> None:
+    asked = _near_calls(monkeypatch, "doomer")
+    label = _label(is_meme=False, subjects=["Wojak"])
+    assert live.classify(label, _T, _matcher()) == (None, "unclassified")
     assert asked == []
 
 
+def test_classify_exact_guess_resolves_between_the_two_thresholds() -> None:
+    label = _label(template_guess="Doomer", confidence=0.75)
+    assert live.classify(label, _T, _matcher()) == ("doomer", "resolved")
+
+
+def test_classify_exact_guess_below_the_exact_threshold_stays_pending() -> None:
+    label = _label(template_guess="Doomer", confidence=0.6)
+    assert live.classify(label, _T, _matcher()) == (None, "pending")
+
+
 def test_classify_boundary_confidence_counts_as_confident() -> None:
-    label = _label(confidence=0.7)
-    assert live.classify(label, 0.7, lambda n, h: "doomer") == ("doomer", "resolved")
+    label = _label(template_guess="Doomer", confidence=0.7)
+    assert live.classify(label, _T, _matcher()) == ("doomer", "resolved")
 
 
-def test_classify_no_template_guess_stays_pending() -> None:
-    label = _label(template_guess=None, confidence=0.99)
-    assert live.classify(label, 0.7, lambda n, h: "doomer") == (None, "pending")
+def test_classify_near_guess_needs_the_higher_threshold(monkeypatch: pytest.MonkeyPatch) -> None:
+    asked = _near_calls(monkeypatch, "doomer")
+    label = _label(template_guess="Doomer Boy", confidence=0.75)
+    assert live.classify(label, _T, _matcher()) == (None, "pending")
+    assert asked == []
+
+
+def test_classify_near_guess_above_the_higher_threshold_resolves(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    asked = _near_calls(monkeypatch, "doomer")
+    label = _label(template_guess="Doomer Boy", confidence=0.9)
+    assert live.classify(label, _T, _matcher()) == ("doomer", "resolved")
+    assert asked == ["Doomer Boy"]
+
+
+def test_classify_near_guess_without_a_match_stays_pending(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _near_calls(monkeypatch, None)
+    label = _label(template_guess="Brand New Thing", confidence=0.95)
+    assert live.classify(label, _T, _matcher()) == (None, "pending")
+
+
+def test_classify_a_depicted_character_resolves_without_a_guess() -> None:
+    label = _label(template_guess=None, confidence=0.0, subjects=["a man", "Wojak"])
+    assert live.classify(label, _T, _matcher()) == ("wojak", "resolved")
+
+
+def test_classify_subjects_naming_two_characters_stay_pending() -> None:
+    label = _label(template_guess=None, subjects=["Wojak", "Pepe the Frog"])
+    assert live.classify(label, _T, _matcher()) == (None, "pending")
+
+
+def test_classify_a_subject_that_is_a_template_stays_pending() -> None:
+    label = _label(template_guess=None, subjects=["Drake Hotline Bling"])
+    assert live.classify(label, _T, _matcher()) == (None, "pending")
+
+
+def test_classify_a_generic_subject_never_stamps() -> None:
+    label = _label(template_guess=None, subjects=["Haggis"])
+    assert live.classify(label, _T, _matcher()) == (None, "pending")
+
+
+def test_classify_subjects_can_be_switched_off() -> None:
+    label = _label(template_guess=None, subjects=["Wojak"])
+    off = live.Thresholds(exact=0.7, near=0.85, subjects=False)
+    assert live.classify(label, off, _matcher()) == (None, "pending")
+
+
+def test_classify_the_guess_wins_over_a_depicted_character() -> None:
+    label = _label(template_guess="Doomer", confidence=0.9, subjects=["Pepe the Frog"])
+    assert live.match_label(label, _T, _matcher()) == live.LabelMatch("doomer", "exact")
+
+
+def test_match_label_reports_how_it_matched(monkeypatch: pytest.MonkeyPatch) -> None:
+    _near_calls(monkeypatch, "doomer")
+    near = _label(template_guess="Doomer Boy", confidence=0.9)
+    assert live.match_label(near, _T, _matcher()) == live.LabelMatch("doomer", "near")
+    subject = _label(template_guess=None, subjects=["Wojak"])
+    assert live.match_label(subject, _T, _matcher()) == live.LabelMatch("wojak", "subject")
 
 
 # --- qualifies ------------------------------------------------------------------------------
@@ -177,9 +263,7 @@ def test_tick_saves_each_state_and_skips_known(
         return _label(template_guess=name, confidence=0.9)
 
     monkeypatch.setattr(llm, "vision_label", fake_vision_label)
-    monkeypatch.setattr(
-        resolver, "resolve", lambda name, *, hint=None: "doomer" if name == "Doomer" else None
-    )
+    _stub_resolution(monkeypatch, lambda name: "doomer" if name == "Doomer" else None)
     monkeypatch.setattr(trace, "run", lambda *a, **kw: None)
 
     report = live.tick(_FEED_KEY)
@@ -275,7 +359,7 @@ def test_tick_auto_trace_attaches_and_respects_cap(
         "vision_label",
         lambda *a, **kw: _label(template_guess="New Specimen X", confidence=0.95),
     )
-    monkeypatch.setattr(resolver, "resolve", lambda name, *, hint=None: None)
+    _stub_resolution(monkeypatch, lambda name: None)
 
     calls: list[tuple[str, bool]] = []
 
@@ -340,7 +424,7 @@ def test_tick_auto_trace_single_author_is_not_traced(
     monkeypatch.setattr(
         llm, "vision_label", lambda *a, **kw: _label(template_guess="Solo Thing", confidence=0.95)
     )
-    monkeypatch.setattr(resolver, "resolve", lambda name, *, hint=None: None)
+    _stub_resolution(monkeypatch, lambda name: None)
 
     calls: list[str] = []
     monkeypatch.setattr(trace, "run", lambda *a, **kw: (calls.append(a[0]), None)[1])
@@ -587,7 +671,7 @@ def test_identify_known(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> 
             template_guess="Doomer", confidence=0.9, overlaid_text="monday again"
         ),
     )
-    monkeypatch.setattr(resolver, "resolve", lambda name, *, hint=None: "doomer")
+    _stub_resolution(monkeypatch, lambda name: "doomer")
 
     result = live.identify(b"bytes", "image/png")
 
@@ -602,7 +686,7 @@ def test_identify_unknown_with_guess(client: TestClient, monkeypatch: pytest.Mon
     monkeypatch.setattr(
         llm, "vision_label", lambda *a, **kw: _label(template_guess="New Thing", confidence=0.9)
     )
-    monkeypatch.setattr(resolver, "resolve", lambda name, *, hint=None: None)
+    _stub_resolution(monkeypatch, lambda name: None)
 
     result = live.identify(b"bytes", "image/png")
 
@@ -639,7 +723,7 @@ def test_identify_blanks_the_response_for_an_nsfw_image(
             template_guess="Doomer", confidence=0.95, nsfw=True, nsfw_reason="graphic gore"
         ),
     )
-    monkeypatch.setattr(resolver, "resolve", lambda name, *, hint=None: "doomer")
+    _stub_resolution(monkeypatch, lambda name: "doomer")
 
     result = live.identify(b"bytes", "image/png")
 

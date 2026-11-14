@@ -165,3 +165,88 @@ def test_resolve_without_llm_or_candidates(archive: FakeArchive) -> None:
 def test_free_id_avoids_existing_nodes(archive: FakeArchive) -> None:
     assert resolver.free_id("Doomer") == "doomer-2"
     assert resolver.free_id("Grug") == "grug"
+
+
+# --- Matcher ------------------------------------------------------------------------------
+
+KINDS = {
+    "doomer": "character",
+    "doomer-girl": "character",
+    "wojak": "character",
+    "swole-doge-vs-cheems": "template",
+    "distracted-boyfriend": "template",
+    "pepe-the-frog": "character",
+}
+
+
+@pytest.mark.parametrize(
+    ("name", "node_id"),
+    [
+        ("doomer", "doomer"),
+        ("The Doomer meme", "doomer"),
+        ("feels guy", "wojak"),
+        ("Buff Doge vs Cheems", "swole-doge-vs-cheems"),
+        ("Doomer Wojak", None),
+        ("   ", None),
+    ],
+)
+def test_matcher_exact_agrees_with_exact_match(name: str, node_id: str | None) -> None:
+    matcher = resolver.Matcher(INDEX, KINDS)
+    assert matcher.exact(name) == node_id
+    if name.strip():
+        assert matcher.exact(name) == resolver.exact_match(INDEX, name)
+
+
+def test_matcher_exact_first_duplicate_wins() -> None:
+    index = [("Doge", "first"), ("doge", "second")]
+    assert resolver.Matcher(index, {}).exact("DOGE") == "first"
+    assert resolver.exact_match(index, "DOGE") == "first"
+
+
+def test_matcher_near_without_llm_never_asks(archive: FakeArchive) -> None:
+    archive.answer = "doomer"
+    matcher = resolver.Matcher(INDEX, KINDS, allow_llm=False)
+    assert matcher.near("Doomer Wojak", None) is None
+    assert matcher.near("the doomer", None) == "doomer"
+    assert archive.asked == []
+
+
+def test_matcher_near_asks_once_and_remembers_the_answer(archive: FakeArchive) -> None:
+    archive.answer = "doomer"
+    matcher = resolver.Matcher(INDEX, KINDS)
+    assert matcher.near("Doomer Wojak", "a tired figure") == "doomer"
+    assert matcher.near("Doomer Wojak", "a tired figure") == "doomer"
+    assert len(archive.asked) == 1
+    assert matcher.exact("Doomer Wojak") == "doomer"
+
+
+def test_matcher_subject_takes_the_one_character_named() -> None:
+    matcher = resolver.Matcher(INDEX, KINDS)
+    assert matcher.subject(["a man at a desk", "Wojak"]) == "wojak"
+    assert matcher.subject(["Wojak", "Feels Guy"]) == "wojak"  # two names, one node
+
+
+def test_matcher_subject_is_ambiguous_for_two_characters() -> None:
+    assert resolver.Matcher(INDEX, KINDS).subject(["Wojak", "Pepe the Frog"]) is None
+
+
+def test_matcher_subject_ignores_templates_and_blanks() -> None:
+    matcher = resolver.Matcher(INDEX, KINDS)
+    assert matcher.subject(["Distracted Boyfriend"]) is None
+    assert matcher.subject(["", "  "]) is None
+    assert matcher.subject([]) is None
+
+
+def test_matcher_subject_is_exact_only(archive: FakeArchive) -> None:
+    archive.answer = "doomer"
+    assert resolver.Matcher(INDEX, KINDS).subject(["Doomer Wojak"]) is None
+    assert archive.asked == []
+
+
+def test_matcher_subject_skips_generic_names() -> None:
+    index = [("Walter", "walter"), ("Doge", "doge"), ("Cameraman", "cameraman")]
+    kinds = {"walter": "character", "doge": "character", "cameraman": "character"}
+    matcher = resolver.Matcher(index, kinds)
+    assert matcher.subject(["Walter"]) is None
+    assert matcher.subject(["the Cameraman"]) is None
+    assert matcher.subject(["Walter", "Doge"]) == "doge"
