@@ -44,15 +44,18 @@ fluids; or anything a reasonable person wouldn't show at a work presentation. Or
 swearing and dark-but-not-graphic humour are SFW. (The single source of truth for this definition
 is the vision prompt in `backend/memepedia/llm.py`; this paragraph mirrors it.)
 
-- **Sightings**: the backend never returns a sighting anywhere (`/api/wall`, the week view, SSE
-  live events, `/api/tree/{id}`) unless its `nsfw` is exactly `false` — `true` and `null` (not yet
-  labelled) are both excluded. The frontend defensively hides any sighting with `nsfw !== false`
-  that slips through anyway.
+- **Sightings**: by default the backend never returns a sighting anywhere (`/api/wall`, the week
+  view, SSE live events, `/api/tree/{id}`) unless its `nsfw` is exactly `false` — `true` and `null`
+  (not yet labelled) are both excluded. `GET /api/wall` additionally takes `sensitive=true`, which
+  drops that filter and returns every sighting (including `nsfw: true` and `null`); the default
+  (`sensitive` unset or `false`) is unchanged. The frontend defensively hides any sighting with
+  `nsfw !== false` that slips through anyway, unless the viewer has the sensitive toggle on.
 - **Nodes** are never removed (that would break family trees). The frontend blurs a node's image
   with a click-to-reveal overlay whenever `nsfw` is `true` or `null`, and only shows it plainly
   once a human or the backfill has set it `false`. A header-level "Sensitive: hidden/shown" toggle
-  (default hidden, persisted in `localStorage`) lets a viewer un-blur node images globally, but it
-  never affects which sightings the backend sends or the wall/side-panel filtering above.
+  (default hidden, persisted in `localStorage`) lets a viewer un-blur node images globally and,
+  on the wall, also requests and shows nsfw sightings; it does not affect the side panel or other
+  endpoints' filtering above.
 
 ## Changing the contract
 

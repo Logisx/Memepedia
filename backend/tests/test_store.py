@@ -241,6 +241,23 @@ def test_wall_hides_nsfw_true_and_unlabelled_sightings(client: TestClient) -> No
         db.execute("DELETE FROM sightings WHERE post_url LIKE 'https://x.test/nsfw-wall-%%'")
 
 
+def test_wall_include_sensitive_shows_everything(client: TestClient) -> None:
+    sfw = store.insert_sighting(
+        _post("https://x.test/nsfw-wall-inc-sfw"), None, "doomer", "resolved", nsfw=False
+    )
+    nsfw = store.insert_sighting(
+        _post("https://x.test/nsfw-wall-inc-nsfw"), None, "doomer", "resolved", nsfw=True
+    )
+    unlabelled = store.insert_sighting(
+        _post("https://x.test/nsfw-wall-inc-null"), None, "doomer", "resolved"
+    )
+    try:
+        ids = {s.id for s in store.wall(None, limit=500, include_sensitive=True)}
+        assert {sfw, nsfw, unlabelled} <= ids
+    finally:
+        db.execute("DELETE FROM sightings WHERE post_url LIKE 'https://x.test/nsfw-wall-inc-%%'")
+
+
 def test_sightings_for_node_hides_nsfw_true_and_unlabelled(client: TestClient) -> None:
     sfw = store.insert_sighting(
         _post("https://x.test/nsfw-node-sfw"), None, "doomer", "resolved", nsfw=False

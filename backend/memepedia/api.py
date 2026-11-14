@@ -80,15 +80,19 @@ def _handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:
 
 
 @app.get("/api/wall", response_model=WallResponse)
-def get_wall(since: str | None = None, limit: int = 60) -> WallResponse:
-    """Recent sightings; pass back server_time as `since` on the next poll."""
+def get_wall(since: str | None = None, limit: int = 60, sensitive: bool = False) -> WallResponse:
+    """Recent sightings; pass back server_time as `since` on the next poll.
+
+    `sensitive=true` includes nsfw (true or unlabelled) sightings too, for a viewer who
+    asked to see them; the default omits them, as before.
+    """
     since_dt = None
     if since is not None:
         try:
             since_dt = datetime.fromisoformat(since)
         except ValueError as exc:
             raise HTTPException(400, "Invalid 'since' timestamp.") from exc
-    sightings, cursor = store.wall_page(since_dt, limit)
+    sightings, cursor = store.wall_page(since_dt, limit, include_sensitive=sensitive)
     return WallResponse(sightings=sightings, server_time=cursor, sources_watched=len(FEEDS))
 
 

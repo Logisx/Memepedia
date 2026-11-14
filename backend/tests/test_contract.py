@@ -84,6 +84,12 @@ def test_wall_endpoint(client: TestClient) -> None:
     WallResponse.model_validate(response.json())
 
 
+def test_wall_endpoint_accepts_sensitive_flag(client: TestClient) -> None:
+    response = client.get("/api/wall", params={"sensitive": "true"})
+    assert response.status_code == 200
+    WallResponse.model_validate(response.json())
+
+
 def test_nodes_endpoint(client: TestClient) -> None:
     response = client.get("/api/nodes", params={"q": "wojak"})
     assert response.status_code == 200

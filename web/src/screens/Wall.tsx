@@ -7,6 +7,7 @@ import { getWall } from '../data'
 import { useColumnCount } from '../hooks/useColumnCount'
 import { useNow } from '../hooks/useNow'
 import { usePolling } from '../hooks/usePolling'
+import { useShowSensitive } from '../hooks/useShowSensitive'
 import { addSightings, emptyMasonry, relayout, type MasonryState } from '../lib/masonry'
 
 const POLL_MS = 5_000
@@ -14,6 +15,7 @@ const POLL_MS = 5_000
 export default function Wall() {
   const now = useNow()
   const count = useColumnCount()
+  const showSensitive = useShowSensitive()
   const [masonry, setMasonry] = useState<MasonryState>(emptyMasonry)
   const [sources, setSources] = useState<number>()
   const [loaded, setLoaded] = useState(false)
@@ -27,19 +29,32 @@ export default function Wall() {
     setMasonry((prev) => (prev.columns.length === count ? prev : relayout(prev, count)))
   }, [count])
 
-  usePolling(async () => {
-    try {
-      const wall = await getWall(since.current)
-      if (since.current !== undefined) wall.sightings.forEach((s) => arrived.current.add(s.id))
-      since.current = wall.server_time
-      setMasonry((prev) => addSightings(prev, wall.sightings, countRef.current))
-      setSources(wall.sources_watched)
-      setLoaded(true)
-      setError(undefined)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
-    }
-  }, POLL_MS)
+  // Toggling "show sensitive" changes what the feed should ask for; wipe what's shown and
+  // restart polling (via resetKey) so it takes effect immediately, not on the next 5s tick.
+  useEffect(() => {
+    since.current = undefined
+    arrived.current = new Set()
+    setMasonry(emptyMasonry())
+    setLoaded(false)
+  }, [showSensitive])
+
+  usePolling(
+    async () => {
+      try {
+        const wall = await getWall(since.current, 60, showSensitive)
+        if (since.current !== undefined) wall.sightings.forEach((s) => arrived.current.add(s.id))
+        since.current = wall.server_time
+        setMasonry((prev) => addSightings(prev, wall.sightings, countRef.current))
+        setSources(wall.sources_watched)
+        setLoaded(true)
+        setError(undefined)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e))
+      }
+    },
+    POLL_MS,
+    showSensitive,
+  )
 
   return (
     <div className="px-6 py-4">
