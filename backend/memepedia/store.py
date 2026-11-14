@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from psycopg.types.json import Json
@@ -298,15 +298,23 @@ def known_post_urls(urls: Sequence[str]) -> set[str]:
 
 
 def insert_sighting(
-    post: Post, vision: VisionLabel | None, node_id: str | None, state: SightingState
+    post: Post,
+    vision: VisionLabel | None,
+    node_id: str | None,
+    state: SightingState,
+    seen_at: datetime | None = None,
 ) -> str | None:
-    """Insert a sighting if its post_url is new; returns the id, or None if it already existed."""
+    """Insert a sighting if its post_url is new; returns the id, or None if it already existed.
+
+    `seen_at` defaults to now; a backfill passes the post's own time so old posts
+    do not arrive on the wall as if they were new.
+    """
     sid = sighting_id(post.post_url)
     row = db.fetch_one(
         """
         INSERT INTO sightings (id, platform, source, post_url, image_url, title, author, posted_at,
-                                vision, node_id, state)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                vision, node_id, state, seen_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, COALESCE(%s, now()))
         ON CONFLICT (post_url) DO NOTHING
         RETURNING id
         """,
@@ -322,21 +330,59 @@ def insert_sighting(
             Json(vision.model_dump(mode="json")) if vision else None,
             node_id,
             state,
+            seen_at,
         ),
     )
     return row["id"] if row else None
 
 
+def _wall_query(since: datetime | None, limit: int) -> tuple[str, db.Params]:
+    if since is None:
+        return _WALL_SELECT + " ORDER BY s.posted_at DESC LIMIT %s", (limit,)
+    return (
+        _WALL_SELECT + " WHERE s.seen_at > %s ORDER BY s.posted_at DESC LIMIT %s",
+        (since, limit),
+    )
+
+
 def wall(since: datetime | None, limit: int) -> list[Sighting]:
     """Sightings for the wall: newest by posted_at, or only those ingested after `since`."""
-    if since is None:
-        rows = db.fetch_all(_WALL_SELECT + " ORDER BY s.posted_at DESC LIMIT %s", (limit,))
-    else:
-        rows = db.fetch_all(
-            _WALL_SELECT + " WHERE s.seen_at > %s ORDER BY s.posted_at DESC LIMIT %s",
-            (since, limit),
-        )
-    return [_row_to_sighting(r) for r in rows]
+    return [_row_to_sighting(r) for r in db.fetch_all(*_wall_query(since, limit))]
+
+
+def _ceil_ms(moment: datetime) -> datetime:
+    extra = moment.microsecond % 1000
+    return moment + timedelta(microseconds=1000 - extra) if extra else moment
+
+
+def wall_page(since: datetime | None, limit: int) -> tuple[list[Sighting], datetime]:
+    """Wall sightings plus the cursor to pass back as `since` on the next poll.
+
+    The cursor is the newest ingestion time in the same snapshot as the rows, taken
+    from the database clock, so a poll neither misses nor repeats a sighting when the
+    API host's clock differs. It is rounded up to a millisecond because browsers
+    drop microseconds when they round-trip a timestamp.
+    """
+    with db.connection() as conn:
+        conn.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+        newest = conn.execute(
+            "SELECT COALESCE(max(seen_at), now()) AS at FROM sightings"
+        ).fetchone()
+        rows = conn.execute(*_wall_query(since, limit)).fetchall()
+    cursor: datetime = newest["at"] if newest else datetime.now(UTC)
+    return [_row_to_sighting(r) for r in rows], _ceil_ms(cursor)
+
+
+def counts() -> dict[str, int]:
+    """Row counts per table, for health checks and scripts."""
+    row = db.fetch_one(
+        """
+        SELECT (SELECT count(*) FROM nodes) AS nodes, (SELECT count(*) FROM links) AS links,
+               (SELECT count(*) FROM sightings) AS sightings,
+               (SELECT count(*) FROM history) AS history
+        """
+    )
+    return {key: int(value) for key, value in (row or {}).items()}
 
 
 def sightings_for_node(node_id: str, limit: int = 12) -> list[Sighting]:

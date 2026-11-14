@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
@@ -25,6 +26,8 @@ from memepedia.models import (
     WeekResponse,
 )
 from memepedia.sources import FEEDS
+
+log = logging.getLogger("memepedia.api")
 
 
 @asynccontextmanager
@@ -59,6 +62,7 @@ def _handle_validation_error(request: Request, exc: RequestValidationError) -> J
 
 @app.exception_handler(Exception)
 def _handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:
+    log.exception("Unhandled error on %s %s", request.method, request.url.path)
     return _error("Internal server error.", 500)
 
 
@@ -71,10 +75,8 @@ def get_wall(since: str | None = None, limit: int = 60) -> WallResponse:
             since_dt = datetime.fromisoformat(since)
         except ValueError as exc:
             raise HTTPException(400, "Invalid 'since' timestamp.") from exc
-    sightings = store.wall(since_dt, limit)
-    return WallResponse(
-        sightings=sightings, server_time=datetime.now(UTC), sources_watched=len(FEEDS)
-    )
+    sightings, cursor = store.wall_page(since_dt, limit)
+    return WallResponse(sightings=sightings, server_time=cursor, sources_watched=len(FEEDS))
 
 
 @app.get("/api/nodes", response_model=NodesResponse)
@@ -165,5 +167,4 @@ def get_week() -> WeekResponse:
 @app.get("/api/health")
 def get_health() -> dict[str, Any]:
     """Not in the contract; a quick deploy check."""
-    sighting_count = len(store.wall(None, 1_000_000))
-    return {"ok": True, "nodes": len(store.all_nodes()), "sightings": sighting_count}
+    return {"ok": True, **store.counts()}
