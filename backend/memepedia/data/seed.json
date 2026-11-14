@@ -1,0 +1,1392 @@
+{
+  "nodes": [
+    {
+      "id": "image-macro",
+      "name": "Image macro",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Imago textus communis",
+      "first_seen": null,
+      "date_precision": null,
+      "summary": "A picture with bold caption text laid over it, the oldest and broadest family of internet memes.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "object-labelling",
+      "name": "Object labelling",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Res titulata",
+      "first_seen": null,
+      "date_precision": null,
+      "summary": "A single image whose people or objects are tagged with labels so the scene stands for an unrelated situation.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "reaction-image",
+      "name": "Reaction image",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Imago reactionis",
+      "first_seen": null,
+      "date_precision": null,
+      "summary": "A still image, usually a face, posted as a reply to show how the poster feels about something.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "drawn-character",
+      "name": "Drawn character",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Persona picta",
+      "first_seen": null,
+      "date_precision": null,
+      "summary": "A recurring hand-drawn figure that stands in for a mood or a social type and is endlessly redrawn by others.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "comparison",
+      "name": "Comparison",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Comparatio duplex",
+      "first_seen": null,
+      "date_precision": null,
+      "summary": "A layout that sets two or more panels side by side to contrast options, people or outcomes.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "exploitable",
+      "name": "Exploitable",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Forma exploitabilis",
+      "first_seen": null,
+      "date_precision": null,
+      "summary": "A source image built so that one part can be swapped or redrawn, inviting endless edits.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "multi-panel-comic",
+      "name": "Multi-panel comic",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Fabula tabulata",
+      "first_seen": null,
+      "date_precision": null,
+      "summary": "A short strip of sequential panels that tells a joke through a small recurring cast.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "copypasta",
+      "name": "Copypasta",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Textus iteratus",
+      "first_seen": null,
+      "date_precision": null,
+      "summary": "A block of text copied and reposted verbatim or with small edits across forums and comment threads.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "catchphrase",
+      "name": "Catchphrase",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Dictum vulgatum",
+      "first_seen": null,
+      "date_precision": null,
+      "summary": "A short phrase that spreads on its own and is attached to many different images and situations.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "video-remix",
+      "name": "Video remix",
+      "aliases": [],
+      "kind": "format_class",
+      "latin_name": "Pellicula remixta",
+      "first_seen": null,
+      "date_precision": null,
+      "summary": "A video clip or soundtrack that is re-edited, overdubbed or recombined into new versions.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "wojak",
+      "name": "Wojak",
+      "aliases": [
+        "Feels Guy"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus vulgaris",
+      "first_seen": "2009-12-01",
+      "date_precision": "month",
+      "summary": "A simple line drawing of a bald, sad-eyed man used to express longing, regret or quiet melancholy, and the base for a large cast of redrawn variants.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "i-know-that-feel-bro",
+      "name": "I Know That Feel Bro",
+      "aliases": [
+        "I Know That Feel",
+        "Wojak Hug"
+      ],
+      "kind": "phrase",
+      "latin_name": "Wojakus vulgaris amplexans",
+      "first_seen": "2011-01-01",
+      "date_precision": "year",
+      "summary": "Two Wojaks hugging under the line 'I know that feel bro', posted in reply to a story of shared misfortune.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "crying-wojak",
+      "name": "Crying Wojak",
+      "aliases": [
+        "Frustrated Wojak"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus lacrimans",
+      "first_seen": "2014-01-01",
+      "date_precision": "year",
+      "summary": "A red-faced Wojak with tears and clenched teeth, used to depict someone furious or upset at an outcome.",
+      "uncertain": true,
+      "check_note": "Earliest known use is an unsourced comic believed to date from 2014; year is soft."
+    },
+    {
+      "id": "wojak-mask",
+      "name": "Wojak Mask",
+      "aliases": [
+        "Masked Wojak",
+        "Crying Wojak Mask"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus lacrimans larvatus",
+      "first_seen": "2016-01-01",
+      "date_precision": "year",
+      "summary": "A crying Wojak holding a smiling mask over his face, used to show someone hiding distress behind a cheerful front.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "pink-wojak",
+      "name": "Pink Wojak",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus roseus",
+      "first_seen": "2017-06-01",
+      "date_precision": "month",
+      "summary": "A pink, screaming Wojak used on trading and crypto boards to depict panic during a market crash.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "brainlet",
+      "name": "Brainlet",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus parvocerebrus",
+      "first_seen": "2015-01-01",
+      "date_precision": "year",
+      "summary": "A Wojak drawn with a shrunken head or tiny brain, used to mock a take as unintelligent.",
+      "uncertain": true,
+      "check_note": "The term 'brainlet' is first archived on 4chan /sci/ in December 2015; the Wojak image may only date from 2016."
+    },
+    {
+      "id": "big-brain-wojak",
+      "name": "Big Brain Wojak",
+      "aliases": [
+        "Big Brain"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus macrocerebrus",
+      "first_seen": "2016-11-01",
+      "date_precision": "month",
+      "summary": "A bespectacled Wojak with a hugely enlarged, wrinkled brain, used ironically for overthought or self-satisfied reasoning.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "npc-wojak",
+      "name": "NPC Wojak",
+      "aliases": [
+        "NPC",
+        "Grey Wojak"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus automaticus",
+      "first_seen": "2018-01-01",
+      "date_precision": "year",
+      "summary": "A grey, expressionless Wojak used to cast people as non-player characters who repeat opinions without thinking.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "thirty-year-old-boomer",
+      "name": "Thirty-Year-Old Boomer",
+      "aliases": [
+        "30-Year-Old Boomer",
+        "30 Year Old Boomer"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus praecox senex",
+      "first_seen": "2018-01-01",
+      "date_precision": "year",
+      "summary": "A sunglasses-wearing Wojak holding an energy drink, mocking a young adult with the tastes and habits of an older generation.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "zoomer",
+      "name": "Zoomer",
+      "aliases": [
+        "Zoomer Wojak"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus iuvenilis",
+      "first_seen": "2018-01-01",
+      "date_precision": "year",
+      "summary": "A youthful Wojak representing a teenage member of Generation Z and their online habits.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "doomer",
+      "name": "Doomer",
+      "aliases": [
+        "Doomer Wojak"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus desperatus",
+      "first_seen": "2018-09-01",
+      "date_precision": "month",
+      "summary": "A Wojak in a black beanie and hoodie, often smoking, representing a young man resigned to hopelessness about the future.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "doomer-girl",
+      "name": "Doomer Girl",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus desperatus femina",
+      "first_seen": "2020-01-01",
+      "date_precision": "month",
+      "summary": "A female counterpart to the Doomer, drawn in dark clothes with short black hair, sharing his gloomy outlook.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "bloomer",
+      "name": "Bloomer",
+      "aliases": [
+        "Bloomer Wojak"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus optimisticus",
+      "first_seen": "2018-09-01",
+      "date_precision": "month",
+      "summary": "A content, smiling Wojak created as the hopeful opposite of the Doomer.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "coomer",
+      "name": "Coomer",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Wojakus compulsivus",
+      "first_seen": "2019-01-01",
+      "date_precision": "year",
+      "summary": "A dishevelled, hollow-eyed Wojak used to mock someone ruled by compulsive habits, originally pornography.",
+      "uncertain": true,
+      "check_note": "Wikipedia dates its rise to November 2019 (No Nut November); earliest drawings may be earlier."
+    },
+    {
+      "id": "consoomer",
+      "name": "Consoomer",
+      "aliases": [
+        "Consume Product"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus emptor",
+      "first_seen": "2019-09-01",
+      "date_precision": "month",
+      "summary": "A Wojak variant mocking someone whose identity revolves around buying franchise products and merchandise.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "soyjak",
+      "name": "Soyjak",
+      "aliases": [
+        "Soy Boy Face",
+        "Soyjack",
+        "Soy Wojak"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus gracilis",
+      "first_seen": "2017-01-01",
+      "date_precision": "year",
+      "summary": "A bearded, bespectacled Wojak with a wide open-mouthed expression, used to caricature naive or performative excitement.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "two-soyjaks-pointing",
+      "name": "Two Soyjaks Pointing",
+      "aliases": [
+        "Soyjaks Pointing",
+        "Pointing Soyjaks"
+      ],
+      "kind": "template",
+      "latin_name": "Wojakus gracilis indicans",
+      "first_seen": "2020-01-01",
+      "date_precision": "year",
+      "summary": "Two excited Soyjaks pointing at something placed between them, used to mock overexcitement about a product or reveal.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "yes-chad",
+      "name": "Yes Chad",
+      "aliases": [
+        "Nordic Gamer",
+        "Chad Yes"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus affirmans",
+      "first_seen": "2019-01-01",
+      "date_precision": "year",
+      "summary": "A calm, bearded blond figure who answers a mocking question with a flat 'Yes.', used to show unashamed confidence.",
+      "uncertain": true,
+      "check_note": "Character parent Wojak follows the fixture; Chad is a credible alternative. Format parent Virgin vs. Chad is by analogy (insecure vs confident archetypes): the documented origin (Aug 2019) combines the Grayons meme with a 4chan Nordic/Mediterranean exploitable. Fallback format parent: comparison."
+    },
+    {
+      "id": "trad-girl",
+      "name": "Trad Girl",
+      "aliases": [
+        "Tradwife",
+        "Trad Wife"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus traditionalis",
+      "first_seen": "2019-01-01",
+      "date_precision": "year",
+      "summary": "A blonde, braided female Wojak in a sundress used to depict an idealised traditionalist woman.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "grug",
+      "name": "Grug",
+      "aliases": [
+        "Grug Wojak",
+        "Caveman Wojak"
+      ],
+      "kind": "character",
+      "latin_name": "Wojakus primigenius",
+      "first_seen": "2017-01-01",
+      "date_precision": "year",
+      "summary": "A caveman Wojak who speaks in broken, simple sentences, used to argue for blunt common sense over sophistication.",
+      "uncertain": true,
+      "check_note": "Earliest illustration reported October 2017; first widely seen upload February 2019. The fixtures call this node 'grug-early-man'."
+    },
+    {
+      "id": "doge",
+      "name": "Doge",
+      "aliases": [
+        "Kabosu",
+        "Shiba Inu Doge"
+      ],
+      "kind": "character",
+      "latin_name": "Canis loquens",
+      "first_seen": "2010-01-01",
+      "date_precision": "year",
+      "summary": "A photo of the Shiba Inu Kabosu glancing sideways, surrounded by multicoloured Comic Sans phrases in broken English such as 'such wow'.",
+      "uncertain": true,
+      "check_note": "Kabosu photo and the 'doge' spelling both date to 2010, but the Comic Sans 'such wow' format mostly spread in 2012-2013. Root changed from reaction-image to image-macro."
+    },
+    {
+      "id": "cheems",
+      "name": "Cheems",
+      "aliases": [
+        "Cheemsburbger",
+        "Balltze"
+      ],
+      "kind": "character",
+      "latin_name": "Canis loquens debilis",
+      "first_seen": "2019-01-01",
+      "date_precision": "year",
+      "summary": "A different Shiba Inu, Balltze, cast as a feeble Doge-like character whose speech adds stray 'm' sounds, as in 'cheemsburbger'.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "swole-doge",
+      "name": "Swole Doge",
+      "aliases": [
+        "Buff Doge"
+      ],
+      "kind": "character",
+      "latin_name": "Canis loquens validus",
+      "first_seen": "2019-01-01",
+      "date_precision": "year",
+      "summary": "Doge's head on a heavily muscled body, used to stand for strength and an idealised past.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "swole-doge-vs-cheems",
+      "name": "Swole Doge vs. Cheems",
+      "aliases": [
+        "Buff Doge vs. Cheems",
+        "Buff Doge vs Cheems",
+        "Swole Doge vs Cheems"
+      ],
+      "kind": "template",
+      "latin_name": "Canis loquens validus et debilis",
+      "first_seen": "2020-01-01",
+      "date_precision": "year",
+      "summary": "A two-panel image pitting muscular Swole Doge against small, weak Cheems to contrast a strong past with a feeble present.",
+      "uncertain": true,
+      "check_note": "Format parent Virgin vs. Chad is by analogy (strong vs weak contrast) and not documented as a direct derivation; fallback format parent: comparison."
+    },
+    {
+      "id": "dogelore",
+      "name": "Dogelore",
+      "aliases": [
+        "Doge Lore",
+        "Dogeverse"
+      ],
+      "kind": "template",
+      "latin_name": "Canis loquens fabulosus",
+      "first_seen": "2018-08-01",
+      "date_precision": "month",
+      "summary": "Deliberately misspelled comics that place Doge and an extended cast of dogs in absurd everyday stories.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "walter",
+      "name": "Walter",
+      "aliases": [
+        "Nelson the Bull Terrier"
+      ],
+      "kind": "character",
+      "latin_name": "Canis loquens taurinus",
+      "first_seen": "2018-09-01",
+      "date_precision": "month",
+      "summary": "A close-up of a white bull terrier staring into the camera, captioned as loving fire trucks and 'moster trucks'.",
+      "uncertain": true,
+      "check_note": "Walter is Nelson, a bull terrier, not a Shiba; he spread separately (Sept 2018) and was later absorbed into the Dogelore cast. The character link records cast membership, not descent; alternatives are a parent of Dogelore or a standalone family under reaction-image."
+    },
+    {
+      "id": "doge-bonk",
+      "name": "Doge Bonk",
+      "aliases": [
+        "Bonk"
+      ],
+      "kind": "template",
+      "latin_name": "Canis loquens percutiens",
+      "first_seen": "2020-01-01",
+      "date_precision": "year",
+      "summary": "Doge swinging a bat at another dog with the word 'bonk', posted to playfully punish an out-of-line remark.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "pepe-the-frog",
+      "name": "Pepe the Frog",
+      "aliases": [
+        "Pepe",
+        "Pepe Frog"
+      ],
+      "kind": "character",
+      "latin_name": "Rana pepeus",
+      "first_seen": "2005-01-01",
+      "date_precision": "year",
+      "summary": "A green cartoon frog from Matt Furie's comic Boy's Club that became one of the most reused reaction characters online.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "feels-good-man",
+      "name": "Feels Good Man",
+      "aliases": [
+        "FeelsGoodMan"
+      ],
+      "kind": "phrase",
+      "latin_name": "Rana pepeus beata",
+      "first_seen": "2005-01-01",
+      "date_precision": "year",
+      "summary": "Pepe's contented line from the original comic, reused as a caption or emote for simple satisfaction.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "sad-frog",
+      "name": "Sad Frog",
+      "aliases": [
+        "Feels Bad Man",
+        "FeelsBadMan",
+        "Sad Pepe"
+      ],
+      "kind": "character",
+      "latin_name": "Rana pepeus tristis",
+      "first_seen": "2012-01-01",
+      "date_precision": "year",
+      "summary": "A dejected, teary Pepe posted to express disappointment, often captioned 'feels bad man'.",
+      "uncertain": true,
+      "check_note": "Wikipedia only says it was in use on Tumblr 'by 2012'; 4chan use is probably earlier (often cited as 2009)."
+    },
+    {
+      "id": "smug-frog",
+      "name": "Smug Frog",
+      "aliases": [
+        "Smug Pepe"
+      ],
+      "kind": "character",
+      "latin_name": "Rana pepeus superba",
+      "first_seen": "2012-01-01",
+      "date_precision": "year",
+      "summary": "A self-satisfied Pepe with a knowing smirk, posted to gloat or feign superiority.",
+      "uncertain": true,
+      "check_note": "Wikipedia gives 2012; a 4chan /tv/ post from June 2011 is reported as the earliest instance."
+    },
+    {
+      "id": "angry-pepe",
+      "name": "Angry Pepe",
+      "aliases": [
+        "REEE",
+        "Reeee",
+        "Angry Frog"
+      ],
+      "kind": "character",
+      "latin_name": "Rana pepeus iracunda",
+      "first_seen": "2015-01-01",
+      "date_precision": "year",
+      "summary": "A red-faced, shouting Pepe paired with a long 'REEE' to mock an outburst of frustration.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "rare-pepe",
+      "name": "Rare Pepe",
+      "aliases": [
+        "Rare Pepes"
+      ],
+      "kind": "character",
+      "latin_name": "Rana pepeus rarissima",
+      "first_seen": "2014-01-01",
+      "date_precision": "year",
+      "summary": "Original or unusual Pepe drawings presented ironically as rare collectibles to be hoarded and traded.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "apu-apustaja",
+      "name": "Apu Apustaja",
+      "aliases": [
+        "Apu"
+      ],
+      "kind": "character",
+      "latin_name": "Rana pepeus auxiliaris",
+      "first_seen": "2016-01-01",
+      "date_precision": "year",
+      "summary": "A deliberately crude, childlike redraw of Pepe whose name is broken Finnish for 'help helper', spread from the Finnish board Ylilauta.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "peepo",
+      "name": "Peepo",
+      "aliases": [
+        "peepoHappy",
+        "widepeepoHappy"
+      ],
+      "kind": "character",
+      "latin_name": "Rana pepeus auxiliaris pusilla",
+      "first_seen": "2017-07-01",
+      "date_precision": "month",
+      "summary": "A small, round, simplified Pepe used as a family of Twitch and Discord emotes.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "pepega",
+      "name": "Pepega",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Rana pepeus stolida",
+      "first_seen": "2018-04-01",
+      "date_precision": "month",
+      "summary": "A Pepe with a huge nose and gaping mouth used on Twitch to call something or someone foolish.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "monkas",
+      "name": "monkaS",
+      "aliases": [
+        "monkaScared"
+      ],
+      "kind": "character",
+      "latin_name": "Rana pepeus sudans",
+      "first_seen": "2016-03-01",
+      "date_precision": "month",
+      "summary": "A sweating, anxious Pepe emote used on Twitch during tense or nerve-wracking moments.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "pepehands",
+      "name": "PepeHands",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Rana pepeus lugens",
+      "first_seen": "2016-09-01",
+      "date_precision": "month",
+      "summary": "A crying Pepe with hands raised to his face, used on Twitch to express sadness or mock grief.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "sadge",
+      "name": "Sadge",
+      "aliases": [],
+      "kind": "character",
+      "latin_name": "Rana pepeus tristis minor",
+      "first_seen": "2019-01-01",
+      "date_precision": "year",
+      "summary": "A simplified, downcast Pepe emote used in Twitch chat for mild disappointment.",
+      "uncertain": true,
+      "check_note": "Reported as created around 2019 and released as an emote in January 2020; year is soft."
+    },
+    {
+      "id": "chad",
+      "name": "Chad",
+      "aliases": [
+        "Chad Thundercock"
+      ],
+      "kind": "character",
+      "latin_name": "Virilis supremus",
+      "first_seen": "2017-01-01",
+      "date_precision": "year",
+      "summary": "An idealised, effortlessly confident alpha male archetype, drawn as a tall square-jawed figure.",
+      "uncertain": true,
+      "check_note": "Date is for the drawn Chad figure of Virgin vs. Chad (2017); the slang 'Chad'/'Chad Thundercock' is older (mid-2010s) and may move this date earlier."
+    },
+    {
+      "id": "virgin-vs-chad",
+      "name": "Virgin vs. Chad",
+      "aliases": [
+        "Virgin vs Chad",
+        "The Virgin Walk vs. The Chad Stride"
+      ],
+      "kind": "template",
+      "latin_name": "Virilis supremus et virgo",
+      "first_seen": "2017-01-01",
+      "date_precision": "year",
+      "summary": "A side-by-side drawing contrasting a hunched, insecure 'virgin' with a confident 'Chad', applied to any pair of rival things.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "gigachad",
+      "name": "Gigachad",
+      "aliases": [
+        "GigaChad",
+        "Giga Chad"
+      ],
+      "kind": "character",
+      "latin_name": "Virilis supremus maximus",
+      "first_seen": "2017-01-01",
+      "date_precision": "year",
+      "summary": "Stylised black-and-white photos of an impossibly chiselled man, used as the ultimate image of confident masculinity.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "average-fan-vs-average-enjoyer",
+      "name": "Average Fan vs. Average Enjoyer",
+      "aliases": [
+        "Average Fan vs Average Enjoyer"
+      ],
+      "kind": "template",
+      "latin_name": "Virilis supremus maximus fruens",
+      "first_seen": "2021-01-01",
+      "date_precision": "year",
+      "summary": "A comparison pairing an anxious, sweaty 'fan' with a calm Gigachad 'enjoyer' of the same thing.",
+      "uncertain": true,
+      "check_note": "Year from the March 2021 video spike; still-image versions may be slightly earlier."
+    },
+    {
+      "id": "advice-dog",
+      "name": "Advice Dog",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius canis",
+      "first_seen": "2006-01-01",
+      "date_precision": "year",
+      "summary": "A smiling puppy on a rainbow colour-wheel background, captioned with two lines of terrible advice, which started the Advice Animals genre.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "courage-wolf",
+      "name": "Courage Wolf",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius lupus",
+      "first_seen": "2008-01-01",
+      "date_precision": "year",
+      "summary": "A snarling wolf on a colour wheel offering extreme, aggressive motivational advice.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "insanity-wolf",
+      "name": "Insanity Wolf",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius lupus insanus",
+      "first_seen": "2009-01-01",
+      "date_precision": "year",
+      "summary": "A wild-eyed wolf on a colour wheel giving deranged, violent advice as an escalation of Courage Wolf.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "socially-awkward-penguin",
+      "name": "Socially Awkward Penguin",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius pinguinus",
+      "first_seen": "2009-05-01",
+      "date_precision": "month",
+      "summary": "A penguin on a blue colour-wheel background captioned with an embarrassing social blunder.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "socially-awesome-penguin",
+      "name": "Socially Awesome Penguin",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius pinguinus splendidus",
+      "first_seen": "2010-01-01",
+      "date_precision": "year",
+      "summary": "The same penguin on a red background, captioned with a socially smooth success.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "philosoraptor",
+      "name": "Philosoraptor",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius cogitabundus",
+      "first_seen": "2008-01-01",
+      "date_precision": "year",
+      "summary": "A drawing of a velociraptor pondering, captioned with a pseudo-profound question or pun.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "foul-bachelor-frog",
+      "name": "Foul Bachelor Frog",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius caelebs",
+      "first_seen": "2009-01-01",
+      "date_precision": "year",
+      "summary": "A frog in a bathrobe captioned with the lazy, unhygienic habits of a single man living alone.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "paranoid-parrot",
+      "name": "Paranoid Parrot",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius psittacus",
+      "first_seen": "2010-01-01",
+      "date_precision": "year",
+      "summary": "A startled parrot captioned with irrational everyday fears and suspicions.",
+      "uncertain": true,
+      "check_note": "Became popular in August 2010; first use may be earlier."
+    },
+    {
+      "id": "success-kid",
+      "name": "Success Kid",
+      "aliases": [
+        "I Hate Sandcastles"
+      ],
+      "kind": "template",
+      "latin_name": "Consiliarius victor",
+      "first_seen": "2008-01-01",
+      "date_precision": "year",
+      "summary": "A toddler on a beach clenching a fistful of sand, captioned with small personal victories.",
+      "uncertain": true,
+      "check_note": "Photo taken August 2007; the earlier 'I Hate Sandcastles' captions are dated 2008 by some sources and 2011 by others, and the 'Success Kid' reading spread around 2010-2011."
+    },
+    {
+      "id": "scumbag-steve",
+      "name": "Scumbag Steve",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius sordidus",
+      "first_seen": "2011-01-01",
+      "date_precision": "month",
+      "summary": "A photo of a young man in a sideways cap and fur coat captioned with selfish, mooching behaviour.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "good-guy-greg",
+      "name": "Good Guy Greg",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius sordidus inversus",
+      "first_seen": "2011-04-01",
+      "date_precision": "month",
+      "summary": "A smiling man with a joint captioned with unexpectedly considerate behaviour.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "actual-advice-mallard",
+      "name": "Actual Advice Mallard",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius anas",
+      "first_seen": "2011-06-01",
+      "date_precision": "month",
+      "summary": "A mallard on a colour wheel offering genuinely useful life tips.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "malicious-advice-mallard",
+      "name": "Malicious Advice Mallard",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius anas malevola",
+      "first_seen": "2012-12-01",
+      "date_precision": "month",
+      "summary": "The same mallard with a red head, offering advice designed to cause harm.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "bad-luck-brian",
+      "name": "Bad Luck Brian",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius infortunatus",
+      "first_seen": "2012-01-01",
+      "date_precision": "month",
+      "summary": "An awkward school portrait of a teenager in a plaid vest captioned with absurd strokes of misfortune.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "ridiculously-photogenic-guy",
+      "name": "Ridiculously Photogenic Guy",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius photogenicus",
+      "first_seen": "2012-04-01",
+      "date_precision": "month",
+      "summary": "A marathon photo of a runner looking effortlessly handsome, captioned with things that go easily for good-looking people.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "confession-bear",
+      "name": "Confession Bear",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius confitens",
+      "first_seen": "2012-06-01",
+      "date_precision": "month",
+      "summary": "A sheepish-looking bear captioned with an embarrassing or unpopular personal admission.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "overly-attached-girlfriend",
+      "name": "Overly Attached Girlfriend",
+      "aliases": [],
+      "kind": "template",
+      "latin_name": "Consiliarius adhaerens",
+      "first_seen": "2012-06-01",
+      "date_precision": "month",
+      "summary": "A wide-eyed, intensely smiling young woman captioned with clingy, possessive relationship behaviour.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "distracted-boyfriend",
+      "name": "Distracted Boyfriend",
+      "aliases": [
+        "Man Looking at Other Woman"
+      ],
+      "kind": "template",
+      "latin_name": "Vir distractus",
+      "first_seen": "2017-01-01",
+      "date_precision": "month",
+      "summary": "A stock photo of a man turning to look at another woman while his partner glares, with each person labelled to show a shift in loyalty.",
+      "uncertain": false,
+      "check_note": null
+    },
+    {
+      "id": "drake-hotline-bling",
+      "name": "Drake Hotline Bling",
+      "aliases": [
+        "Drakeposting",
+        "Drake Approves"
+      ],
+      "kind": "template",
+      "latin_name": "Vir reiciens et probans",
+      "first_seen": "2015-01-01",
+      "date_precision": "year",
+      "summary": "Two stacked stills of Drake from the 'Hotline Bling' video, waving away the top caption and approving the bottom one.",
+      "uncertain": true,
+      "check_note": "Video released October 2015; the two-panel approve/reject format reportedly circulated on 4chan in late 2015 and spread widely in early 2016."
+    }
+  ],
+  "links": [
+    {
+      "child_id": "wojak",
+      "parent_id": "drawn-character",
+      "axis": "character",
+      "basis": "Wojak is a crude MS Paint-style drawn figure."
+    },
+    {
+      "child_id": "i-know-that-feel-bro",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "The image shows two Wojaks embracing."
+    },
+    {
+      "child_id": "i-know-that-feel-bro",
+      "parent_id": "catchphrase",
+      "axis": "format",
+      "basis": "Spread as a stock reply phrase attached to the image."
+    },
+    {
+      "child_id": "crying-wojak",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A tearful, enraged redraw of the Wojak face."
+    },
+    {
+      "child_id": "wojak-mask",
+      "parent_id": "crying-wojak",
+      "axis": "character",
+      "basis": "The figure behind the mask is the Crying (Frustrated) Wojak."
+    },
+    {
+      "child_id": "pink-wojak",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A recoloured, distorted Wojak face."
+    },
+    {
+      "child_id": "brainlet",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A Wojak redrawn with a comically small head."
+    },
+    {
+      "child_id": "big-brain-wojak",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A Wojak redrawn with an enlarged head and visible brain."
+    },
+    {
+      "child_id": "npc-wojak",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A grey, blank-faced Wojak."
+    },
+    {
+      "child_id": "thirty-year-old-boomer",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A Wojak redraw from the 4chan '-oomer' cycle."
+    },
+    {
+      "child_id": "zoomer",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A Wojak redraw from the 4chan '-oomer' cycle."
+    },
+    {
+      "child_id": "doomer",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A Wojak redrawn with beanie, hoodie and cigarette."
+    },
+    {
+      "child_id": "doomer-girl",
+      "parent_id": "doomer",
+      "axis": "character",
+      "basis": "Created and named as the female counterpart of Doomer."
+    },
+    {
+      "child_id": "bloomer",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A Wojak redraw from the '-oomer' cycle, framed against Doomer."
+    },
+    {
+      "child_id": "coomer",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A Wojak redraw from the '-oomer' cycle."
+    },
+    {
+      "child_id": "consoomer",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A Wojak variant from the '-oomer' cycle, named as a pun on Coomer."
+    },
+    {
+      "child_id": "soyjak",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A redraw of Wojak with an open 'soy face' mouth."
+    },
+    {
+      "child_id": "two-soyjaks-pointing",
+      "parent_id": "soyjak",
+      "axis": "character",
+      "basis": "Both figures are Soyjaks."
+    },
+    {
+      "child_id": "two-soyjaks-pointing",
+      "parent_id": "exploitable",
+      "axis": "format",
+      "basis": "The object being pointed at is swapped in each edit."
+    },
+    {
+      "child_id": "yes-chad",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "Drawn in the Wojak comic style and used opposite Wojak characters."
+    },
+    {
+      "child_id": "yes-chad",
+      "parent_id": "virgin-vs-chad",
+      "axis": "format",
+      "basis": "Restages the insecure-versus-confident contrast of Virgin vs. Chad."
+    },
+    {
+      "child_id": "trad-girl",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A female Wojak variant."
+    },
+    {
+      "child_id": "grug",
+      "parent_id": "wojak",
+      "axis": "character",
+      "basis": "A caveman redraw of Wojak."
+    },
+    {
+      "child_id": "doge",
+      "parent_id": "image-macro",
+      "axis": "character",
+      "basis": "Doge is a photo overlaid with caption text."
+    },
+    {
+      "child_id": "cheems",
+      "parent_id": "doge",
+      "axis": "character",
+      "basis": "Cheems is a Shiba Inu character used as a weaker Doge counterpart."
+    },
+    {
+      "child_id": "swole-doge",
+      "parent_id": "doge",
+      "axis": "character",
+      "basis": "An edit placing Doge's head on a muscular body."
+    },
+    {
+      "child_id": "swole-doge-vs-cheems",
+      "parent_id": "swole-doge",
+      "axis": "character",
+      "basis": "Swole Doge fills the strong panel."
+    },
+    {
+      "child_id": "swole-doge-vs-cheems",
+      "parent_id": "virgin-vs-chad",
+      "axis": "format",
+      "basis": "Repeats the weak-versus-strong archetype contrast of Virgin vs. Chad."
+    },
+    {
+      "child_id": "dogelore",
+      "parent_id": "doge",
+      "axis": "character",
+      "basis": "Doge is the central character of the Dogelore cast."
+    },
+    {
+      "child_id": "dogelore",
+      "parent_id": "multi-panel-comic",
+      "axis": "format",
+      "basis": "Dogelore posts are mostly short multi-panel comics."
+    },
+    {
+      "child_id": "walter",
+      "parent_id": "doge",
+      "axis": "character",
+      "basis": "Walter is part of the extended Doge (Dogelore) cast."
+    },
+    {
+      "child_id": "doge-bonk",
+      "parent_id": "doge",
+      "axis": "character",
+      "basis": "Doge is the dog swinging the bat."
+    },
+    {
+      "child_id": "pepe-the-frog",
+      "parent_id": "drawn-character",
+      "axis": "character",
+      "basis": "Pepe is a cartoon character from a drawn comic."
+    },
+    {
+      "child_id": "feels-good-man",
+      "parent_id": "pepe-the-frog",
+      "axis": "character",
+      "basis": "The line is spoken by Pepe in Boy's Club."
+    },
+    {
+      "child_id": "feels-good-man",
+      "parent_id": "catchphrase",
+      "axis": "format",
+      "basis": "Circulates as a standalone catchphrase and emote."
+    },
+    {
+      "child_id": "sad-frog",
+      "parent_id": "pepe-the-frog",
+      "axis": "character",
+      "basis": "A sad redraw of Pepe."
+    },
+    {
+      "child_id": "smug-frog",
+      "parent_id": "pepe-the-frog",
+      "axis": "character",
+      "basis": "A smirking redraw of Pepe."
+    },
+    {
+      "child_id": "angry-pepe",
+      "parent_id": "pepe-the-frog",
+      "axis": "character",
+      "basis": "An enraged redraw of Pepe."
+    },
+    {
+      "child_id": "rare-pepe",
+      "parent_id": "pepe-the-frog",
+      "axis": "character",
+      "basis": "Rare Pepes are new drawings of Pepe."
+    },
+    {
+      "child_id": "apu-apustaja",
+      "parent_id": "pepe-the-frog",
+      "axis": "character",
+      "basis": "A poorly drawn variation of Pepe."
+    },
+    {
+      "child_id": "peepo",
+      "parent_id": "apu-apustaja",
+      "axis": "character",
+      "basis": "Peepo grew out of the childlike Apu Apustaja drawings."
+    },
+    {
+      "child_id": "pepega",
+      "parent_id": "pepe-the-frog",
+      "axis": "character",
+      "basis": "A distorted redraw of Pepe."
+    },
+    {
+      "child_id": "monkas",
+      "parent_id": "pepe-the-frog",
+      "axis": "character",
+      "basis": "A sweating redraw of Pepe."
+    },
+    {
+      "child_id": "pepehands",
+      "parent_id": "pepe-the-frog",
+      "axis": "character",
+      "basis": "A crying redraw of Pepe."
+    },
+    {
+      "child_id": "sadge",
+      "parent_id": "sad-frog",
+      "axis": "character",
+      "basis": "A simplified variation of the FeelsBadMan sad Pepe."
+    },
+    {
+      "child_id": "chad",
+      "parent_id": "drawn-character",
+      "axis": "character",
+      "basis": "The Chad figure is a crude drawn character."
+    },
+    {
+      "child_id": "virgin-vs-chad",
+      "parent_id": "chad",
+      "axis": "character",
+      "basis": "Chad is one of the two figures in every Virgin vs. Chad image."
+    },
+    {
+      "child_id": "virgin-vs-chad",
+      "parent_id": "comparison",
+      "axis": "format",
+      "basis": "A two-sided comparison of opposing archetypes."
+    },
+    {
+      "child_id": "gigachad",
+      "parent_id": "chad",
+      "axis": "character",
+      "basis": "Named as the extreme form of the Chad archetype."
+    },
+    {
+      "child_id": "average-fan-vs-average-enjoyer",
+      "parent_id": "gigachad",
+      "axis": "character",
+      "basis": "Gigachad is the 'enjoyer' in the format."
+    },
+    {
+      "child_id": "average-fan-vs-average-enjoyer",
+      "parent_id": "virgin-vs-chad",
+      "axis": "format",
+      "basis": "Restages the Virgin vs. Chad weak-versus-confident contrast."
+    },
+    {
+      "child_id": "advice-dog",
+      "parent_id": "image-macro",
+      "axis": "format",
+      "basis": "A captioned photo image macro."
+    },
+    {
+      "child_id": "courage-wolf",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "Copies Advice Dog's colour wheel and two-line advice caption."
+    },
+    {
+      "child_id": "insanity-wolf",
+      "parent_id": "courage-wolf",
+      "axis": "format",
+      "basis": "Created as an unhinged spin-off of Courage Wolf."
+    },
+    {
+      "child_id": "socially-awkward-penguin",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "An Advice Animals macro using the colour-wheel caption format."
+    },
+    {
+      "child_id": "socially-awesome-penguin",
+      "parent_id": "socially-awkward-penguin",
+      "axis": "character",
+      "basis": "Uses the same penguin as its positive counterpart."
+    },
+    {
+      "child_id": "philosoraptor",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "Captioned in the Advice Animals colour-wheel format."
+    },
+    {
+      "child_id": "foul-bachelor-frog",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "An Advice Animals macro using the colour-wheel caption format."
+    },
+    {
+      "child_id": "paranoid-parrot",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "An Advice Animals macro using the colour-wheel caption format."
+    },
+    {
+      "child_id": "success-kid",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "Grouped with Advice Animals and follows their two-line caption formula."
+    },
+    {
+      "child_id": "scumbag-steve",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "Follows the Advice Animals two-line caption formula."
+    },
+    {
+      "child_id": "good-guy-greg",
+      "parent_id": "scumbag-steve",
+      "axis": "format",
+      "basis": "Created as the deliberate antithesis of Scumbag Steve."
+    },
+    {
+      "child_id": "actual-advice-mallard",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "An Advice Animals macro using the colour-wheel caption format."
+    },
+    {
+      "child_id": "malicious-advice-mallard",
+      "parent_id": "actual-advice-mallard",
+      "axis": "character",
+      "basis": "A recoloured edit of the Actual Advice Mallard photo."
+    },
+    {
+      "child_id": "bad-luck-brian",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "Follows the Advice Animals two-line caption formula."
+    },
+    {
+      "child_id": "ridiculously-photogenic-guy",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "Used as an Advice Animals two-line caption macro."
+    },
+    {
+      "child_id": "confession-bear",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "Created as a new Advice Animals macro on r/AdviceAnimals."
+    },
+    {
+      "child_id": "overly-attached-girlfriend",
+      "parent_id": "advice-dog",
+      "axis": "format",
+      "basis": "A video still reused as an Advice Animals caption macro."
+    },
+    {
+      "child_id": "distracted-boyfriend",
+      "parent_id": "object-labelling",
+      "axis": "format",
+      "basis": "Each of the three people is labelled to map the scene onto a new situation."
+    },
+    {
+      "child_id": "drake-hotline-bling",
+      "parent_id": "comparison",
+      "axis": "format",
+      "basis": "Two panels contrast a rejected option with a preferred one."
+    }
+  ]
+}
