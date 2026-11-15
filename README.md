@@ -34,7 +34,7 @@ trace any meme back to its origin.
 
 | | |
 |---|---|
-| 🌊 **The Wall** | Posts seen on Lemmy, Reddit and Imgflip minutes ago, each one stamped with the family it belongs to. If we are not sure, it says **unidentified**. We would rather admit it than guess. |
+| 🌊 **The Wall** | Posts seen on Lemmy, Reddit and Imgflip minutes ago, each one stamped with the family it belongs to. If we are not sure, it says **unidentified**; a joke that uses no template says **one-off**. We would rather admit it than guess. The same picture posted twice shows once. |
 | 🧬 **Lineage** | Open any meme and see its line of descent back to a root, plus the whole family as a map. Two lines: **character** (who it is about) and **format** (how it is built). |
 | 📜 **Cited or "citation needed"** | A link with a verbatim quote from a real web page is solid. A link we could not source is drawn **dashed**, with a stamp. No vibes-based history. |
 | 🔬 **Trace anything** | Type a meme we have never heard of. An agent drafts its ancestry, then goes to the web to verify each link, streaming its progress as it goes. |
@@ -98,8 +98,9 @@ flowchart LR
 2. **Look**: one Gemini vision call per image returns structure, not prose: its best template guess,
    how confident it is, the characters in it, and any overlaid text.
 3. **Resolve**: the guess is matched to a meme in the archive. A post is stamped only when the model is
-   confident and the name matches a known meme, or when it clearly shows one known character. Otherwise
-   it stays **unidentified**.
+   confident and the name matches a known meme, when it clearly shows one known character, or when the
+   post's title names one known meme outright. Otherwise it stays **unidentified**. A repost of a picture
+   already seen skips the vision call and shares the original's stamp.
 4. **Notice new memes**: unidentified posts are grouped. If three or more, from at least two different
    people, share a structure, the cluster becomes a new specimen and is traced.
 

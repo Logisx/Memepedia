@@ -1,5 +1,13 @@
 # Plan: duplicates, unstamped tiles, and memes missing from their tree
 
+> **Status (2026-11-15): implemented** on `bugfix/final-fixes` (not a separate `feat/` branch, so
+> it sits on top of the Gemma guardrail commit), Parts A to E, 412 backend tests passing. Not
+> deployed: the production steps are the top section of `claude_docs/TODO_WITH_ENV.md`. Changes
+> from the text below: the URL-fixing helper is `live.readable_image_url` (shared by `relook.py`
+> and `dedupe.py`); the title rule also lets a longer matched name win over a name inside it; the
+> family-map groups carry the list of variant keys they hold, so the folded "other posts" group can
+> filter the Sightings tab.
+
 Written 2026-11-15 for an implementing model (Sonnet) working on this Windows machine **without**
 the repo-root `.env`. Nothing here may touch production. The other programmer (who has `.env`)
 runs the production steps afterwards from the new section you add to `claude_docs/TODO_WITH_ENV.md`
