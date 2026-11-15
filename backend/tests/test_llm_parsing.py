@@ -143,6 +143,44 @@ def test_label_nsfw_only_treats_a_safety_block_as_nsfw(monkeypatch: pytest.Monke
     assert reason is not None
 
 
+def test_label_nsfw_only_asks_the_guardrail_model_without_json_mode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen: dict[str, object] = {}
+
+    def fake_generate(contents: object, **kwargs: object) -> str:
+        seen.update(kwargs)
+        return '```json\n{"nsfw": false, "nsfw_reason": null}\n```'
+
+    monkeypatch.setattr(llm, "_generate", fake_generate)
+    assert llm.label_nsfw_only(b"bytes", "image/png") == (False, None)
+    assert seen["response_schema"] is None
+    assert seen["model"] == llm.get_settings().guardrail_model
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ('{"nsfw": true, "nsfw_reason": "gore"}', (True, "gore")),
+        ('Sure! {"nsfw": false, "nsfw_reason": "n/a"} Hope that helps.', (False, None)),
+        ('```json\n{"nsfw": "True", "nsfw_reason": "nudity"}\n```', (True, "nudity")),
+        ('{"nsfw": true, "nsfw_reason": null}', (True, None)),
+    ],
+)
+def test_parse_nsfw_verdict_reads_prompted_json(
+    text: str, expected: tuple[bool, str | None]
+) -> None:
+    assert llm._parse_nsfw_verdict(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text", ["I think it is fine.", '{"nsfw": maybe}', '{"nsfw": "unsure"}', '{"reason": "x"}']
+)
+def test_parse_nsfw_verdict_refuses_an_unclear_answer(text: str) -> None:
+    with pytest.raises(llm.LLMError):
+        llm._parse_nsfw_verdict(text)
+
+
 def test_parse_draft_chain_drops_links_with_unknown_names() -> None:
     raw = {
         "subject": "Doomer",

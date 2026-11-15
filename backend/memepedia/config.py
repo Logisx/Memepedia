@@ -16,6 +16,8 @@ PGDATA_DIR = BACKEND_DIR / ".pgdata"
 FIXTURES_DIR = REPO_ROOT / "contract" / "fixtures"
 
 DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
+# The nsfw guardrail: a separate, cheaper model that decides only whether an image is safe to show.
+DEFAULT_GUARDRAIL_MODEL = "gemma-3-27b-it"
 
 
 @dataclass(frozen=True)
@@ -35,6 +37,7 @@ class Settings:
     vision_exact_min_confidence: float = 0.7
     match_subjects: bool = True
     read_only: bool = False
+    guardrail_model: str = DEFAULT_GUARDRAIL_MODEL
 
 
 _TRUTHY = {"1", "true", "on", "yes"}
@@ -67,4 +70,5 @@ def get_settings() -> Settings:
         vision_exact_min_confidence=float(_first("VISION_EXACT_MIN_CONFIDENCE") or 0.7),
         match_subjects=_flag("VISION_MATCH_SUBJECTS", True),
         read_only=_flag("MEMEPEDIA_READ_ONLY", False),
+        guardrail_model=_first("GUARDRAIL_MODEL") or DEFAULT_GUARDRAIL_MODEL,
     )

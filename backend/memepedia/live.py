@@ -108,8 +108,24 @@ def _archive_context() -> tuple[list[RootInfo], list[str]]:
     return roots, names
 
 
+def _guardrail(image: bytes, mime: str, label: VisionLabel) -> VisionLabel:
+    """`label` with its nsfw verdict replaced by the guardrail model's (GUARDRAIL_MODEL).
+
+    A label that already stands for a safety block stays as it is (no second call). When the
+    guardrail call fails or its answer is unreadable, the labelling model's own verdict is kept.
+    """
+    if llm_module.was_blocked(label):
+        return label
+    try:
+        nsfw, reason = llm_module.label_nsfw_only(image, mime)
+    except llm_module.LLMError as exc:
+        log.warning("nsfw guardrail failed, keeping the labeller's verdict: %s", exc)
+        return label
+    return label.model_copy(update={"nsfw": nsfw, "nsfw_reason": reason})
+
+
 def _look_one(post: Post, roots: Sequence[RootInfo], known_names: Sequence[str]) -> _Looked:
-    """Downloads one post's image and labels it; never raises."""
+    """Downloads one post's image, labels it, then has the guardrail judge it; never raises."""
     downloaded = _download_image(post.image_url)
     if downloaded is None:
         return _Looked(post, None, None)
@@ -120,7 +136,7 @@ def _look_one(post: Post, roots: Sequence[RootInfo], known_names: Sequence[str])
         )
     except llm_module.LLMError as exc:
         return _Looked(post, None, str(exc))
-    return _Looked(post, vision, None)
+    return _Looked(post, _guardrail(data, mime, vision), None)
 
 
 @dataclass(frozen=True)
@@ -448,6 +464,7 @@ def identify(image: bytes, mime_type: str) -> IdentifyResponse:
     label = llm_module.vision_label(
         image, mime_type, title=None, roots=roots, known_names=known_names
     )
+    label = _guardrail(image, mime_type, label)
     if label.nsfw:
         return IdentifyResponse(node_id=None, trace_query=None, guess=None, overlaid_text=None)
     match = match_label(

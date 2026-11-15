@@ -125,7 +125,8 @@ The database is a local PostgreSQL 16 that starts itself on first use (the `pgse
 ## Assumptions made while the owner was away (say if any is wrong)
 
 1. **Database.** Docker is not reachable from this WSL and there is no Aiven connection string, so development uses the self-starting local Postgres described above. It has no `pg_trgm`; search uses plain `ILIKE`.
-2. **Gemini model.** `gemini-3.8-flash` for everything (`GEMINI_MODEL` overrides). The cheaper `gemini-3.5-flash-lite` was confidently wrong on 4 of 5 test images. `gemini-2.5-flash-lite` answers 404 on this key.
+2. **Gemini model.** `gemini-3.8-flash` for everything except the NSFW guardrail (`GEMINI_MODEL` overrides). The cheaper `gemini-3.5-flash-lite` was confidently wrong on 4 of 5 test images. `gemini-2.5-flash-lite` answers 404 on this key.
+   **NSFW guardrail model** (owner, 2026-11-15): a separate Gemma call, `gemma-3-27b-it` by default (`GUARDRAIL_MODEL` overrides), decides `nsfw` for every new post, every dropped image and `scripts/label_nsfw.py` (`llm.label_nsfw_only`). Gemini still labels the meme; its own `nsfw` answer is used only when the Gemma call fails or its answer is unreadable, and a Gemini safety block still counts as NSFW without a Gemma call. Gemma has no JSON-schema mode on the Gemini API, so it is asked for JSON in the prompt and parsed leniently. Each Gemma call counts as one Gemini call against the cost cap, so a tick now uses about two calls per post. Not yet checked against the real key: see `TODO_WITH_ENV.md`.
 3. **Code standards.** The relaxed set proposed earlier: full typing, Ruff, strict mypy, short functions, tests for pure logic, smoke scripts for anything that calls an external service.
 4. **Synchronous code** throughout; parallel work uses thread pools.
 5. **Format roots.** Ten instead of the mock data's six (added comparison, exploitable, multi-panel comic, copypasta, catchphrase, video remix), because the real families needed them.

@@ -31,6 +31,17 @@ def _settings(**overrides: object) -> Settings:
     return Settings(**base)  # type: ignore[arg-type]
 
 
+@pytest.fixture(autouse=True)
+def _no_guardrail_call(monkeypatch: pytest.MonkeyPatch) -> None:
+    """No test here may reach the real guardrail model: by default it "fails", so the labeller's
+    own nsfw verdict stands. Tests about the guardrail patch `llm.label_nsfw_only` themselves."""
+
+    def unavailable(image: bytes, mime_type: str) -> tuple[bool, str | None]:
+        raise llm.LLMUnavailable("guardrail stubbed out in tests")
+
+    monkeypatch.setattr(llm, "label_nsfw_only", unavailable)
+
+
 def _label(**overrides: object) -> VisionLabel:
     base: dict[str, object] = dict(
         is_meme=True,
@@ -775,3 +786,59 @@ def test_verify_signature_rejects_a_stale_timestamp() -> None:
 def test_verify_signature_rejects_a_malformed_header() -> None:
     assert live.verify_signature(b"body", "not-a-valid-header", "secret") is False
     assert live.verify_signature(b"body", "t=abc,v1=xyz", "secret") is False
+
+
+def test_guardrail_verdict_replaces_the_labellers(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(llm, "label_nsfw_only", lambda image, mime: (True, "gore"))
+    label = live._guardrail(b"img", "image/png", _label(nsfw=False))
+    assert label.nsfw is True
+    assert label.nsfw_reason == "gore"
+    assert label.template_guess == "Doomer"  # the rest of the label is untouched
+
+
+def test_guardrail_can_clear_an_image_the_labeller_flagged(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(llm, "label_nsfw_only", lambda image, mime: (False, None))
+    label = live._guardrail(b"img", "image/png", _label(nsfw=True, nsfw_reason="maybe"))
+    assert label.nsfw is False
+    assert label.nsfw_reason is None
+
+
+def test_guardrail_failure_keeps_the_labellers_verdict() -> None:
+    flagged = _label(nsfw=True, nsfw_reason="graphic gore")
+    assert live._guardrail(b"img", "image/png", flagged) == flagged  # the autouse stub fails
+
+
+def test_guardrail_skips_an_image_the_labeller_was_blocked_on(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[bytes] = []
+
+    def judge(image: bytes, mime: str) -> tuple[bool, str | None]:
+        calls.append(image)
+        return False, None
+
+    monkeypatch.setattr(llm, "label_nsfw_only", judge)
+    blocked = _label(nsfw=True, nsfw_reason=llm.BLOCKED_REASON)
+    assert live._guardrail(b"img", "image/png", blocked) == blocked
+    assert calls == []
+
+
+def test_tick_stores_the_guardrails_nsfw_verdict(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    now = datetime.now(UTC)
+    post = _post("https://lemmy.test/post/guardrail-1", posted_at=now)
+    monkeypatch.setattr(sources, "fetch", lambda feed: [post])
+    monkeypatch.setattr(live, "get_settings", lambda: _settings())
+    monkeypatch.setattr(live, "_download_image", lambda url: (b"data", "image/png"))
+    monkeypatch.setattr(llm, "vision_label", lambda *a, **kw: _label(nsfw=False))
+    monkeypatch.setattr(llm, "label_nsfw_only", lambda image, mime: (True, "gore"))
+    _stub_resolution(monkeypatch, lambda name: "doomer")
+    monkeypatch.setattr(trace, "run", lambda *a, **kw: None)
+
+    live.tick(_FEED_KEY)
+
+    row = db.fetch_one("SELECT nsfw, vision FROM sightings WHERE post_url = %s", (post.post_url,))
+    assert row is not None
+    assert row["nsfw"] is True
+    assert row["vision"]["nsfw_reason"] == "gore"

@@ -1,7 +1,10 @@
 """Gemini calls for the pipeline: vision labelling, lineage drafting, identity and judging.
 
 Every public function makes exactly one Gemini call with low-temperature, JSON-schema-constrained
-output and returns typed objects. This module never touches Context.dev, and the database only
+output and returns typed objects. The exception is `label_nsfw_only`, the nsfw guardrail: it runs
+on a separate Gemma model (`GUARDRAIL_MODEL`), which has no JSON-schema mode on the Gemini API, so
+it is asked for JSON in the prompt and its answer is parsed leniently. Both go through the same
+client and are counted as Gemini calls. This module never touches Context.dev, and the database only
 through `budget`: each attempt counts as one Gemini call, and none is made once the Gemini cap or
 the kill switch says so. Callers pass in everything else (root list, candidate names, context).
 """
@@ -9,6 +12,7 @@ the kill switch says so. Callers pass in everything else (root list, candidate n
 from __future__ import annotations
 
 import json
+import re
 import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -135,19 +139,28 @@ def _guard() -> None:
 def _generate(
     contents: str | list[str | types.Part],
     *,
-    response_schema: type[BaseModel],
+    response_schema: type[BaseModel] | None,
     temperature: float,
+    model: str | None = None,
 ) -> str:
-    """Makes one Gemini call with structured JSON output, retrying once on a transient failure."""
+    """Makes one call, retrying once on a transient failure.
+
+    With `response_schema` the output is constrained to that JSON schema; with None it is plain
+    text (Gemma models refuse JSON mode). `model` defaults to GEMINI_MODEL.
+    """
     client = _get_client()
     _guard()
-    config = types.GenerateContentConfig(
-        response_mime_type="application/json",
-        response_schema=response_schema,
-        temperature=temperature,
-        http_options=types.HttpOptions(timeout=_TIMEOUT_MS),
-    )
-    model = get_settings().gemini_model
+    http_options = types.HttpOptions(timeout=_TIMEOUT_MS)
+    if response_schema is None:
+        config = types.GenerateContentConfig(temperature=temperature, http_options=http_options)
+    else:
+        config = types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=response_schema,
+            temperature=temperature,
+            http_options=http_options,
+        )
+    model = model or get_settings().gemini_model
     last_error: Exception | None = None
     for attempt in range(2):
         budget.charge("gemini", 1)
@@ -247,6 +260,14 @@ def vision_label(
     return _parse_vision_label(raw, roots)
 
 
+BLOCKED_REASON = "blocked by Gemini's safety filters"
+
+
+def was_blocked(label: VisionLabel) -> bool:
+    """Whether this label stands for a safety-filter block rather than a real answer."""
+    return label.nsfw and label.nsfw_reason == BLOCKED_REASON
+
+
 def _blocked_vision_label() -> VisionLabel:
     """A Gemini safety-filter block is itself strong evidence the image is NSFW."""
     return VisionLabel(
@@ -259,7 +280,7 @@ def _blocked_vision_label() -> VisionLabel:
         catchphrase=None,
         description="",
         nsfw=True,
-        nsfw_reason="blocked by Gemini's safety filters",
+        nsfw_reason=BLOCKED_REASON,
     )
 
 
@@ -303,25 +324,55 @@ def parse_stored_vision(raw: Mapping[str, Any]) -> VisionLabel:
     )
 
 
-class _NsfwOnlyResponse(BaseModel):
-    nsfw: bool
-    nsfw_reason: str | None
+_NSFW_ONLY_PROMPT = (
+    "Decide only whether this image is safe to show.\n\n"
+    + _NSFW_POLICY
+    + '\n\nAnswer with only a JSON object and no other text: {"nsfw": true or false, '
+    '"nsfw_reason": "a few words" or null}'
+)
+_JSON_OBJECT = re.compile(r"\{.*\}", re.DOTALL)
+_BOOL_WORDS = {"true": True, "false": False}
 
 
-_NSFW_ONLY_PROMPT = "Decide only whether this image is safe to show.\n\n" + _NSFW_POLICY
+def _parse_nsfw_verdict(text: str) -> tuple[bool, str | None]:
+    """Reads the guardrail's prompted JSON answer, tolerating code fences and stray prose.
+
+    Raises `LLMError` when there is no JSON object or no clear true/false in it, so the caller
+    can fall back instead of guessing.
+    """
+    match = _JSON_OBJECT.search(text)
+    if match is None:
+        raise LLMError(f"guardrail answer has no JSON object: {text[:120]!r}")
+    try:
+        raw = json.loads(match.group(0))
+    except json.JSONDecodeError as exc:
+        raise LLMError(f"guardrail answer is not valid JSON: {text[:120]!r}") from exc
+    value = raw.get("nsfw") if isinstance(raw, dict) else None
+    if isinstance(value, str):
+        value = _BOOL_WORDS.get(value.strip().lower())
+    if not isinstance(value, bool):
+        raise LLMError(f"guardrail answer has no true/false nsfw: {text[:120]!r}")
+    reason = raw.get("nsfw_reason")
+    return value, (str(reason) if value and reason else None)
 
 
 def label_nsfw_only(image: bytes, mime_type: str) -> tuple[bool, str | None]:
-    """A single small Gemini call that decides only the nsfw flag for one image (the backfill)."""
+    """The nsfw guardrail: one call to GUARDRAIL_MODEL (Gemma) that decides only the nsfw flag.
+
+    Used for every new post, every dropped image and the backfill. A safety-filter block counts
+    as nsfw; an unreadable answer raises `LLMError`.
+    """
     image_part = types.Part.from_bytes(data=image, mime_type=mime_type)
     try:
         text = _generate(
-            [_NSFW_ONLY_PROMPT, image_part], response_schema=_NsfwOnlyResponse, temperature=0.0
+            [_NSFW_ONLY_PROMPT, image_part],
+            response_schema=None,
+            temperature=0.0,
+            model=get_settings().guardrail_model,
         )
     except LLMBlockedError:
-        return True, "blocked by Gemini's safety filters"
-    raw = cast(dict[str, Any], json.loads(text))
-    return bool(raw.get("nsfw", False)), raw.get("nsfw_reason") or None
+        return True, "blocked by the guardrail model's safety filters"
+    return _parse_nsfw_verdict(text)
 
 
 _DRAFT_CHAIN_PROMPT = """You draft a hypothesised lineage for one meme, to be verified against the

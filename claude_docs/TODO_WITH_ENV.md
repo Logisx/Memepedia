@@ -1,5 +1,26 @@
 # To do: things only someone with the repo-root `.env` can do
 
+## NSFW guardrail on Gemma (2026-11-15)
+
+The NSFW check is now a separate call to Gemma (`gemma-3-27b-it`; `GUARDRAIL_MODEL` overrides it).
+Gemini still labels the meme. The code is tested with mocks only: nobody has called Gemma with the
+real key yet. Run from `backend/`.
+
+- [ ] Check the key can use Gemma: `uv run python scripts/smoke_llm.py`. The
+      `label_nsfw_only (guardrail: gemma-3-27b-it)` block must print `(False, None)` (or a verdict),
+      not an error. If it says the model is not found, list what the key offers:
+      `uv run python -c "from memepedia import llm; print([m.name for m in llm._get_client().models.list() if 'gemma' in m.name])"`
+      and set `GUARDRAIL_MODEL=<one of those, without the models/ prefix>` in `.env`.
+- [ ] Deploy as usual (`deploy.py` now also sends `GUARDRAIL_MODEL` to Modal).
+- [ ] After a few live ticks, check the Modal logs for `nsfw guardrail failed`. A few are fine
+      (that post falls back to Gemini's own verdict). If every post has one, Gemma is not answering:
+      fix `GUARDRAIL_MODEL` and redeploy.
+- [ ] Optional: label the still-unlabelled images with Gemma: `uv run python scripts/label_nsfw.py --dry-run`,
+      then without `--dry-run`. `--relabel` re-judges **every** node and sighting (about 850 calls);
+      do that only if the owner wants Gemma's verdict on the whole archive.
+- [ ] Each Gemma call is counted as a Gemini call, so the live loop now spends about two calls per
+      post. Check `uv run python scripts/budget.py status` the next morning.
+
 Last checked against the branch on 2026-11-14 (up to commit `fa2bcb2`). A Claude session can do all of
 this by following `claude_docs/plans/2026-11-14_stamping-rollout_plan.md`. Anything run from `backend/`
 with a `.env` holding `DATABASE_URL` hits the **hosted production database**. Do the steps in order.

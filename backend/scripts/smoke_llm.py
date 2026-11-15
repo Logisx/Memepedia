@@ -9,6 +9,7 @@ import time
 from collections.abc import Callable
 
 from memepedia import llm
+from memepedia.config import get_settings
 
 _ROOTS = [
     llm.RootInfo(
@@ -53,6 +54,11 @@ def main() -> None:
             roots=_ROOTS,
             known_names=["Wojak", "Doomer"],
         ),
+    )
+
+    _timed(
+        f"label_nsfw_only (guardrail: {get_settings().guardrail_model})",
+        lambda: llm.label_nsfw_only(_TINY_PNG, "image/png"),
     )
 
     _timed(
