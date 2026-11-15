@@ -21,7 +21,7 @@ from typing import Any, Literal
 
 import httpx
 
-from memepedia import budget, contextdev, db, imageprep, resolver, sources, store
+from memepedia import budget, contextdev, db, dedupe, imageprep, resolver, sources, store
 from memepedia import llm as llm_module
 from memepedia.config import Settings, get_settings
 from memepedia.llm import Cluster, PendingItem, RootInfo
@@ -63,6 +63,7 @@ class TickReport:
     unclassified: int
     traced: list[str]
     errors: list[str]
+    duplicates: int = 0  # reposts of a sighting already in the archive: saved, never looked at
 
 
 @dataclass(frozen=True)
@@ -343,6 +344,80 @@ def _auto_trace(candidates: Sequence[tuple[str, str]], cap: int, errors: list[st
     return traced
 
 
+@dataclass(frozen=True)
+class _Repeat:
+    """A post in this batch that repeats another sighting (`memepedia.dedupe`)."""
+
+    post: Post
+    fetched: Fetched
+    original_id: str
+
+
+def _candidate(post: Post, fetched: Fetched) -> dedupe.Candidate:
+    fingerprint = fetched.prepared.fingerprint if fetched.prepared else None
+    return dedupe.Candidate(
+        store.sighting_id(post.post_url),
+        post.image_url,
+        fingerprint,
+        post.author,
+        post.title,
+        post.posted_at,
+    )
+
+
+def _split_repeats(
+    batch: Sequence[Post], fetched: Sequence[Fetched]
+) -> tuple[list[tuple[Post, Fetched]], list[_Repeat]]:
+    """Splits a fetched batch into posts to look at and reposts of something already seen.
+
+    A post is compared with the archive's recent sightings (`store.dedupe_candidates`), every
+    earlier sighting of its exact image URL, and the posts before it in this same batch, so two
+    copies arriving together cost one vision call. The batch is walked oldest first, so the
+    first post of a picture is the one kept; the posts to look at keep the batch's own order.
+    """
+    rows = store.dedupe_candidates() + store.sightings_with_image([p.image_url for p in batch])
+    seen = list({row["id"]: dedupe.candidate(row) for row in rows}.values())
+    pairs = list(zip(batch, fetched, strict=True))
+    repeat_of: dict[int, str] = {}
+    for index in sorted(range(len(pairs)), key=lambda i: pairs[i][0].posted_at):
+        post, image = pairs[index]
+        candidate = _candidate(post, image)
+        match = dedupe.find_original(candidate, seen)
+        if match is None:
+            seen.append(candidate)
+        else:
+            repeat_of[index] = match.original.id
+    fresh = [pair for i, pair in enumerate(pairs) if i not in repeat_of]
+    repeats = [_Repeat(*pairs[i], original_id) for i, original_id in repeat_of.items()]
+    return fresh, repeats
+
+
+def _save_repeats(repeats: Sequence[_Repeat]) -> int:
+    """Saves each repost with its original's stamp; one whose original is not saved yet (its
+    vision call failed this tick) is left for the next tick. Returns how many were saved."""
+    saved = 0
+    for repeat in repeats:
+        original = store.sighting_row(repeat.original_id)
+        if original is None:
+            continue
+        vision = llm_module.parse_stored_vision(original["vision"]) if original["vision"] else None
+        if vision is not None and original["nsfw"] is not None:
+            vision = vision.model_copy(update={"nsfw": original["nsfw"]})
+        image = repeat.fetched.prepared
+        sid = store.insert_sighting(
+            repeat.post,
+            vision,
+            original["node_id"],
+            original["state"],
+            nsfw=original["nsfw"],
+            look_error=repeat.fetched.error,
+            fingerprint=image.fingerprint if image else None,
+            duplicate_of=repeat.original_id,
+        )
+        saved += sid is not None
+    return saved
+
+
 def _tick(feed_key: str) -> TickReport:
     errors: list[str] = []
     feed = next((f for f in FEEDS if f.key == feed_key), None)
@@ -356,27 +431,30 @@ def _tick(feed_key: str) -> TickReport:
 
     roots, known_names = _archive_context()
     with ThreadPoolExecutor(max_workers=4) as pool:
+        # FETCH every image, DEDUPE against what is already known, LOOK only at the rest.
         fetched = list(pool.map(lambda post: fetch_image(post.image_url), batch))
+        to_look, repeats = _split_repeats(batch, fetched)
         futures = [
-            pool.submit(_look_one, post, image, roots, known_names)
-            for post, image in zip(batch, fetched, strict=True)
+            pool.submit(_look_one, post, image, roots, known_names) for post, image in to_look
         ]
         looked = [f.result() for f in futures]
 
     resolved, pending, unclassified, candidates = _save_looked(
         looked, Thresholds.from_settings(settings), resolver.Matcher.from_store(), errors
     )
+    duplicates = _save_repeats(repeats)
     traced = _auto_trace(candidates, settings.auto_traces_per_tick, errors)
     return TickReport(
         feed=feed_key,
         fetched=fetched_count,
         fresh=fresh_count,
-        looked=len(batch),
+        looked=len(to_look),
         resolved=resolved,
         pending=pending,
         unclassified=unclassified,
         traced=traced,
         errors=errors,
+        duplicates=duplicates,
     )
 
 

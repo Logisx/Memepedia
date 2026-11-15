@@ -864,3 +864,89 @@ def test_tick_stores_the_guardrails_nsfw_verdict(
     assert row is not None
     assert row["nsfw"] is True
     assert row["vision"]["nsfw_reason"] == "gore"
+
+
+def test_two_copies_of_one_image_in_a_batch_cost_one_vision_call(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    now = datetime.now(UTC)
+    first = Post(
+        platform="lemmy",
+        source="test",
+        post_url="https://a.test/post/dupe-1",
+        image_url="https://img.test/dupe-shared.jpg",
+        title="Fall Guy",
+        author="cm0002",
+        posted_at=now - timedelta(minutes=5),
+    )
+    second = first.model_copy(
+        update={"post_url": "https://b.test/post/dupe-2", "author": "join", "posted_at": now}
+    )
+    monkeypatch.setattr(sources, "fetch", lambda feed: [first, second])
+    monkeypatch.setattr(live, "get_settings", lambda: _settings())
+    monkeypatch.setattr(live, "fetch_image", lambda url: _fetched(b"same picture"))
+    calls: list[str | None] = []
+
+    def fake_vision_label(*a: object, title: str | None = None, **kw: object) -> VisionLabel:
+        calls.append(title)
+        return _label(template_guess="Doomer", confidence=0.95)
+
+    monkeypatch.setattr(llm, "vision_label", fake_vision_label)
+    _stub_resolution(monkeypatch, lambda name: "doomer")
+    monkeypatch.setattr(trace, "run", lambda *a, **kw: None)
+
+    report = live.tick(_FEED_KEY)
+
+    assert len(calls) == 1
+    assert (report.looked, report.resolved, report.duplicates) == (1, 1, 1)
+    rows = db.fetch_all(
+        "SELECT post_url, id, state, node_id, duplicate_of, fingerprint FROM sightings"
+        " WHERE post_url = ANY(%s)",
+        ([first.post_url, second.post_url],),
+    )
+    by_url = {r["post_url"]: r for r in rows}
+    original, repost = by_url[first.post_url], by_url[second.post_url]
+    assert original["duplicate_of"] is None
+    assert repost["duplicate_of"] == original["id"]
+    assert (repost["state"], repost["node_id"]) == ("resolved", "doomer")
+    assert repost["fingerprint"] == original["fingerprint"]
+    wall_ids = {s.id for s in store.wall(None, 500, include_sensitive=True)}
+    assert original["id"] in wall_ids and repost["id"] not in wall_ids
+
+
+def test_a_repost_of_an_archived_image_is_not_looked_at(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    now = datetime.now(UTC)
+    old = _post("https://a.test/post/archived-original", posted_at=now - timedelta(days=30))
+    assert store.insert_sighting(old, _label(), "doomer", "resolved") is not None
+    repost = Post(
+        platform="lemmy",
+        source="test",
+        post_url="https://b.test/post/archived-repost",
+        image_url=old.image_url,
+        title="something else",
+        author="another",
+        posted_at=now,
+    )
+    monkeypatch.setattr(sources, "fetch", lambda feed: [repost])
+    monkeypatch.setattr(live, "get_settings", lambda: _settings())
+    monkeypatch.setattr(live, "fetch_image", _fetch_by_url)
+
+    def no_vision(*a: object, **kw: object) -> VisionLabel:
+        raise AssertionError("a repost must not reach the vision model")
+
+    monkeypatch.setattr(llm, "vision_label", no_vision)
+
+    report = live.tick(_FEED_KEY)
+
+    assert (report.looked, report.duplicates) == (0, 1)
+    row = db.fetch_one(
+        "SELECT state, node_id, duplicate_of FROM sightings WHERE post_url = %s",
+        (repost.post_url,),
+    )
+    assert row == {
+        "state": "resolved",
+        "node_id": "doomer",
+        "duplicate_of": store.sighting_id(old.post_url),
+    }

@@ -498,3 +498,24 @@ def test_delete_nodes_sends_a_meme_sighting_back_to_pending(client: TestClient) 
     finally:
         db.execute("DELETE FROM sightings WHERE id = ANY(%s)", ([meme, not_meme],))
         db.execute("DELETE FROM nodes WHERE id = 'delete-nodes-meme-test'")
+
+
+def test_attach_sightings_stamps_reposts_too_but_counts_only_the_originals(
+    client: TestClient,
+) -> None:
+    original = store.insert_sighting(_post("https://x.test/attach-original"), None, None, "pending")
+    assert original is not None
+    repost = store.insert_sighting(
+        _post("https://x.test/attach-repost"), None, None, "pending", duplicate_of=original
+    )
+    assert repost is not None
+    try:
+        assert store.attach_sightings([original], "doomer") == 1
+        rows = db.fetch_all(
+            "SELECT id, state, node_id FROM sightings WHERE id = ANY(%s)", ([original, repost],)
+        )
+        assert {(r["state"], r["node_id"]) for r in rows} == {("resolved", "doomer")}
+        assert repost not in {s.id for s in store.sightings_for_node("doomer", limit=500)}
+        assert repost not in {r["id"] for r in store.pending_sightings()}
+    finally:
+        db.execute("DELETE FROM sightings WHERE id = ANY(%s)", ([repost, original],))
