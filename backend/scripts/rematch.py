@@ -57,9 +57,11 @@ def _needs_llm(label: VisionLabel, thresholds: Thresholds, matcher: Matcher) -> 
     )
 
 
-def _detail(label: VisionLabel, match: LabelMatch) -> str:
+def _detail(label: VisionLabel, match: LabelMatch, title: str | None = None) -> str:
     if match.via == "subject":
         return ", ".join(label.subjects)
+    if match.via == "title":
+        return f"title: {title or ''}"
     return label.template_guess or ""
 
 
@@ -81,9 +83,9 @@ def rematch(apply: bool, hours: int | None, llm_enabled: bool, max_llm: int) -> 
                 matcher = with_llm
             else:
                 report.llm_skipped += 1
-        match = match_label(label, thresholds, matcher)
+        match = match_label(label, thresholds, matcher, row.get("title"))
         if match is not None:
-            detail = _detail(label, match)
+            detail = _detail(label, match, row.get("title"))
             report.proposals.append(Proposal(row["id"], match.node_id, match.via, detail))
     if apply:
         report.applied = _apply(report.proposals)

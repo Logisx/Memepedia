@@ -30,7 +30,14 @@ function Stamp({ sighting }: { sighting: Sighting }) {
       </span>
     )
   }
-  return null // unclassified posts carry no stamp
+  // Unclassified: looked at and not a template ("one-off"), or never read at all.
+  return (
+    <span
+      className={`font-type absolute bottom-0 left-2 z-10 translate-y-1/2 -rotate-2 border-2 ${sighting.read ? 'border-dashed' : 'border-dotted'} border-ink-soft bg-paper px-2 py-0.5 text-lg uppercase text-ink-soft`}
+    >
+      {sighting.read ? 'one-off' : 'not read yet'}
+    </span>
+  )
 }
 
 interface Props {
@@ -60,7 +67,7 @@ export function SightingTile({ sighting, now, arriving }: Props) {
       alt={sighting.title}
       loading="lazy"
       onError={() => setBroken(true)}
-      className={`block w-full bg-paper-deep ${sighting.state === 'unclassified' ? 'opacity-70 grayscale-[30%]' : ''}`}
+      className={`block w-full bg-paper-deep ${sighting.state === 'unclassified' && !sighting.read ? 'opacity-70 grayscale-[30%]' : ''}`}
     />
   )
 
@@ -83,7 +90,7 @@ export function SightingTile({ sighting, now, arriving }: Props) {
         )}
         <Stamp sighting={sighting} />
       </div>
-      <div className={`p-3 ${sighting.state === 'resolved' || sighting.state === 'pending' ? 'pt-5' : ''}`}>
+      <div className="p-3 pt-5">
         <a
           href={sighting.post_url}
           target="_blank"

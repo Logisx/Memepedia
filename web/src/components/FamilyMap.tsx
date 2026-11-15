@@ -4,14 +4,17 @@ import '@xyflow/react/dist/style.css'
 import { useNavigate } from 'react-router'
 import type { MemeNode, TreeResponse } from '@contract/types'
 import { useIsNarrow } from '../hooks/useIsNarrow'
-import { layoutFamily, NODE_H, NODE_W } from '../lib/familyLayout'
+import { useShowSensitive } from '../hooks/useShowSensitive'
+import { layoutFamily, NODE_H, NODE_W, type PostGroup } from '../lib/familyLayout'
 import { abbreviateLatin } from '../lib/latin'
 import { NodeThumb } from './SpecimenCard'
 
 type MemeData = { node: MemeNode; selected: boolean; onPath: boolean }
 type MoreData = { hidden: number }
+type PostsData = { group: PostGroup }
 type MemeFlowNode = Node<MemeData, 'meme'>
 type MoreFlowNode = Node<MoreData, 'more'>
+type PostsFlowNode = Node<PostsData, 'posts'>
 
 const hiddenHandle = { opacity: 0, pointerEvents: 'none' } as const
 
@@ -57,20 +60,54 @@ function MoreBox({ data }: NodeProps<MoreFlowNode>) {
   )
 }
 
-const nodeTypes = { meme: MemeBox, more: MoreBox }
+/** A group of the selected meme's posts: the newest picture, what they use, how many. */
+function PostsBox({ data }: NodeProps<PostsFlowNode>) {
+  const { group } = data
+  return (
+    <div
+      className="flex cursor-pointer items-center gap-2 border-2 border-dotted border-ink bg-paper p-1.5"
+      style={{ width: NODE_W, height: NODE_H }}
+      title={group.nodeId ? `Open ${group.label}` : `Show these posts`}
+    >
+      <Handle type="target" position={Position.Top} style={hiddenHandle} />
+      <img src={group.thumb} alt="" loading="lazy" className="h-[68px] w-[68px] shrink-0 border border-ink object-cover" />
+      <div className="min-w-0">
+        <div className="line-clamp-2 text-base font-bold leading-tight">{group.label}</div>
+        <div className="font-type text-sm">
+          {group.count} {group.count === 1 ? 'post' : 'posts'}
+          {group.nodeId ? ' →' : ''}
+        </div>
+      </div>
+    </div>
+  )
+}
 
-/** The whole character-line family as a top-to-bottom map. Click a meme to open it. */
-export function FamilyMap({ tree }: { tree: TreeResponse }) {
+const nodeTypes = { meme: MemeBox, more: MoreBox, posts: PostsBox }
+
+interface Props {
+  tree: TreeResponse
+  /** A group of the selected meme's own posts was clicked: show just those in the side panel. */
+  onPostsClick?: (group: PostGroup) => void
+}
+
+/**
+ * The whole character-line family as a top-to-bottom map, with the selected meme's posts
+ * hanging under it in groups. Click a meme to open it, a group to see its posts.
+ */
+export function FamilyMap({ tree, onPostsClick }: Props) {
   const navigate = useNavigate()
   const narrow = useIsNarrow()
+  const showSensitive = useShowSensitive()
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
 
   const { nodes, edges, legend } = useMemo(() => {
-    const layout = layoutFamily(tree, expanded)
-    const flowNodes: (MemeFlowNode | MoreFlowNode)[] = layout.nodes.map((n) =>
+    const layout = layoutFamily(tree, expanded, showSensitive)
+    const flowNodes: (MemeFlowNode | MoreFlowNode | PostsFlowNode)[] = layout.nodes.map((n) =>
       n.kind === 'meme'
         ? { id: n.id, type: 'meme', position: { x: n.x, y: n.y }, data: { node: n.node, selected: n.selected, onPath: n.onPath } }
-        : { id: n.id, type: 'more', position: { x: n.x, y: n.y }, data: { hidden: n.hidden } },
+        : n.kind === 'more'
+          ? { id: n.id, type: 'more', position: { x: n.x, y: n.y }, data: { hidden: n.hidden } }
+          : { id: n.id, type: 'posts', position: { x: n.x, y: n.y }, data: { group: n.group } },
     )
     const flowEdges: Edge[] = layout.edges.map((e) => ({
       id: e.id,
@@ -80,12 +117,17 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
       style: {
         stroke: e.onPath ? 'var(--color-stamp)' : 'var(--color-ink-soft)',
         strokeWidth: e.onPath ? 4 : 2,
-        strokeDasharray: e.inferred ? '8 6' : undefined,
+        strokeDasharray: e.posts ? '2 5' : e.inferred ? '8 6' : undefined,
       },
     }))
-    const legend = { cited: layout.edges.some((e) => !e.inferred), inferred: layout.edges.some((e) => e.inferred) }
+    const links = layout.edges.filter((e) => !e.posts)
+    const legend = {
+      cited: links.some((e) => !e.inferred),
+      inferred: links.some((e) => e.inferred),
+      posts: layout.edges.some((e) => e.posts),
+    }
     return { nodes: flowNodes, edges: flowEdges, legend }
-  }, [tree, expanded])
+  }, [tree, expanded, showSensitive])
 
   // Fitting a wide family into a phone screen shrinks every card past reading: open on the
   // selected meme at a readable zoom instead, and let the reader pan to the relatives.
@@ -111,13 +153,17 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
         if (node.type === 'more') {
           const parentId = node.id.slice('more:'.length)
           setExpanded((prev) => new Set(prev).add(parentId))
+        } else if (node.type === 'posts') {
+          const { group } = (node as PostsFlowNode).data
+          if (group.nodeId) navigate(`/meme/${group.nodeId}`)
+          else onPostsClick?.(group)
         } else {
           navigate(`/meme/${node.id}`)
         }
       }}
       proOptions={{ hideAttribution: true }}
     />
-    {(legend.cited || legend.inferred) && (
+    {(legend.cited || legend.inferred || legend.posts) && (
       <div className="font-type pointer-events-none absolute right-3 top-3 z-10 border border-ink bg-paper px-2 py-1 text-sm">
         {legend.cited && (
           <div className="flex items-center gap-2">
@@ -127,6 +173,11 @@ export function FamilyMap({ tree }: { tree: TreeResponse }) {
         {legend.inferred && (
           <div className="flex items-center gap-2">
             <span className="inline-block w-8 border-t-2 border-dashed border-ink-soft" /> citation needed
+          </div>
+        )}
+        {legend.posts && (
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-8 border-t-2 border-dotted border-ink-soft" /> posts seen
           </div>
         )}
       </div>

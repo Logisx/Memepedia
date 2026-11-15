@@ -17,7 +17,7 @@ from datetime import UTC, datetime, timedelta
 
 from memepedia import budget, db, store
 from memepedia.config import get_settings
-from memepedia.live import Thresholds, _archive_context, _look_one, classify
+from memepedia.live import Thresholds, _archive_context, _look_one, classify, fetch_image
 from memepedia.llm import RootInfo
 from memepedia.models import Post, SightingState
 from memepedia.resolver import Matcher
@@ -59,15 +59,23 @@ def _save_one(
     thresholds: Thresholds,
     matcher: Matcher,
 ) -> str:
-    looked = _look_one(post, roots, known_names)
+    looked = _look_one(post, fetch_image(post.image_url), roots, known_names)
     if looked.error is not None:
         return "error"
     node_id, state = (
         (None, "unclassified")
         if looked.vision is None
-        else classify(looked.vision, thresholds, matcher)
+        else classify(looked.vision, thresholds, matcher, post.title)
     )
-    sid = store.insert_sighting(post, looked.vision, node_id, state, seen_at=post.posted_at)
+    sid = store.insert_sighting(
+        post,
+        looked.vision,
+        node_id,
+        state,
+        seen_at=post.posted_at,
+        look_error=looked.look_error,
+        fingerprint=looked.fingerprint,
+    )
     return state if sid is not None else "duplicate"
 
 

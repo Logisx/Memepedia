@@ -366,7 +366,9 @@
       "node_id": "doomer",
       "node_name": "Doomer",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "extra-doomer-0",
@@ -379,7 +381,9 @@
       "node_id": "doomer",
       "node_name": "Doomer",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "extra-doomer-2",
@@ -392,7 +396,9 @@
       "node_id": "doomer",
       "node_name": "Doomer",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": "Drake Hotline Bling"
     },
     {
       "id": "s024",
@@ -405,7 +411,9 @@
       "node_id": "doomer",
       "node_name": "Doomer",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": "Drake Hotline Bling"
     },
     {
       "id": "extra-doomer-1",
@@ -418,7 +426,9 @@
       "node_id": "doomer",
       "node_name": "Doomer",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     }
   ],
   "history": [

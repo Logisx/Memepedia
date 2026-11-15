@@ -1,10 +1,119 @@
 # To do: things only someone with the repo-root `.env` can do
 
+## Rollout 2026-11-15: Gemma guardrail, duplicates, a stamp on every tile, posts in the tree
+
+Branch `bugfix/final-fixes` (commits `11add3f` to the Part E commit; plan:
+`claude_docs/plans/2026-11-15_dedupe-stamps-tree_plan.md`). Everything below runs from `backend/` with
+the repo-root `.env`, so it hits **production**. Do the steps in order and keep every output file in
+`backend/.data/` (git-ignored). Paid calls in total: at most ~160 Gemini/Gemma calls (step 5: 80
+images, two calls each) plus an optional ~300 (step 7); **no Context.dev credits**.
+
+What it changes, in one line each:
+- The NSFW verdict comes from a separate Gemma call (`GUARDRAIL_MODEL`, default `gemma-3-27b-it`);
+  Gemini still labels the meme. **Never called with the real key yet** (step 0 checks it).
+- Every image is read: GIF, AVIF and WebP are converted, Reddit preview thumbnails become the full
+  image, Lemmy proxy links are unwrapped. A failed image records why (`look_error`).
+- Every wall tile has a stamp: `family: …`, `unidentified`, `one-off` (looked at, not a template) or,
+  with NSFW on, `not read yet`. Expired specimens' memes go back to `unidentified`.
+- Reposts (same picture, another URL) are saved but hidden, cost no vision call and share the
+  original's stamp.
+- A post whose title names a meme outright ("POV: you're Jensen Huang") is stamped with it
+  (`VISION_MATCH_TITLES=0` turns that off).
+- A meme's page shows up to 48 posts, including a character's appearances inside other templates,
+  drawn as groups under the meme in its family map.
+
+### 0. Before touching anything
+- [ ] Back up production: `pg_dump -Fc "$DATABASE_URL" -f .data/before_dedupe_2026-11-15.dump`
+      (where `pg_dump` lives: see "Earlier rollout", step 0).
+- [ ] `git fetch && git checkout bugfix/final-fixes && git pull`, then `uv sync` (adds Pillow).
+- [ ] `uv run pytest -q`, `uv run ruff check .`, `uv run mypy memepedia scripts` on Linux/WSL; expect
+      **412 passed**. On WSL the test database cannot live on `/mnt/c`: copy the repo into the WSL
+      filesystem first (`rsync -a --exclude .venv --exclude .pgdata --exclude node_modules
+      /mnt/c/.../Memepedia/ ~/memepedia-wsl/`) and run there.
+- [ ] AVIF support: `uv run python -c "from PIL import features; print(features.check('avif'))"`
+      should print `True`.
+- [ ] Gemma works with the key: `uv run python scripts/smoke_llm.py`. The
+      `label_nsfw_only (guardrail: gemma-3-27b-it)` block must print a verdict such as `(False, None)`,
+      not an error. If the model is not found, list what the key offers:
+      `uv run python -c "from memepedia import llm; print([m.name for m in llm._get_client().models.list() if 'gemma' in m.name])"`
+      and set `GUARDRAIL_MODEL=<one of those, without the models/ prefix>` in `.env`.
+- [ ] `uv run python scripts/budget.py status`: note the Gemini calls in the last 24 h.
+- [ ] Read-only snapshot **before** anything changes (no writes, no paid calls, works before the
+      deploy): `uv run python scripts/diagnose.py --name "Jensen Huang" | tee .data/diagnose_before.txt`.
+      Send this file to the owner: it shows what the vision model said about every Jensen Huang post
+      that is not stamped with him.
+
+### 1. Get the code live
+- [ ] Get the branch merged into `main` (owner's OK), then `git checkout main && git pull`.
+- [ ] Optional `.env` switches (defaults shown; `deploy.py` sends them to Modal):
+      `GUARDRAIL_MODEL=gemma-3-27b-it`, `VISION_MATCH_TITLES=1`.
+- [ ] Deploy from an up-to-date `main`: `.\backend\deploy.ps1` (Windows) or the Linux/WSL steps in
+      "Earlier rollout", step 2. The new columns (`look_error`, `duplicate_of`, `fingerprint`) are
+      added on the first start; that is additive and safe for the old rows.
+- [ ] Check: `<PUBLIC_BASE_URL>/api/health` is 200; the wall loads and every tile has a stamp.
+
+### 2. Mark the reposts already in the archive (no paid calls, ~750 image downloads)
+- [ ] Dry run. It also saves each image's fingerprint (or why it could not be read), which is safe:
+      `uv run python scripts/dedupe.py | tee .data/dedupe_dry.txt`. Expect roughly 10 to 20 groups.
+- [ ] Open 5 groups from the output and check each really is one picture. If any is not, stop and
+      tell the owner (the thresholds in `memepedia/dedupe.py` need tightening).
+- [ ] `uv run python scripts/dedupe.py --apply | tee .data/dedupe_apply.txt`.
+- [ ] On the wall, the cross-posted "Fall Guy", "Oh, behave!" and "It had a good run" now show once.
+
+### 3. Give expired specimens' memes their "unidentified" stamp back (no paid calls)
+- [ ] `uv run python scripts/relook.py --orphans` (dry run, lists them), then add `--apply`.
+
+### 4. Images that were never read: dry run (no paid calls)
+- [ ] `uv run python scripts/relook.py | tee .data/relook_dry.txt`. Most rows should now say `ok`
+      (the GIFs, AVIFs and Reddit thumbnails); the rest are listed by reason.
+
+### 5. Read them for real (at most 80 images = 160 calls)
+- [ ] `uv run python scripts/relook.py --apply --max 80 | tee .data/relook_apply.txt`. It stops by
+      itself, saying so, if the Gemini cap is reached.
+
+### 6. Re-match pending posts, now with the title rule (no paid calls)
+- [ ] `uv run python scripts/rematch.py | tee .data/rematch_dry.txt`. Read the `title` lines hardest:
+      open about 10 of those posts and check the stamp is right.
+- [ ] `uv run python scripts/rematch.py --apply`.
+
+### 7. Optional: re-label old "not a meme" posts with the looser prompt (at most ~150 images)
+- [ ] `uv run python scripts/relook.py --not-memes` (dry run, lists them), then
+      `uv run python scripts/relook.py --not-memes --apply --max 150`.
+- [ ] Then step 6 again.
+
+### 8. Check, record, hand back
+- [ ] `/meme/jensen-huang`: under the Jensen Huang card the family map shows dotted post boxes
+      ("in the wild", plus one per other template he appears in) instead of "No relatives on record".
+      Clicking a box filters the Sightings tab; a box naming another meme opens that meme. The
+      Sightings tab lists more than 12 posts.
+- [ ] `uv run python scripts/diagnose.py --name "Jensen Huang" | tee .data/diagnose_after.txt` and
+      send both diagnose files to the owner.
+- [ ] Watch a few live ticks in the Modal logs: `TickReport(...)` now ends with `duplicates=`; a
+      cross-post shows up there instead of as a second tile. A few `nsfw guardrail failed` lines are
+      fine (that post keeps Gemini's verdict); one on every post means Gemma is not answering: fix
+      `GUARDRAIL_MODEL` and redeploy.
+- [ ] Each post now costs about two Gemini-counted calls (label plus guardrail). Check
+      `uv run python scripts/budget.py status` the next morning.
+- [ ] Optional: label the still-unlabelled images with Gemma: `uv run python scripts/label_nsfw.py --dry-run`,
+      then without `--dry-run`. `--relabel` re-judges **every** node and sighting (about 850 calls); only
+      if the owner wants Gemma's verdict on the whole archive.
+- [ ] Update `claude_docs/STATUS.md` ("Done") with the numbers from steps 2 to 7.
+
+### If something looks wrong
+- Wrong title stamps: set `VISION_MATCH_TITLES=0` in `.env`, redeploy, and tell the owner which posts.
+- Wrong duplicates: `UPDATE sightings SET duplicate_of = NULL WHERE id IN (...)` for the bad ones (their
+  stamp stays as the keeper's; run `scripts/rematch.py` afterwards for the pending ones). Last resort:
+  restore the step-0 dump (`pg_restore --clean -d "$DATABASE_URL" <dump>`), which loses everything
+  collected since.
+- Gemma not answering at all: `GUARDRAIL_MODEL=gemini-3.8-flash` makes the guardrail use Gemini again.
+
+## Earlier rollout (2026-11-14, kept for reference)
+
 Last checked against the branch on 2026-11-14 (up to commit `fa2bcb2`). A Claude session can do all of
 this by following `claude_docs/plans/2026-11-14_stamping-rollout_plan.md`. Anything run from `backend/`
 with a `.env` holding `DATABASE_URL` hits the **hosted production database**. Do the steps in order.
 
-## What is on `bugfix/various-fixes` and not yet live
+### What is on `bugfix/various-fixes` and not yet live
 
 | Change | Needs |
 |---|---|
@@ -24,7 +133,7 @@ Needs on that machine: `uv`, `.env` at the repo root, Modal access to the `aleks
 workspace, `gh` or the GitHub site for the PR. Tests run on Linux/WSL only (the database guard refuses
 the local test database on Windows).
 
-## 0. Before touching anything
+### 0. Before touching anything
 
 - [ ] Back up production. `pg_dump` ships inside the backend's environment
       (`backend/.venv/Lib/site-packages/pgserver/pginstall/bin/pg_dump.exe` on Windows,
@@ -38,7 +147,7 @@ the local test database on Windows).
 - [ ] `git pull` on `bugfix/various-fixes`; from `backend/` run `uv run pytest -q`, `uv run ruff check .`,
       `uv run mypy memepedia scripts`. Expect all 276 tests to pass on Linux/WSL.
 
-## 1. Put the new families in the archive
+### 1. Put the new families in the archive
 
 - [ ] `uv run python scripts/seed.py --steps families`: adds 19 memes and 39 links (new links start as
       "inferred", shown dashed). It also promotes Sad Baby Yoda and IQ Bell Curve from `specimen` to
@@ -64,7 +173,7 @@ the local test database on Windows).
       is blurred, including in the README screenshot. If its image is fine:
       `uv run python scripts/set_nsfw.py node wojak false`.
 
-## 2. Get the code live
+### 2. Get the code live
 
 `main` is protected. Merge only with the owner's explicit OK.
 
@@ -88,7 +197,7 @@ the local test database on Windows).
       - With NSFW on, a meme that has flagged sightings shows them in its Sightings tab.
       - "Rising today" is empty. That is expected until the archive has 3 days of history.
 
-## 3. Measure, then re-match old posts
+### 3. Measure, then re-match old posts
 
 - [ ] Run the two queries from `claude_docs/plans/2026-11-14_identification-recall_plan.md` ("After it
       lands"): where posts drop out, and which subjects recur among pending posts.
@@ -105,7 +214,7 @@ the local test database on Windows).
 - [ ] If stamping looks wrong afterwards: raise `VISION_EXACT_MIN_CONFIDENCE`, or set
       `VISION_MATCH_SUBJECTS=0`, and redeploy.
 
-## Still open (not part of this branch)
+### Still open (not part of this branch)
 
 - [ ] **Overnight clock.** The Modal clock is paused (`MEMEPEDIA_CLOCK` unset) and no Context.dev
       monitor exists. Recommended: the Modal clock, not monitors. There are **no daily cost caps** yet: a

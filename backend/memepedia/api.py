@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from starlette.concurrency import run_in_threadpool
 
-from memepedia import budget, db, graph, live, static, store, trace
+from memepedia import budget, db, graph, live, resolver, static, store, trace
 from memepedia.config import get_settings
 from memepedia.llm import LLMError
 from memepedia.models import (
@@ -27,11 +27,13 @@ from memepedia.models import (
     IdentifyResponse,
     Kind,
     Link,
+    MemeNode,
     NodesResponse,
     ProposalRequest,
     ProposalResponse,
     RandomResponse,
     RelatedResponse,
+    Sighting,
     TraceEvent,
     TraceRequest,
     TreeResponse,
@@ -154,6 +156,31 @@ def get_random_node() -> RandomResponse:
     return RandomResponse(id=node_id)
 
 
+def _variant(sighting: Sighting, vision: dict[str, Any] | None, node: MemeNode) -> str | None:
+    """Which template or family a post on `node`'s page uses, when it is not `node` itself.
+
+    A post stamped with another node is that node (its name); a post of `node` whose vision
+    label guessed a different template is that guess; anything else is None.
+    """
+    if sighting.node_id != node.id:
+        return sighting.node_name
+    guess = (vision or {}).get("template_guess")
+    if not guess:
+        return None
+    own = {resolver.normalize(name) for name in (node.name, *node.aliases)}
+    return None if resolver.normalize(str(guess)) in own else str(guess)
+
+
+def _tree_sightings(node: MemeNode, sensitive: bool) -> list[Sighting]:
+    """The posts shown on a meme's page, each with its `variant`.
+
+    A character's page also gets the posts where it appears inside another meme's template.
+    """
+    names = [node.name, *node.aliases] if node.kind == "character" else None
+    rows = store.node_sightings(node.id, include_sensitive=sensitive, names=names)
+    return [s.model_copy(update={"variant": _variant(s, vision, node)}) for s, vision in rows]
+
+
 def _tree_node_ids(
     links: list[Link], kinds: dict[str, Kind], node_id: str, family_ids: list[str]
 ) -> tuple[set[str], list[str], list[str], set[str]]:
@@ -190,7 +217,7 @@ def get_tree(node_id: str, sensitive: bool = False) -> TreeResponse:
         family_ids=family,
         links=link_set,
         descent=Descent(character=char_descent, format=format_descent),
-        sightings=store.sightings_for_node(node_id, include_sensitive=sensitive),
+        sightings=_tree_sightings(selected, sensitive),
         history=store.history_for(sorted(history_ids)),
     )
 

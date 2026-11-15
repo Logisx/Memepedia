@@ -229,7 +229,9 @@
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "extra-swole-doge-vs-cheems-3",
@@ -242,7 +244,9 @@
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "extra-swole-doge-vs-cheems-0",
@@ -255,7 +259,9 @@
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "extra-swole-doge-vs-cheems-1",
@@ -268,7 +274,9 @@
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "extra-swole-doge-vs-cheems-2",
@@ -281,7 +289,9 @@
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     }
   ],
   "history": [

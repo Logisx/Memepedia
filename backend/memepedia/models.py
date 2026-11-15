@@ -62,6 +62,8 @@ class Sighting(ContractModel):
     node_name: str | None
     state: SightingState
     nsfw: bool | None
+    read: bool
+    variant: str | None = None
 
 
 class HistoryItem(ContractModel):

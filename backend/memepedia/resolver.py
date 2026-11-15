@@ -107,6 +107,11 @@ _GENERIC_SUBJECTS = frozenset(
 )
 
 
+# A one-word name must be at least this long to stamp a post from its title alone ("Huang" and
+# "Doge" are too short to trust; "Labubu" is too, which is the price of that safety).
+_TITLE_MIN_WORD = 8
+
+
 def is_generic_subject(name: str) -> bool:
     """Whether `name` is too generic to name a character on its own (see `_GENERIC_SUBJECTS`)."""
     return normalize(name) in _GENERIC_SUBJECTS
@@ -121,6 +126,7 @@ class Matcher:
         self.index = index
         self.kinds = kinds
         self.allow_llm = allow_llm
+        self._titles: list[tuple[str, str]] | None = None
         self._exact: dict[str, str] = {}
         for known, node_id in index:
             self._exact.setdefault(normalize(known), node_id)  # first one wins, as exact_match
@@ -156,6 +162,38 @@ class Matcher:
             if node_id is not None and self.kinds.get(node_id) == "character":
                 found.add(node_id)
         return next(iter(found)) if len(found) == 1 else None
+
+    def title(self, title: str) -> str | None:
+        """The one node a post title names outright, e.g. "POV: you're Jensen Huang"; else None.
+
+        A name or alias counts when it appears as a whole phrase in the normalised title and is
+        distinctive: at least two words, or one word of at least `_TITLE_MIN_WORD` letters, and
+        not in `_GENERIC_SUBJECTS`. Format-class roots never count. A name inside a longer matched
+        name ("Doge" in "Swole Doge") gives way to it; two different nodes left give None.
+        """
+        padded = f" {normalize(title)} "
+        hits: list[tuple[str, str]] = []
+        for name, node_id in self._title_names():
+            if f" {name} " in padded:
+                hits.append((name, node_id))
+        kept = {
+            node_id
+            for name, node_id in hits
+            if not any(name != other and f" {name} " in f" {other} " for other, _ in hits)
+        }
+        return next(iter(kept)) if len(kept) == 1 else None
+
+    def _title_names(self) -> list[tuple[str, str]]:
+        if self._titles is None:
+            self._titles = [
+                (name, node_id)
+                for known, node_id in self.index
+                if self.kinds.get(node_id) != "format_class"
+                and (name := normalize(known))
+                and name not in _GENERIC_SUBJECTS
+                and (" " in name or len(name) >= _TITLE_MIN_WORD)
+            ]
+        return self._titles
 
 
 def free_id(name: str) -> str:

@@ -7,6 +7,7 @@ import { FamilyMap } from '../components/FamilyMap'
 import { SidePanel } from '../components/SidePanel'
 import { getTree } from '../data'
 import { getShowSensitive, useShowSensitive } from '../hooks/useShowSensitive'
+import type { PostGroup } from '../lib/familyLayout'
 
 type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; tree: TreeResponse; sensitive: boolean }
 
@@ -48,6 +49,8 @@ export default function Lineage() {
 function LineageView({ initial, loadedSensitive }: { initial: TreeResponse; loadedSensitive: boolean }) {
   const [tree, setTree] = useState(initial)
   const [axis, setAxis] = useState<Axis>('character')
+  // A group of posts picked in the family map: the Sightings tab then shows only those.
+  const [postsFilter, setPostsFilter] = useState<PostGroup | null>(null)
   const showSensitive = useShowSensitive()
   const sightingsFetchedWith = useRef(loadedSensitive)
 
@@ -97,6 +100,7 @@ function LineageView({ initial, loadedSensitive }: { initial: TreeResponse; load
   // When both lines are the same chain there is nothing to switch between.
   const linesDiffer = tree.descent.character.join('>') !== tree.descent.format.join('>')
   const aloneInFamily = tree.family_ids.length <= 1
+  const hasPosts = tree.sightings.some((s) => showSensitive || s.nsfw === false)
 
   // Phones and tablets stack the sections and let the page scroll; from lg up it is one screen.
   return (
@@ -140,14 +144,26 @@ function LineageView({ initial, loadedSensitive }: { initial: TreeResponse; load
           animate={{ opacity: 1 }}
           transition={{ delay: mapDelay, duration: 0.6 }}
         >
-          <FamilyMap tree={tree} />
-          {aloneInFamily && (
+          <FamilyMap tree={tree} onPostsClick={setPostsFilter} />
+          {aloneInFamily && !hasPosts && (
             <p className="font-type pointer-events-none absolute inset-x-0 top-[calc(50%+4rem)] m-0 px-4 text-center text-lg text-ink-soft">
               No relatives on record yet: this meme is the only one in its family so far.
             </p>
           )}
+          {aloneInFamily && hasPosts && (
+            <p className="font-type pointer-events-none absolute inset-x-0 bottom-2 m-0 px-4 text-center text-base text-ink-soft">
+              No recorded relatives yet: the boxes below it are this meme seen in the wild.
+            </p>
+          )}
         </motion.div>
-        <SidePanel nodeId={tree.selected_id} sightings={tree.sightings} history={tree.history} onCited={markCited} />
+        <SidePanel
+          nodeId={tree.selected_id}
+          sightings={tree.sightings}
+          history={tree.history}
+          onCited={markCited}
+          filter={postsFilter}
+          onClearFilter={() => setPostsFilter(null)}
+        />
       </section>
     </div>
   )

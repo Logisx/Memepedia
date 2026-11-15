@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import type { HistoryItem, Link, ProposalResponse, Sighting } from '@contract/types'
 import { propose } from '../data'
 import { useShowSensitive } from '../hooks/useShowSensitive'
+import { variantKey, type PostGroup } from '../lib/familyLayout'
 import { PLATFORM_NAME } from '../lib/platform'
 import { timeAgo } from '../lib/time'
 
@@ -26,10 +27,20 @@ interface Props {
   history: HistoryItem[]
   /** Called when a proposal turned a link into a cited one. */
   onCited: (link: Link) => void
+  /** Show only this group of posts (picked in the family map); null shows them all. */
+  filter?: PostGroup | null
+  onClearFilter?: () => void
 }
 
-export function SidePanel({ nodeId, sightings, history, onCited }: Props) {
+export function SidePanel({ nodeId, sightings, history, onCited, filter = null, onClearFilter }: Props) {
   const [tab, setTab] = useState<Tab>('sightings')
+  // Picking a group in the map jumps to the Sightings tab (adjusted during render, not in an
+  // effect, so there is no extra render pass).
+  const [shownFilter, setShownFilter] = useState(filter)
+  if (filter !== shownFilter) {
+    setShownFilter(filter)
+    if (filter) setTab('sightings')
+  }
   return (
     <aside className="flex w-full shrink-0 flex-col border-t border-ink lg:h-full lg:min-h-0 lg:w-[26rem] lg:border-l lg:border-t-0">
       <div role="tablist" className="font-type flex border-b border-ink text-lg">
@@ -46,7 +57,7 @@ export function SidePanel({ nodeId, sightings, history, onCited }: Props) {
         ))}
       </div>
       <div className="min-h-[14rem] p-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
-        {tab === 'sightings' && <SightingsList sightings={sightings} />}
+        {tab === 'sightings' && <SightingsList sightings={sightings} filter={filter} onClearFilter={onClearFilter} />}
         {tab === 'history' && <HistoryList history={history} />}
         {tab === 'suggest' && <SuggestForm nodeId={nodeId} onCited={onCited} />}
       </div>
@@ -67,11 +78,28 @@ function groupSightings(sightings: Sighting[]): { latest: Sighting; others: Sigh
   })
 }
 
-function SightingsList({ sightings }: { sightings: Sighting[] }) {
+interface ListProps {
+  sightings: Sighting[]
+  filter: PostGroup | null
+  onClearFilter?: () => void
+}
+
+function SightingsList({ sightings, filter, onClearFilter }: ListProps) {
   // The backend only sends a sighting that isn't nsfw === false when the viewer asked to see
   // sensitive ones; unless that toggle is on, never render one that slips through anyway.
   const showSensitive = useShowSensitive()
-  const safe = showSensitive ? sightings : sightings.filter((s) => s.nsfw === false)
+  const visible = showSensitive ? sightings : sightings.filter((s) => s.nsfw === false)
+  const safe = filter ? visible.filter((s) => filter.keys.includes(variantKey(s))) : visible
+  const filterLine = filter && (
+    <div className="font-type mb-3 flex items-center gap-2 text-base">
+      <span>
+        Showing: <b>{filter.label}</b>
+      </span>
+      <button onClick={onClearFilter} className="cursor-pointer border-0 bg-transparent p-0 text-base underline">
+        show all
+      </button>
+    </div>
+  )
   if (safe.length === 0)
     return (
       <div className="flex flex-col items-start gap-2">
@@ -82,6 +110,8 @@ function SightingsList({ sightings }: { sightings: Sighting[] }) {
       </div>
     )
   return (
+    <>
+    {filterLine}
     <ul className="m-0 list-none space-y-3 p-0">
       {groupSightings(safe).map(({ latest: s, others }) => (
         <li key={s.id} className="flex gap-3">
@@ -107,6 +137,7 @@ function SightingsList({ sightings }: { sightings: Sighting[] }) {
         </li>
       ))}
     </ul>
+    </>
   )
 }
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from typing import Any
+from urllib.parse import parse_qs, urlsplit
 
 import httpx
 
@@ -11,7 +12,7 @@ from memepedia.models import Post
 from memepedia.sources import Feed, SourceError
 
 USER_AGENT = "memepedia-archive/0.1 (hackathon research project)"
-IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".gif", ".webp")
+IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif")
 
 
 def _instance_and_community(target: str) -> tuple[str, str]:
@@ -22,8 +23,18 @@ def _instance_and_community(target: str) -> tuple[str, str]:
     return instance, community
 
 
+def unwrap_proxy(url: str) -> str:
+    """The real image behind a Lemmy `/api/v3/image_proxy?url=...` link; other URLs unchanged."""
+    parts = urlsplit(url)
+    if parts.path.rstrip("/").endswith("/api/v3/image_proxy"):
+        inner = parse_qs(parts.query).get("url")
+        if inner and inner[0]:
+            return inner[0]
+    return url
+
+
 def _is_image_post(post: dict[str, Any]) -> bool:
-    url = (post.get("url") or "").lower().split("?")[0]
+    url = unwrap_proxy(post.get("url") or "").lower().split("?")[0]
     content_type = post.get("url_content_type") or ""
     return url.endswith(IMAGE_EXTENSIONS) or content_type.startswith("image/")
 
@@ -75,7 +86,7 @@ def parse_posts(data: dict[str, Any], *, source: str) -> list[Post]:
                 platform="lemmy",
                 source=source,
                 post_url=post["ap_id"],
-                image_url=post["url"],
+                image_url=unwrap_proxy(post["url"]),
                 title=post.get("name") or "",
                 author=creator.get("name"),
                 posted_at=_parse_published(post["published"]),

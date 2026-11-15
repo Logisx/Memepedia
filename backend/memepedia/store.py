@@ -33,12 +33,12 @@ SELECT n.*,
 FROM nodes n
 LEFT JOIN (
     SELECT node_id, count(*) AS c FROM sightings
-    WHERE posted_at >= now() - interval '24 hours' AND nsfw = false
+    WHERE posted_at >= now() - interval '24 hours' AND nsfw = false AND duplicate_of IS NULL
     GROUP BY node_id
 ) c24 ON c24.node_id = n.id
 LEFT JOIN (
     SELECT node_id, count(*) AS c FROM sightings
-    WHERE posted_at >= now() - interval '7 days' AND nsfw = false
+    WHERE posted_at >= now() - interval '7 days' AND nsfw = false AND duplicate_of IS NULL
     GROUP BY node_id
 ) c7 ON c7.node_id = n.id
 """
@@ -92,6 +92,7 @@ def _row_to_sighting(row: db.Row) -> Sighting:
         node_name=row.get("node_name"),
         state=row["state"],
         nsfw=row["nsfw"],
+        read=row.get("vision") is not None,
     )
 
 
@@ -324,6 +325,11 @@ def sighting_id(post_url: str) -> str:
     return hashlib.sha1(post_url.encode(), usedforsecurity=False).hexdigest()[:12]
 
 
+def sighting_row(sid: str) -> db.Row | None:
+    """One raw sightings row (vision included), or None."""
+    return db.fetch_one("SELECT * FROM sightings WHERE id = %s", (sid,))
+
+
 def known_post_urls(urls: Sequence[str]) -> set[str]:
     """Which of these post URLs are already in the archive."""
     rows = db.fetch_all("SELECT post_url FROM sightings WHERE post_url = ANY(%s)", (list(urls),))
@@ -337,19 +343,26 @@ def insert_sighting(
     state: SightingState,
     seen_at: datetime | None = None,
     nsfw: bool | None = None,
+    *,
+    look_error: str | None = None,
+    fingerprint: str | None = None,
+    duplicate_of: str | None = None,
 ) -> str | None:
     """Insert a sighting if its post_url is new; returns the id, or None if it already existed.
 
     `seen_at` defaults to now; a backfill passes the post's own time so old posts
     do not arrive on the wall as if they were new. `nsfw` is used only when `vision`
     is None (e.g. loading mock fixtures that carry a pre-decided label of their own).
+    `look_error` says why the image was never read; `duplicate_of` marks a repost of another
+    sighting, which then stays off the wall.
     """
     sid = sighting_id(post.post_url)
     row = db.fetch_one(
         """
         INSERT INTO sightings (id, platform, source, post_url, image_url, title, author, posted_at,
-                                vision, node_id, state, seen_at, nsfw)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, COALESCE(%s, now()), %s)
+                                vision, node_id, state, seen_at, nsfw, look_error, fingerprint,
+                                duplicate_of)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, COALESCE(%s, now()), %s, %s, %s, %s)
         ON CONFLICT (post_url) DO NOTHING
         RETURNING id
         """,
@@ -367,6 +380,9 @@ def insert_sighting(
             state,
             seen_at,
             vision.nsfw if vision else nsfw,
+            look_error,
+            fingerprint,
+            duplicate_of,
         ),
     )
     return row["id"] if row else None
@@ -402,9 +418,12 @@ def _wall_query(
     `include_sensitive` drops that filter entirely, for a viewer who asked to see them.
     `since` (ingestion time) picks up live arrivals; `before` is a keyset cursor over the
     sort order itself (posted_at, id both DESC, so ties on posted_at are broken deterministically)
-    that picks up older pages. Either, both or neither may be set.
+    that picks up older pages. Either, both or neither may be set. A repost of another sighting
+    (`duplicate_of` set) is never shown.
     """
-    clauses = [] if include_sensitive else ["s.nsfw = false"]
+    clauses = ["s.duplicate_of IS NULL"]
+    if not include_sensitive:
+        clauses.append("s.nsfw = false")
     params: list[object] = []
     if since is not None:
         clauses.append("s.seen_at > %s")
@@ -481,21 +500,43 @@ def counts() -> dict[str, int]:
     return {key: int(value) for key, value in (row or {}).items()}
 
 
-def sightings_for_node(
-    node_id: str, limit: int = 12, include_sensitive: bool = False
-) -> list[Sighting]:
-    """Sightings of one node, newest first.
+def node_sightings(
+    node_id: str,
+    limit: int = 48,
+    include_sensitive: bool = False,
+    names: Sequence[str] | None = None,
+) -> list[tuple[Sighting, dict[str, Any] | None]]:
+    """Sightings of one node with their saved vision labels, newest first; never reposts.
 
-    By default nsfw (true or unlabelled) sightings are excluded; `include_sensitive` keeps
-    them, for a viewer who asked to see them.
+    With `names` (the lower-cased name and aliases of a character), also the resolved sightings
+    stamped with another node whose vision subjects name this character: Jensen Huang drawn into
+    a Drake template is stamped Drake, but belongs on his page too. By default nsfw (true or
+    unlabelled) sightings are excluded; `include_sensitive` keeps them.
     """
     sensitive_filter = "" if include_sensitive else " AND s.nsfw = false"
+    also = ""
+    params: dict[str, Any] = {"id": node_id, "limit": limit}
+    if names:
+        also = """
+            OR (s.state = 'resolved' AND s.node_id <> %(id)s AND EXISTS (
+                SELECT 1
+                FROM jsonb_array_elements_text(COALESCE(s.vision->'subjects', '[]'::jsonb)) AS subj
+                WHERE lower(subj) = ANY(%(names)s)))"""
+        params["names"] = [n.lower() for n in names]
     rows = db.fetch_all(
         _WALL_SELECT
-        + f" WHERE s.node_id = %s{sensitive_filter} ORDER BY s.posted_at DESC LIMIT %s",
-        (node_id, limit),
+        + f" WHERE s.duplicate_of IS NULL AND (s.node_id = %(id)s{also}){sensitive_filter}"
+        + " ORDER BY s.posted_at DESC LIMIT %(limit)s",
+        params,
     )
-    return [_row_to_sighting(r) for r in rows]
+    return [(_row_to_sighting(r), r.get("vision")) for r in rows]
+
+
+def sightings_for_node(
+    node_id: str, limit: int = 48, include_sensitive: bool = False
+) -> list[Sighting]:
+    """Sightings stamped with one node, newest first (`node_sightings` without the extras)."""
+    return [s for s, _ in node_sightings(node_id, limit, include_sensitive)]
 
 
 def pending_sightings(hours: int = 72) -> list[db.Row]:
@@ -503,31 +544,45 @@ def pending_sightings(hours: int = 72) -> list[db.Row]:
     return db.fetch_all(
         """
         SELECT * FROM sightings
-        WHERE state = 'pending' AND seen_at > now() - (%s || ' hours')::interval
+        WHERE state = 'pending' AND duplicate_of IS NULL
+          AND seen_at > now() - (%s || ' hours')::interval
         ORDER BY seen_at
         """,
         (hours,),
     )
 
 
+# Unstamps the sightings of nodes about to be deleted: a meme goes back to pending, so it keeps an
+# "unidentified" stamp and can be matched again; anything else becomes unclassified.
+_DETACH_SQL = """
+    UPDATE sightings
+    SET node_id = NULL,
+        state = CASE WHEN (vision->>'is_meme') = 'true' THEN 'pending' ELSE 'unclassified' END
+    WHERE node_id = ANY(%s)
+"""
+
+
 def delete_nodes(ids: Sequence[str]) -> int:
     """Delete these nodes; their links and history go with them.
 
-    Sightings attached to them are kept but become unclassified, because a resolved sighting
-    may not lose its node. Returns the number of nodes removed.
+    Sightings attached to them are kept but lose their stamp, because a resolved sighting may
+    not lose its node: a meme goes back to pending (it can be re-matched), anything else becomes
+    unclassified. Returns the number of nodes removed.
     """
     if not ids:
         return 0
     with db.connection() as conn:
         conn.execute(
-            "UPDATE sightings SET node_id = NULL, state = 'unclassified' WHERE node_id = ANY(%s)",
+            _DETACH_SQL,
             (list(ids),),
         )
         return conn.execute("DELETE FROM nodes WHERE id = ANY(%s)", (list(ids),)).rowcount
 
 
 def pending_with_vision(hours: int | None = None) -> list[db.Row]:
-    """Pending sightings that carry a saved vision label (id, vision), oldest first.
+    """Pending sightings with a saved vision label (id, title, vision), oldest first.
+
+    Reposts (`duplicate_of` set) are left out: they follow their original's stamp.
 
     `hours` limits them to those seen that recently; None means every one, however old.
     """
@@ -537,17 +592,132 @@ def pending_with_vision(hours: int | None = None) -> list[db.Row]:
         where = " AND seen_at > now() - (%s || ' hours')::interval"
         params = (hours,)
     return db.fetch_all(
-        "SELECT id, vision FROM sightings"
-        f" WHERE state = 'pending' AND vision IS NOT NULL{where} ORDER BY seen_at",
+        "SELECT id, title, vision FROM sightings"
+        " WHERE state = 'pending' AND vision IS NOT NULL AND duplicate_of IS NULL"
+        f"{where} ORDER BY seen_at",
         params,
     )
 
 
 def attach_sightings(sighting_ids: Sequence[str], node_id: str) -> int:
-    """Attach these sightings to node_id and mark them resolved; returns the number changed."""
+    """Attach these sightings to node_id and mark them resolved; returns the number changed.
+
+    Their reposts (`duplicate_of` one of them) get the same stamp, but are not counted.
+    """
+    ids = list(sighting_ids)
+    with db.connection() as conn:
+        changed = conn.execute(
+            "UPDATE sightings SET node_id = %s, state = 'resolved' WHERE id = ANY(%s)",
+            (node_id, ids),
+        ).rowcount
+        conn.execute(
+            "UPDATE sightings SET node_id = %s, state = 'resolved' WHERE duplicate_of = ANY(%s)",
+            (node_id, ids),
+        )
+    return changed
+
+
+def update_sighting_label(
+    sid: str,
+    vision: VisionLabel,
+    node_id: str | None,
+    state: SightingState,
+    *,
+    image_url: str,
+    fingerprint: str | None,
+) -> None:
+    """Save a fresh look at one sighting: its label, stamp, nsfw flag, image URL and fingerprint.
+
+    Clears `look_error`. The sighting's reposts take the same stamp and nsfw flag.
+    """
+    with db.connection() as conn:
+        conn.execute(
+            """
+            UPDATE sightings
+            SET vision = %s, node_id = %s, state = %s, nsfw = %s, image_url = %s,
+                fingerprint = %s, look_error = NULL
+            WHERE id = %s
+            """,
+            (
+                Json(vision.model_dump(mode="json")),
+                node_id,
+                state,
+                vision.nsfw,
+                image_url,
+                fingerprint,
+                sid,
+            ),
+        )
+        conn.execute(
+            "UPDATE sightings SET node_id = %s, state = %s, nsfw = %s WHERE duplicate_of = %s",
+            (node_id, state, vision.nsfw, sid),
+        )
+
+
+def set_sighting_state(sids: Sequence[str], state: SightingState) -> int:
+    """Set the state of unstamped sightings (node_id stays as it is); returns how many changed."""
     return db.execute(
-        "UPDATE sightings SET node_id = %s, state = 'resolved' WHERE id = ANY(%s)",
-        (node_id, list(sighting_ids)),
+        "UPDATE sightings SET state = %s WHERE id = ANY(%s) AND node_id IS NULL",
+        (state, list(sids)),
+    )
+
+
+def set_image_check(sid: str, fingerprint: str | None, look_error: str | None) -> None:
+    """Record what re-reading one sighting's image found: its fingerprint, or why it failed."""
+    db.execute(
+        "UPDATE sightings SET fingerprint = %s, look_error = %s WHERE id = %s",
+        (fingerprint, look_error, sid),
+    )
+
+
+def mark_duplicates(keeper_id: str, ids: Sequence[str]) -> int:
+    """Make `ids` reposts of `keeper_id`, sharing its stamp; returns how many were marked.
+
+    Reposts that pointed at one of `ids` are moved onto the keeper too.
+    """
+    others = [i for i in ids if i != keeper_id]
+    if not others:
+        return 0
+    with db.connection() as conn:
+        conn.execute(
+            """
+            UPDATE sightings AS s
+            SET duplicate_of = k.id, state = k.state, node_id = k.node_id
+            FROM sightings AS k
+            WHERE k.id = %s AND (s.id = ANY(%s) OR s.duplicate_of = ANY(%s))
+            """,
+            (keeper_id, others, others),
+        )
+        return len(others)
+
+
+def dedupe_candidates(days: int = 7) -> list[db.Row]:
+    """Sightings a new post may repeat: not themselves reposts, posted in the last `days`.
+
+    Each row has what `dedupe.Candidate` needs plus the stamp a repost copies
+    (`state`, `node_id`, `vision`, `nsfw`).
+    """
+    return db.fetch_all(
+        """
+        SELECT id, image_url, fingerprint, author, title, posted_at, state, node_id, vision, nsfw
+        FROM sightings
+        WHERE duplicate_of IS NULL AND posted_at > now() - make_interval(days => %s)
+        ORDER BY posted_at
+        """,
+        (days,),
+    )
+
+
+def sightings_with_image(image_urls: Sequence[str]) -> list[db.Row]:
+    """Non-repost sightings showing exactly one of these image URLs, however old (rule D1)."""
+    return db.fetch_all(
+        """
+        SELECT id, image_url, fingerprint, author, title, posted_at, state, node_id, vision, nsfw
+        FROM sightings
+        WHERE duplicate_of IS NULL AND image_url = ANY(%s)
+        ORDER BY posted_at
+        """,
+        (list(image_urls),),
     )
 
 
@@ -635,7 +805,7 @@ def _rising_candidates() -> list[tuple[str, int, float]]:
                   AND posted_at >= now() - interval '7 days'
             ) AS prior_count
         FROM sightings
-        WHERE node_id IS NOT NULL AND nsfw = false
+        WHERE node_id IS NOT NULL AND nsfw = false AND duplicate_of IS NULL
         GROUP BY node_id
         """
     )
@@ -669,7 +839,10 @@ def new_specimens(days: int = 7) -> list[MemeNode]:
 
 
 def expire_specimens(days: int = 7) -> list[str]:
-    """Delete specimens with no sighting in `days`; their sightings become unclassified."""
+    """Delete specimens with no sighting in `days`; their sightings lose the stamp.
+
+    As in `delete_nodes`, a meme goes back to pending and anything else becomes unclassified.
+    """
     stale = """
         SELECT n.id FROM nodes n
         WHERE n.status = 'specimen' AND n.created_at < now() - make_interval(days => %(days)s)
@@ -681,7 +854,7 @@ def expire_specimens(days: int = 7) -> list[str]:
     with db.connection() as conn:
         ids = [row["id"] for row in conn.execute(stale, {"days": days}).fetchall()]
         conn.execute(
-            "UPDATE sightings SET node_id = NULL, state = 'unclassified' WHERE node_id = ANY(%s)",
+            _DETACH_SQL,
             (ids,),
         )
         conn.execute("DELETE FROM nodes WHERE id = ANY(%s)", (ids,))

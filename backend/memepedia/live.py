@@ -21,17 +21,19 @@ from typing import Any, Literal
 
 import httpx
 
-from memepedia import budget, contextdev, db, resolver, sources, store
+from memepedia import budget, contextdev, db, dedupe, imageprep, resolver, sources, store
 from memepedia import llm as llm_module
 from memepedia.config import Settings, get_settings
 from memepedia.llm import Cluster, PendingItem, RootInfo
 from memepedia.models import IdentifyResponse, Post, SightingState, VisionLabel
 from memepedia.sources import FEEDS, Feed, SourceError
+from memepedia.sources import lemmy as lemmy_source
+from memepedia.sources import reddit as reddit_source
 
 log = logging.getLogger("memepedia.live")
 
-_ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp"}
-_MAX_IMAGE_BYTES = 5 * 1024 * 1024
+_MAX_UPLOAD_BYTES = 5 * 1024 * 1024  # a dropped image (identify)
+_MAX_DOWNLOAD_BYTES = 25 * 1024 * 1024  # a post's image; shrunk before the vision call
 _IMAGE_TIMEOUT_S = 15.0
 _USER_AGENT = "memepedia-archive/0.1 (hackathon research project)"
 _AUTO_TRACE_MIN_CONFIDENCE = 0.85
@@ -63,6 +65,7 @@ class TickReport:
     unclassified: int
     traced: list[str]
     errors: list[str]
+    duplicates: int = 0  # reposts of a sighting already in the archive: saved, never looked at
 
 
 @dataclass(frozen=True)
@@ -77,28 +80,76 @@ class Member:
 
 @dataclass(frozen=True)
 class _Looked:
-    """What the LOOK step produced for one post: a label, an unclassified miss, or an error."""
+    """What the LOOK step produced for one post: a label, an unclassified miss, or an error.
+
+    `error` is a failed vision call (the post is not saved, so the next tick retries it);
+    `look_error` is why the image itself could not be read (saved as unclassified).
+    """
 
     post: Post
     vision: VisionLabel | None
     error: str | None
+    look_error: str | None = None
+    fingerprint: str | None = None
 
 
-def _download_image(url: str) -> tuple[bytes, str] | None:
-    """Downloads one post's image; None when it cannot be fetched or is not a supported type."""
+@dataclass(frozen=True)
+class Fetched:
+    """One post's image ready for the vision model, or why it could not be read."""
+
+    prepared: imageprep.Prepared | None
+    error: str | None
+
+
+def download_image(url: str) -> tuple[bytes, None] | tuple[None, str]:
+    """Downloads one image: its bytes, or why not; never raises.
+
+    The reason is one of "http_<status>", "network", "unsupported:<mime>" or "too_large".
+    """
+    chunks: list[bytes] = []
     try:
-        with httpx.Client(
-            follow_redirects=True, timeout=_IMAGE_TIMEOUT_S, headers={"User-Agent": _USER_AGENT}
-        ) as client:
-            resp = client.get(url)
+        with (
+            httpx.Client(
+                follow_redirects=True,
+                timeout=_IMAGE_TIMEOUT_S,
+                headers={"User-Agent": _USER_AGENT},
+            ) as client,
+            client.stream("GET", url) as resp,
+        ):
+            if resp.status_code != 200:
+                return None, f"http_{resp.status_code}"
+            mime = resp.headers.get("content-type", "").split(";")[0].strip().lower()
+            if mime and mime not in imageprep.INPUT_MIME and mime != "application/octet-stream":
+                return None, f"unsupported:{mime}"
+            declared = resp.headers.get("content-length", "")
+            if declared.isdigit() and int(declared) > _MAX_DOWNLOAD_BYTES:
+                return None, "too_large"
+            size = 0
+            for chunk in resp.iter_bytes():
+                size += len(chunk)
+                if size > _MAX_DOWNLOAD_BYTES:
+                    return None, "too_large"
+                chunks.append(chunk)
     except httpx.HTTPError:
-        return None
-    if resp.status_code != 200:
-        return None
-    mime = resp.headers.get("content-type", "").split(";")[0].strip().lower()
-    if mime not in _ALLOWED_MIME or len(resp.content) > _MAX_IMAGE_BYTES:
-        return None
-    return resp.content, mime
+        return None, "network"
+    return b"".join(chunks), None
+
+
+def readable_image_url(url: str) -> str:
+    """Where an image stored before the source fixes can actually be fetched from: the
+    full-size Reddit image for a preview thumbnail, the real image behind a Lemmy proxy link."""
+    return lemmy_source.unwrap_proxy(reddit_source.full_image_url(url))
+
+
+def fetch_image(url: str) -> Fetched:
+    """Downloads and decodes one post's image (any of `imageprep.INPUT_MIME`); never raises."""
+    raw, error = download_image(url)
+    if raw is None:
+        return Fetched(None, error)
+    try:
+        return Fetched(imageprep.prepare(raw), None)
+    except imageprep.ImageError:
+        return Fetched(None, "undecodable")
 
 
 def _archive_context() -> tuple[list[RootInfo], list[str]]:
@@ -108,19 +159,37 @@ def _archive_context() -> tuple[list[RootInfo], list[str]]:
     return roots, names
 
 
-def _look_one(post: Post, roots: Sequence[RootInfo], known_names: Sequence[str]) -> _Looked:
-    """Downloads one post's image and labels it; never raises."""
-    downloaded = _download_image(post.image_url)
-    if downloaded is None:
-        return _Looked(post, None, None)
-    data, mime = downloaded
+def _guardrail(image: bytes, mime: str, label: VisionLabel) -> VisionLabel:
+    """`label` with its nsfw verdict replaced by the guardrail model's (GUARDRAIL_MODEL).
+
+    A label that already stands for a safety block stays as it is (no second call). When the
+    guardrail call fails or its answer is unreadable, the labelling model's own verdict is kept.
+    """
+    if llm_module.was_blocked(label):
+        return label
+    try:
+        nsfw, reason = llm_module.label_nsfw_only(image, mime)
+    except llm_module.LLMError as exc:
+        log.warning("nsfw guardrail failed, keeping the labeller's verdict: %s", exc)
+        return label
+    return label.model_copy(update={"nsfw": nsfw, "nsfw_reason": reason})
+
+
+def _look_one(
+    post: Post, fetched: Fetched, roots: Sequence[RootInfo], known_names: Sequence[str]
+) -> _Looked:
+    """Labels one fetched image, then has the guardrail judge it; never raises."""
+    image = fetched.prepared
+    if image is None:
+        return _Looked(post, None, None, look_error=fetched.error)
     try:
         vision = llm_module.vision_label(
-            data, mime, title=post.title, roots=roots, known_names=known_names
+            image.data, image.mime, title=post.title, roots=roots, known_names=known_names
         )
     except llm_module.LLMError as exc:
-        return _Looked(post, None, str(exc))
-    return _Looked(post, vision, None)
+        return _Looked(post, None, str(exc), fingerprint=image.fingerprint)
+    vision = _guardrail(image.data, image.mime, vision)
+    return _Looked(post, vision, None, fingerprint=image.fingerprint)
 
 
 @dataclass(frozen=True)
@@ -130,6 +199,7 @@ class Thresholds:
     exact: float  # the guess equals an archive name or alias
     near: float  # any other guess: a close spelling confirmed by the LLM
     subjects: bool  # whether a depicted character may stamp a post with no usable guess
+    titles: bool = True  # whether a post title naming a meme outright may stamp it (last rule)
 
     @classmethod
     def from_settings(cls, settings: Settings) -> Thresholds:
@@ -137,6 +207,7 @@ class Thresholds:
             exact=settings.vision_exact_min_confidence,
             near=settings.vision_min_confidence,
             subjects=settings.match_subjects,
+            titles=settings.match_titles,
         )
 
 
@@ -145,15 +216,18 @@ class LabelMatch:
     """The node a label matched and how: its guess exactly, near, or by a depicted character."""
 
     node_id: str
-    via: Literal["exact", "near", "subject"]
+    via: Literal["exact", "near", "subject", "title"]
 
 
-def match_label(label: VisionLabel, t: Thresholds, m: resolver.Matcher) -> LabelMatch | None:
-    """The archive node a vision label points at, or None. The first of three rules that fits.
+def match_label(
+    label: VisionLabel, t: Thresholds, m: resolver.Matcher, title: str | None = None
+) -> LabelMatch | None:
+    """The archive node a vision label points at, or None. The first of four rules that fits.
 
-    An exact guess passes at the lower threshold, any other guess needs the higher one, and the
-    depicted characters are tried last. Confidence belongs to the template guess only, so the
-    subject rule ignores it.
+    An exact guess passes at the lower threshold, any other guess needs the higher one, then the
+    depicted characters, and last a post `title` that names a meme outright ("POV: you're
+    Jensen Huang"), for a meme only. Confidence belongs to the template guess only, so the
+    subject and title rules ignore it.
     """
     guess = label.template_guess
     if guess and label.confidence >= t.exact and (node_id := m.exact(guess)) is not None:
@@ -162,16 +236,19 @@ def match_label(label: VisionLabel, t: Thresholds, m: resolver.Matcher) -> Label
         return LabelMatch(node_id, "near")
     if t.subjects and (node_id := m.subject(label.subjects)) is not None:
         return LabelMatch(node_id, "subject")
+    if t.titles and title and label.is_meme and (node_id := m.title(title)) is not None:
+        return LabelMatch(node_id, "title")
     return None
 
 
 def classify(
-    label: VisionLabel, t: Thresholds, m: resolver.Matcher
+    label: VisionLabel, t: Thresholds, m: resolver.Matcher, title: str | None = None
 ) -> tuple[str | None, SightingState]:
-    """Decides a sighting's node and state from its vision label; never stamps a weak guess."""
+    """Decides a sighting's node and state from its vision label (and the post title);
+    never stamps a weak guess."""
     if not label.is_meme:
         return None, "unclassified"
-    match = match_label(label, t, m)
+    match = match_label(label, t, m, title)
     if match is not None:
         return match.node_id, "resolved"
     return None, "pending"
@@ -200,9 +277,16 @@ def _save_looked(
         node_id, state = (
             (None, "unclassified")
             if result.vision is None
-            else classify(result.vision, thresholds, matcher)
+            else classify(result.vision, thresholds, matcher, result.post.title)
         )
-        sid = store.insert_sighting(result.post, result.vision, node_id, state)
+        sid = store.insert_sighting(
+            result.post,
+            result.vision,
+            node_id,
+            state,
+            look_error=result.look_error,
+            fingerprint=result.fingerprint,
+        )
         if sid is None:
             continue
         if state == "resolved":
@@ -276,6 +360,80 @@ def _auto_trace(candidates: Sequence[tuple[str, str]], cap: int, errors: list[st
     return traced
 
 
+@dataclass(frozen=True)
+class _Repeat:
+    """A post in this batch that repeats another sighting (`memepedia.dedupe`)."""
+
+    post: Post
+    fetched: Fetched
+    original_id: str
+
+
+def _candidate(post: Post, fetched: Fetched) -> dedupe.Candidate:
+    fingerprint = fetched.prepared.fingerprint if fetched.prepared else None
+    return dedupe.Candidate(
+        store.sighting_id(post.post_url),
+        post.image_url,
+        fingerprint,
+        post.author,
+        post.title,
+        post.posted_at,
+    )
+
+
+def _split_repeats(
+    batch: Sequence[Post], fetched: Sequence[Fetched]
+) -> tuple[list[tuple[Post, Fetched]], list[_Repeat]]:
+    """Splits a fetched batch into posts to look at and reposts of something already seen.
+
+    A post is compared with the archive's recent sightings (`store.dedupe_candidates`), every
+    earlier sighting of its exact image URL, and the posts before it in this same batch, so two
+    copies arriving together cost one vision call. The batch is walked oldest first, so the
+    first post of a picture is the one kept; the posts to look at keep the batch's own order.
+    """
+    rows = store.dedupe_candidates() + store.sightings_with_image([p.image_url for p in batch])
+    seen = list({row["id"]: dedupe.candidate(row) for row in rows}.values())
+    pairs = list(zip(batch, fetched, strict=True))
+    repeat_of: dict[int, str] = {}
+    for index in sorted(range(len(pairs)), key=lambda i: pairs[i][0].posted_at):
+        post, image = pairs[index]
+        candidate = _candidate(post, image)
+        match = dedupe.find_original(candidate, seen)
+        if match is None:
+            seen.append(candidate)
+        else:
+            repeat_of[index] = match.original.id
+    fresh = [pair for i, pair in enumerate(pairs) if i not in repeat_of]
+    repeats = [_Repeat(*pairs[i], original_id) for i, original_id in repeat_of.items()]
+    return fresh, repeats
+
+
+def _save_repeats(repeats: Sequence[_Repeat]) -> int:
+    """Saves each repost with its original's stamp; one whose original is not saved yet (its
+    vision call failed this tick) is left for the next tick. Returns how many were saved."""
+    saved = 0
+    for repeat in repeats:
+        original = store.sighting_row(repeat.original_id)
+        if original is None:
+            continue
+        vision = llm_module.parse_stored_vision(original["vision"]) if original["vision"] else None
+        if vision is not None and original["nsfw"] is not None:
+            vision = vision.model_copy(update={"nsfw": original["nsfw"]})
+        image = repeat.fetched.prepared
+        sid = store.insert_sighting(
+            repeat.post,
+            vision,
+            original["node_id"],
+            original["state"],
+            nsfw=original["nsfw"],
+            look_error=repeat.fetched.error,
+            fingerprint=image.fingerprint if image else None,
+            duplicate_of=repeat.original_id,
+        )
+        saved += sid is not None
+    return saved
+
+
 def _tick(feed_key: str) -> TickReport:
     errors: list[str] = []
     feed = next((f for f in FEEDS if f.key == feed_key), None)
@@ -289,23 +447,30 @@ def _tick(feed_key: str) -> TickReport:
 
     roots, known_names = _archive_context()
     with ThreadPoolExecutor(max_workers=4) as pool:
-        futures = [pool.submit(_look_one, post, roots, known_names) for post in batch]
+        # FETCH every image, DEDUPE against what is already known, LOOK only at the rest.
+        fetched = list(pool.map(lambda post: fetch_image(post.image_url), batch))
+        to_look, repeats = _split_repeats(batch, fetched)
+        futures = [
+            pool.submit(_look_one, post, image, roots, known_names) for post, image in to_look
+        ]
         looked = [f.result() for f in futures]
 
     resolved, pending, unclassified, candidates = _save_looked(
         looked, Thresholds.from_settings(settings), resolver.Matcher.from_store(), errors
     )
+    duplicates = _save_repeats(repeats)
     traced = _auto_trace(candidates, settings.auto_traces_per_tick, errors)
     return TickReport(
         feed=feed_key,
         fetched=fetched_count,
         fresh=fresh_count,
-        looked=len(batch),
+        looked=len(to_look),
         resolved=resolved,
         pending=pending,
         unclassified=unclassified,
         traced=traced,
         errors=errors,
+        duplicates=duplicates,
     )
 
 
@@ -440,14 +605,19 @@ def detect_specimens() -> list[str]:
 
 def identify(image: bytes, mime_type: str) -> IdentifyResponse:
     """Labels a dropped image and either resolves it or hands back a trace query."""
-    if mime_type not in _ALLOWED_MIME:
+    if mime_type not in imageprep.INPUT_MIME:
         raise ValueError(f"unsupported image type: {mime_type!r}")
-    if len(image) > _MAX_IMAGE_BYTES:
+    if len(image) > _MAX_UPLOAD_BYTES:
         raise ValueError("image is larger than the 5 MB limit")
+    try:
+        prepared = imageprep.prepare(image)
+    except imageprep.ImageError as exc:
+        raise ValueError("that file could not be read as an image") from exc
     roots, known_names = _archive_context()
     label = llm_module.vision_label(
-        image, mime_type, title=None, roots=roots, known_names=known_names
+        prepared.data, prepared.mime, title=None, roots=roots, known_names=known_names
     )
+    label = _guardrail(prepared.data, prepared.mime, label)
     if label.nsfw:
         return IdentifyResponse(node_id=None, trace_query=None, guess=None, overlaid_text=None)
     match = match_label(

@@ -165,3 +165,48 @@ def test_blocked_detection() -> None:
 
     clean_body = {"markdown": {"requested": True, "success": True, "data": "hello"}}
     assert contextdev.blocked_message(clean_body) is None
+
+
+def test_reddit_preview_thumbnail_becomes_the_full_image() -> None:
+    thumb = "https://preview.redd.it/uiv23vuamp1i1.jpeg?width=140&amp;height=140&amp;crop=1:1"
+    assert reddit.full_image_url(thumb) == "https://i.redd.it/uiv23vuamp1i1.jpeg"
+
+
+def test_reddit_preview_with_a_slug_is_only_unescaped() -> None:
+    url = "https://preview.redd.it/some-title-v0-abc123def.jpeg?width=640&amp;s=deadbeef"
+    assert reddit.full_image_url(url) == (
+        "https://preview.redd.it/some-title-v0-abc123def.jpeg?width=640&s=deadbeef"
+    )
+
+
+def test_reddit_entry_image_unescapes_the_full_image_link() -> None:
+    html_text = '<a href="https://i.redd.it/abc.png?x=1&amp;y=2">[link]</a>'
+    assert reddit._entry_image(html_text) == "https://i.redd.it/abc.png?x=1&y=2"
+
+
+def test_reddit_entry_image_falls_back_to_the_rewritten_preview() -> None:
+    html_text = '<img src="https://preview.redd.it/vhtw4bug8p1i1.jpeg?width=140&amp;crop=1:1" />'
+    assert reddit._entry_image(html_text) == "https://i.redd.it/vhtw4bug8p1i1.jpeg"
+
+
+def test_lemmy_unwrap_proxy_returns_the_real_image() -> None:
+    proxied = (
+        "https://lemmy.ml/api/v3/image_proxy?url=https%3A%2F%2Flemmy.zip%2Fpictrs%2Fimage%2Fab.avif"
+    )
+    assert lemmy.unwrap_proxy(proxied) == "https://lemmy.zip/pictrs/image/ab.avif"
+    plain = "https://lemmy.world/pictrs/image/x.png?format=webp"
+    assert lemmy.unwrap_proxy(plain) == plain
+
+
+def test_lemmy_parse_posts_unwraps_proxied_image_urls() -> None:
+    item = {
+        "post": {
+            "ap_id": "https://lemmy.ml/post/1",
+            "url": "https://lemmy.ml/api/v3/image_proxy?url=https%3A%2F%2Fa.test%2Fm.avif",
+            "name": "proxied",
+            "published": "2026-11-14T10:00:00Z",
+        },
+        "creator": {"name": "someone"},
+    }
+    posts = lemmy.parse_posts({"posts": [item]}, source="lemmy:test")
+    assert [p.image_url for p in posts] == ["https://a.test/m.avif"]
