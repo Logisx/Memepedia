@@ -500,22 +500,43 @@ def counts() -> dict[str, int]:
     return {key: int(value) for key, value in (row or {}).items()}
 
 
-def sightings_for_node(
-    node_id: str, limit: int = 12, include_sensitive: bool = False
-) -> list[Sighting]:
-    """Sightings of one node, newest first.
+def node_sightings(
+    node_id: str,
+    limit: int = 48,
+    include_sensitive: bool = False,
+    names: Sequence[str] | None = None,
+) -> list[tuple[Sighting, dict[str, Any] | None]]:
+    """Sightings of one node with their saved vision labels, newest first; never reposts.
 
-    By default nsfw (true or unlabelled) sightings are excluded; `include_sensitive` keeps
-    them, for a viewer who asked to see them.
+    With `names` (the lower-cased name and aliases of a character), also the resolved sightings
+    stamped with another node whose vision subjects name this character: Jensen Huang drawn into
+    a Drake template is stamped Drake, but belongs on his page too. By default nsfw (true or
+    unlabelled) sightings are excluded; `include_sensitive` keeps them.
     """
     sensitive_filter = "" if include_sensitive else " AND s.nsfw = false"
+    also = ""
+    params: dict[str, Any] = {"id": node_id, "limit": limit}
+    if names:
+        also = """
+            OR (s.state = 'resolved' AND s.node_id <> %(id)s AND EXISTS (
+                SELECT 1
+                FROM jsonb_array_elements_text(COALESCE(s.vision->'subjects', '[]'::jsonb)) AS subj
+                WHERE lower(subj) = ANY(%(names)s)))"""
+        params["names"] = [n.lower() for n in names]
     rows = db.fetch_all(
         _WALL_SELECT
-        + f" WHERE s.node_id = %s AND s.duplicate_of IS NULL{sensitive_filter}"
-        + " ORDER BY s.posted_at DESC LIMIT %s",
-        (node_id, limit),
+        + f" WHERE s.duplicate_of IS NULL AND (s.node_id = %(id)s{also}){sensitive_filter}"
+        + " ORDER BY s.posted_at DESC LIMIT %(limit)s",
+        params,
     )
-    return [_row_to_sighting(r) for r in rows]
+    return [(_row_to_sighting(r), r.get("vision")) for r in rows]
+
+
+def sightings_for_node(
+    node_id: str, limit: int = 48, include_sensitive: bool = False
+) -> list[Sighting]:
+    """Sightings stamped with one node, newest first (`node_sightings` without the extras)."""
+    return [s for s, _ in node_sightings(node_id, limit, include_sensitive)]
 
 
 def pending_sightings(hours: int = 72) -> list[db.Row]:
@@ -594,6 +615,51 @@ def attach_sightings(sighting_ids: Sequence[str], node_id: str) -> int:
             (node_id, ids),
         )
     return changed
+
+
+def update_sighting_label(
+    sid: str,
+    vision: VisionLabel,
+    node_id: str | None,
+    state: SightingState,
+    *,
+    image_url: str,
+    fingerprint: str | None,
+) -> None:
+    """Save a fresh look at one sighting: its label, stamp, nsfw flag, image URL and fingerprint.
+
+    Clears `look_error`. The sighting's reposts take the same stamp and nsfw flag.
+    """
+    with db.connection() as conn:
+        conn.execute(
+            """
+            UPDATE sightings
+            SET vision = %s, node_id = %s, state = %s, nsfw = %s, image_url = %s,
+                fingerprint = %s, look_error = NULL
+            WHERE id = %s
+            """,
+            (
+                Json(vision.model_dump(mode="json")),
+                node_id,
+                state,
+                vision.nsfw,
+                image_url,
+                fingerprint,
+                sid,
+            ),
+        )
+        conn.execute(
+            "UPDATE sightings SET node_id = %s, state = %s, nsfw = %s WHERE duplicate_of = %s",
+            (node_id, state, vision.nsfw, sid),
+        )
+
+
+def set_sighting_state(sids: Sequence[str], state: SightingState) -> int:
+    """Set the state of unstamped sightings (node_id stays as it is); returns how many changed."""
+    return db.execute(
+        "UPDATE sightings SET state = %s WHERE id = ANY(%s) AND node_id IS NULL",
+        (state, list(sids)),
+    )
 
 
 def set_image_check(sid: str, fingerprint: str | None, look_error: str | None) -> None:

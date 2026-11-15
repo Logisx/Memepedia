@@ -65,7 +65,7 @@ def _save_one(
     node_id, state = (
         (None, "unclassified")
         if looked.vision is None
-        else classify(looked.vision, thresholds, matcher)
+        else classify(looked.vision, thresholds, matcher, post.title)
     )
     sid = store.insert_sighting(
         post,

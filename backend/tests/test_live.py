@@ -950,3 +950,27 @@ def test_a_repost_of_an_archived_image_is_not_looked_at(
         "node_id": "doomer",
         "duplicate_of": store.sighting_id(old.post_url),
     }
+
+
+def test_a_title_naming_a_meme_stamps_it_last() -> None:
+    label = _label(template_guess=None, confidence=0.2, subjects=[])
+    assert live.match_label(label, _T, _matcher(), "my Drake Hotline Bling edit") == (
+        live.LabelMatch("drake", "title")
+    )
+    assert live.classify(label, _T, _matcher(), "my Drake Hotline Bling edit") == (
+        "drake",
+        "resolved",
+    )
+
+
+def test_the_title_rule_comes_after_the_guess_and_is_switchable() -> None:
+    guessed = _label(template_guess="Doomer", confidence=0.95)
+    assert live.match_label(guessed, _T, _matcher(), "Drake Hotline Bling") == (
+        live.LabelMatch("doomer", "exact")
+    )
+    unguessed = _label(template_guess=None, confidence=0.2)
+    off = live.Thresholds(exact=0.7, near=0.85, subjects=True, titles=False)
+    assert live.match_label(unguessed, off, _matcher(), "Drake Hotline Bling") is None
+    not_meme = _label(is_meme=False, template_guess=None)
+    assert live.match_label(not_meme, _T, _matcher(), "Drake Hotline Bling") is None
+    assert live.match_label(unguessed, _T, _matcher(), None) is None

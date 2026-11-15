@@ -44,6 +44,7 @@ SENT = (
     "VISION_MIN_CONFIDENCE",
     "VISION_EXACT_MIN_CONFIDENCE",
     "VISION_MATCH_SUBJECTS",
+    "VISION_MATCH_TITLES",
     # Cost guards and the clock fallback (memepedia/budget.py, live.clock_tick).
     "VISION_PER_TICK",
     "AUTO_TRACES_PER_TICK",

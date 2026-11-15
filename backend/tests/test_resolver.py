@@ -298,3 +298,49 @@ def test_matcher_exact_and_near_still_stamp_chad_and_big_brain_wojak_by_guess() 
     assert matcher.exact("Chad") == "chad"
     assert matcher.exact("Big Brain Wojak") == "big-brain-wojak"
     assert matcher.exact("Big Brain") == "big-brain-wojak"
+
+
+_TITLE_INDEX = [
+    *INDEX,
+    ("Jensen Huang", "jensen-huang"),
+    ("Nvidia CEO", "jensen-huang"),
+    ("Reaction image", "reaction-image"),
+    ("Labubu", "labubu"),
+]
+_TITLE_KINDS = {
+    **KINDS,
+    "jensen-huang": "character",
+    "reaction-image": "format_class",
+    "labubu": "character",
+}
+
+
+def _title_matcher() -> resolver.Matcher:
+    return resolver.Matcher(_TITLE_INDEX, _TITLE_KINDS, allow_llm=False)
+
+
+def test_matcher_title_finds_a_distinctive_name() -> None:
+    assert _title_matcher().title("POV: you're Jensen Huang") == "jensen-huang"
+    assert _title_matcher().title("the nvidia ceo again") == "jensen-huang"
+
+
+def test_matcher_title_ignores_short_single_words_and_roots() -> None:
+    matcher = _title_matcher()
+    assert matcher.title("Performative Huang supporter") is None  # "Huang" alone is not a name
+    assert matcher.title("Doomer at 3am") is None  # one word under 8 letters
+    assert matcher.title("labubu everywhere") is None
+    assert matcher.title("just a reaction image") is None  # format-class roots never count
+
+
+def test_matcher_title_wants_a_whole_phrase() -> None:
+    assert _title_matcher().title("jensenhuang fan account") is None
+
+
+def test_matcher_title_gives_none_for_two_memes() -> None:
+    assert _title_matcher().title("Jensen Huang as the Distracted Boyfriend") is None
+
+
+def test_matcher_title_prefers_the_longer_name_inside_it() -> None:
+    index = [("Doomer Girl", "doomer-girl"), ("Doomer Girl Variant", "dgv")]
+    matcher = resolver.Matcher(index, {"doomer-girl": "character", "dgv": "character"})
+    assert matcher.title("a doomer girl variant appears") == "dgv"

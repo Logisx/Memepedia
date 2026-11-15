@@ -108,11 +108,11 @@ def test_dry_run_only_fingerprints_and_apply_marks_the_reposts(
 
 def test_readable_url_rewrites_thumbnails_and_proxies() -> None:
     assert (
-        dedupe_script.readable_url("https://preview.redd.it/abcdefgh12.jpeg?width=140&amp;crop=1:1")
+        live.readable_image_url("https://preview.redd.it/abcdefgh12.jpeg?width=140&amp;crop=1:1")
         == "https://i.redd.it/abcdefgh12.jpeg"
     )
     assert (
-        dedupe_script.readable_url(
+        live.readable_image_url(
             "https://lemmy.ml/api/v3/image_proxy?url=https%3A%2F%2Fa.test%2Fb.png"
         )
         == "https://a.test/b.png"

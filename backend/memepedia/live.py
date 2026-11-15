@@ -27,6 +27,8 @@ from memepedia.config import Settings, get_settings
 from memepedia.llm import Cluster, PendingItem, RootInfo
 from memepedia.models import IdentifyResponse, Post, SightingState, VisionLabel
 from memepedia.sources import FEEDS, Feed, SourceError
+from memepedia.sources import lemmy as lemmy_source
+from memepedia.sources import reddit as reddit_source
 
 log = logging.getLogger("memepedia.live")
 
@@ -133,6 +135,12 @@ def download_image(url: str) -> tuple[bytes, None] | tuple[None, str]:
     return b"".join(chunks), None
 
 
+def readable_image_url(url: str) -> str:
+    """Where an image stored before the source fixes can actually be fetched from: the
+    full-size Reddit image for a preview thumbnail, the real image behind a Lemmy proxy link."""
+    return lemmy_source.unwrap_proxy(reddit_source.full_image_url(url))
+
+
 def fetch_image(url: str) -> Fetched:
     """Downloads and decodes one post's image (any of `imageprep.INPUT_MIME`); never raises."""
     raw, error = download_image(url)
@@ -191,6 +199,7 @@ class Thresholds:
     exact: float  # the guess equals an archive name or alias
     near: float  # any other guess: a close spelling confirmed by the LLM
     subjects: bool  # whether a depicted character may stamp a post with no usable guess
+    titles: bool = True  # whether a post title naming a meme outright may stamp it (last rule)
 
     @classmethod
     def from_settings(cls, settings: Settings) -> Thresholds:
@@ -198,6 +207,7 @@ class Thresholds:
             exact=settings.vision_exact_min_confidence,
             near=settings.vision_min_confidence,
             subjects=settings.match_subjects,
+            titles=settings.match_titles,
         )
 
 
@@ -206,15 +216,18 @@ class LabelMatch:
     """The node a label matched and how: its guess exactly, near, or by a depicted character."""
 
     node_id: str
-    via: Literal["exact", "near", "subject"]
+    via: Literal["exact", "near", "subject", "title"]
 
 
-def match_label(label: VisionLabel, t: Thresholds, m: resolver.Matcher) -> LabelMatch | None:
-    """The archive node a vision label points at, or None. The first of three rules that fits.
+def match_label(
+    label: VisionLabel, t: Thresholds, m: resolver.Matcher, title: str | None = None
+) -> LabelMatch | None:
+    """The archive node a vision label points at, or None. The first of four rules that fits.
 
-    An exact guess passes at the lower threshold, any other guess needs the higher one, and the
-    depicted characters are tried last. Confidence belongs to the template guess only, so the
-    subject rule ignores it.
+    An exact guess passes at the lower threshold, any other guess needs the higher one, then the
+    depicted characters, and last a post `title` that names a meme outright ("POV: you're
+    Jensen Huang"), for a meme only. Confidence belongs to the template guess only, so the
+    subject and title rules ignore it.
     """
     guess = label.template_guess
     if guess and label.confidence >= t.exact and (node_id := m.exact(guess)) is not None:
@@ -223,16 +236,19 @@ def match_label(label: VisionLabel, t: Thresholds, m: resolver.Matcher) -> Label
         return LabelMatch(node_id, "near")
     if t.subjects and (node_id := m.subject(label.subjects)) is not None:
         return LabelMatch(node_id, "subject")
+    if t.titles and title and label.is_meme and (node_id := m.title(title)) is not None:
+        return LabelMatch(node_id, "title")
     return None
 
 
 def classify(
-    label: VisionLabel, t: Thresholds, m: resolver.Matcher
+    label: VisionLabel, t: Thresholds, m: resolver.Matcher, title: str | None = None
 ) -> tuple[str | None, SightingState]:
-    """Decides a sighting's node and state from its vision label; never stamps a weak guess."""
+    """Decides a sighting's node and state from its vision label (and the post title);
+    never stamps a weak guess."""
     if not label.is_meme:
         return None, "unclassified"
-    match = match_label(label, t, m)
+    match = match_label(label, t, m, title)
     if match is not None:
         return match.node_id, "resolved"
     return None, "pending"
@@ -261,7 +277,7 @@ def _save_looked(
         node_id, state = (
             (None, "unclassified")
             if result.vision is None
-            else classify(result.vision, thresholds, matcher)
+            else classify(result.vision, thresholds, matcher, result.post.title)
         )
         sid = store.insert_sighting(
             result.post,

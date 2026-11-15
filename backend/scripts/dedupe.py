@@ -21,7 +21,6 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 from memepedia import db, dedupe, live, store
-from memepedia.sources import lemmy, reddit
 
 DEFAULT_WORKERS = 8
 _STATE_RANK = {"resolved": 0, "pending": 1, "unclassified": 2}
@@ -46,11 +45,6 @@ class DedupeReport:
     marked: int = 0
 
 
-def readable_url(url: str) -> str:
-    """The URL the image can actually be fetched from (full-size Reddit, unwrapped Lemmy)."""
-    return lemmy.unwrap_proxy(reddit.full_image_url(url))
-
-
 def _rows_without_fingerprint() -> list[db.Row]:
     return db.fetch_all(
         "SELECT id, image_url FROM sightings"
@@ -67,7 +61,7 @@ def backfill_fingerprints(
     rows = _rows_without_fingerprint()
     print(f"fingerprinting {len(rows)} images")
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        results = pool.map(lambda r: (r, fetch(readable_url(r["image_url"]))), rows)
+        results = pool.map(lambda r: (r, fetch(live.readable_image_url(r["image_url"]))), rows)
         for done, (row, fetched) in enumerate(results, start=1):
             if fetched.prepared is not None:
                 store.set_image_check(row["id"], fetched.prepared.fingerprint, None)
