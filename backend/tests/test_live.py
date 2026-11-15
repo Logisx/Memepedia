@@ -10,7 +10,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from fastapi.testclient import TestClient
 
-from memepedia import db, live, llm, resolver, sources, store, trace
+from memepedia import db, imageprep, live, llm, resolver, sources, store, trace
 from memepedia.config import Settings
 from memepedia.models import MemeNode, Post, VisionLabel
 
@@ -40,6 +40,28 @@ def _no_guardrail_call(monkeypatch: pytest.MonkeyPatch) -> None:
         raise llm.LLMUnavailable("guardrail stubbed out in tests")
 
     monkeypatch.setattr(llm, "label_nsfw_only", unavailable)
+
+
+def _fetched(data: bytes) -> live.Fetched:
+    """A fetched image whose bytes are `data` and whose fingerprint is unique to them."""
+    return live.Fetched(
+        imageprep.Prepared(data, "image/jpeg", hashlib.sha256(data).hexdigest()), None
+    )
+
+
+def _fetch_by_url(url: str) -> live.Fetched:
+    return _fetched(b"data-" + url.encode())
+
+
+def _png() -> bytes:
+    """A real 8x8 PNG, for code that decodes what it is given."""
+    import io
+
+    from PIL import Image
+
+    out = io.BytesIO()
+    Image.new("RGB", (8, 8), (200, 30, 30)).save(out, format="PNG")
+    return out.getvalue()
 
 
 def _label(**overrides: object) -> VisionLabel:
@@ -262,10 +284,10 @@ def test_tick_saves_each_state_and_skips_known(
     )
     monkeypatch.setattr(live, "get_settings", lambda: _settings())
 
-    def fake_download(url: str) -> tuple[bytes, str] | None:
-        return None if "unclassified" in url else (b"data-" + url.encode(), "image/png")
+    def fake_fetch(url: str) -> live.Fetched:
+        return live.Fetched(None, "http_404") if "unclassified" in url else _fetch_by_url(url)
 
-    monkeypatch.setattr(live, "_download_image", fake_download)
+    monkeypatch.setattr(live, "fetch_image", fake_fetch)
 
     def fake_vision_label(
         data: bytes, mime: str, *, title: str | None, roots: object, known_names: object
@@ -305,7 +327,7 @@ def test_tick_respects_per_tick_cap(client: TestClient, monkeypatch: pytest.Monk
     monkeypatch.setattr(
         live, "get_settings", lambda: _settings(vision_per_tick=2, auto_traces_per_tick=0)
     )
-    monkeypatch.setattr(live, "_download_image", lambda url: None)
+    monkeypatch.setattr(live, "fetch_image", lambda url: live.Fetched(None, "http_404"))
 
     report = live.tick(_FEED_KEY)
 
@@ -341,7 +363,7 @@ def test_tick_vision_failure_is_not_saved(
     post = _post("https://t.test/vision-fail", posted_at=now)
     monkeypatch.setattr(sources, "fetch", lambda feed: [post])
     monkeypatch.setattr(live, "get_settings", lambda: _settings())
-    monkeypatch.setattr(live, "_download_image", lambda url: (b"data", "image/png"))
+    monkeypatch.setattr(live, "fetch_image", _fetch_by_url)
 
     def boom(*a: object, **kw: object) -> VisionLabel:
         raise llm.LLMError("gemini is unhappy")
@@ -364,7 +386,7 @@ def test_tick_auto_trace_attaches_and_respects_cap(
     post_b = _post("https://t.test/autotrace-b", posted_at=now - timedelta(seconds=1), author="bob")
     monkeypatch.setattr(sources, "fetch", lambda feed: [post_a, post_b])
     monkeypatch.setattr(live, "get_settings", lambda: _settings(auto_traces_per_tick=1))
-    monkeypatch.setattr(live, "_download_image", lambda url: (b"data-" + url.encode(), "image/png"))
+    monkeypatch.setattr(live, "fetch_image", _fetch_by_url)
     monkeypatch.setattr(
         llm,
         "vision_label",
@@ -433,7 +455,7 @@ def test_tick_auto_trace_single_author_is_not_traced(
     )
     monkeypatch.setattr(sources, "fetch", lambda feed: [post_a, post_b])
     monkeypatch.setattr(live, "get_settings", lambda: _settings(auto_traces_per_tick=2))
-    monkeypatch.setattr(live, "_download_image", lambda url: (b"data-" + url.encode(), "image/png"))
+    monkeypatch.setattr(live, "fetch_image", _fetch_by_url)
     monkeypatch.setattr(
         llm, "vision_label", lambda *a, **kw: _label(template_guess="Solo Thing", confidence=0.95)
     )
@@ -686,7 +708,7 @@ def test_identify_known(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> 
     )
     _stub_resolution(monkeypatch, lambda name: "doomer")
 
-    result = live.identify(b"bytes", "image/png")
+    result = live.identify(_png(), "image/png")
 
     assert result.node_id == "doomer"
     assert result.trace_query is None
@@ -701,7 +723,7 @@ def test_identify_unknown_with_guess(client: TestClient, monkeypatch: pytest.Mon
     )
     _stub_resolution(monkeypatch, lambda name: None)
 
-    result = live.identify(b"bytes", "image/png")
+    result = live.identify(_png(), "image/png")
 
     assert result.node_id is None
     assert result.trace_query == "New Thing"
@@ -718,7 +740,7 @@ def test_identify_unknown_without_guess(
         lambda *a, **kw: _label(template_guess=None, confidence=0.1, description="an odd drawing"),
     )
 
-    result = live.identify(b"bytes", "image/png")
+    result = live.identify(_png(), "image/png")
 
     assert result.node_id is None
     assert result.trace_query == "an odd drawing"
@@ -738,7 +760,7 @@ def test_identify_blanks_the_response_for_an_nsfw_image(
     )
     _stub_resolution(monkeypatch, lambda name: "doomer")
 
-    result = live.identify(b"bytes", "image/png")
+    result = live.identify(_png(), "image/png")
 
     assert result.node_id is None
     assert result.trace_query is None
@@ -748,7 +770,7 @@ def test_identify_blanks_the_response_for_an_nsfw_image(
 
 def test_identify_rejects_an_unsupported_type() -> None:
     with pytest.raises(ValueError):
-        live.identify(b"bytes", "image/gif")
+        live.identify(b"bytes", "image/tiff")
 
 
 def test_identify_rejects_an_oversized_upload() -> None:
@@ -830,7 +852,7 @@ def test_tick_stores_the_guardrails_nsfw_verdict(
     post = _post("https://lemmy.test/post/guardrail-1", posted_at=now)
     monkeypatch.setattr(sources, "fetch", lambda feed: [post])
     monkeypatch.setattr(live, "get_settings", lambda: _settings())
-    monkeypatch.setattr(live, "_download_image", lambda url: (b"data", "image/png"))
+    monkeypatch.setattr(live, "fetch_image", _fetch_by_url)
     monkeypatch.setattr(llm, "vision_label", lambda *a, **kw: _label(nsfw=False))
     monkeypatch.setattr(llm, "label_nsfw_only", lambda image, mime: (True, "gore"))
     _stub_resolution(monkeypatch, lambda name: "doomer")

@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from memepedia import db, store
-from memepedia.models import Evidence, MemeNode, Post
+from memepedia.models import Evidence, MemeNode, Post, VisionLabel
 
 
 def test_search_exact_before_prefix_before_substring(client: TestClient) -> None:
@@ -443,3 +443,58 @@ def test_delete_nodes_keeps_their_sightings_as_unclassified(client: TestClient) 
     finally:
         db.execute("DELETE FROM sightings WHERE id = %s", (sid,))
         db.execute("DELETE FROM nodes WHERE id = 'delete-nodes-test'")
+
+
+def test_delete_nodes_sends_a_meme_sighting_back_to_pending(client: TestClient) -> None:
+    store.upsert_node(
+        MemeNode(
+            id="delete-nodes-meme-test",
+            name="Delete Nodes Meme Test",
+            aliases=[],
+            kind="character",
+            latin_name=None,
+            image_url=None,
+            image_credit_url=None,
+            first_seen=None,
+            date_precision=None,
+            summary=None,
+            status="specimen",
+            sightings_24h=0,
+            sightings_7d=0,
+            nsfw=None,
+        )
+    )
+    label = VisionLabel(
+        is_meme=True,
+        template_guess="Delete Nodes Meme Test",
+        confidence=0.9,
+        structure_class=None,
+        subjects=[],
+        overlaid_text=None,
+        catchphrase=None,
+        description="a test meme",
+        nsfw=False,
+        nsfw_reason=None,
+    )
+    meme = store.insert_sighting(
+        _post("https://x.test/delete-nodes-meme"), label, "delete-nodes-meme-test", "resolved"
+    )
+    not_meme = store.insert_sighting(
+        _post("https://x.test/delete-nodes-photo"),
+        label.model_copy(update={"is_meme": False}),
+        "delete-nodes-meme-test",
+        "resolved",
+    )
+    assert meme is not None and not_meme is not None
+    try:
+        assert store.delete_nodes(["delete-nodes-meme-test"]) == 1
+        rows = db.fetch_all(
+            "SELECT id, state, node_id FROM sightings WHERE id = ANY(%s)", ([meme, not_meme],)
+        )
+        assert {r["id"]: (r["state"], r["node_id"]) for r in rows} == {
+            meme: ("pending", None),
+            not_meme: ("unclassified", None),
+        }
+    finally:
+        db.execute("DELETE FROM sightings WHERE id = ANY(%s)", ([meme, not_meme],))
+        db.execute("DELETE FROM nodes WHERE id = 'delete-nodes-meme-test'")

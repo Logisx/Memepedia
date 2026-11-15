@@ -57,6 +57,15 @@ ALTER TABLE sightings ADD COLUMN IF NOT EXISTS nsfw boolean;
 CREATE INDEX IF NOT EXISTS sightings_seen_idx ON sightings (seen_at DESC);
 CREATE INDEX IF NOT EXISTS sightings_posted_idx ON sightings (posted_at DESC);
 CREATE INDEX IF NOT EXISTS sightings_node_idx ON sightings (node_id, posted_at DESC);
+-- Why the image was never looked at (download or decode failure); null once it has been read.
+ALTER TABLE sightings ADD COLUMN IF NOT EXISTS look_error text;
+-- The same picture posted again under another URL: it points at the sighting kept on the wall,
+-- shares its stamp and is left out of every list and count (memepedia/dedupe.py).
+ALTER TABLE sightings ADD COLUMN IF NOT EXISTS duplicate_of text REFERENCES sightings (id) ON DELETE SET NULL;
+-- 256-bit difference hash of the image, 64 hex characters (memepedia/imageprep.py).
+ALTER TABLE sightings ADD COLUMN IF NOT EXISTS fingerprint text;
+CREATE INDEX IF NOT EXISTS sightings_image_url_idx ON sightings (image_url);
+CREATE INDEX IF NOT EXISTS sightings_duplicate_idx ON sightings (duplicate_of);
 
 CREATE TABLE IF NOT EXISTS history (
     id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

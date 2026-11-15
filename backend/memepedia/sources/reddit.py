@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import re
 from datetime import UTC, datetime
 from xml.etree import ElementTree as ET
@@ -13,6 +14,9 @@ from memepedia.sources import Feed, SourceError
 ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
 _FULL_IMAGE_RE = re.compile(r'href="(https://i\.redd\.it/[^"]+)"')
 _PREVIEW_IMAGE_RE = re.compile(r'<img src="(https://preview\.redd\.it/[^"]+)"')
+_PREVIEW_ID_RE = re.compile(
+    r"^https://preview\.redd\.it/([A-Za-z0-9]{8,20}\.(?:jpe?g|png|gif|webp))(?:\?.*)?$"
+)
 
 
 def _feed_url(subreddit: str) -> str:
@@ -33,12 +37,24 @@ def fetch_raw(feed: Feed) -> str:
     return xml_text
 
 
+def full_image_url(url: str) -> str:
+    """The full-size `i.redd.it` URL for a `preview.redd.it` thumbnail, when one exists.
+
+    The feed's HTML escapes `&` as `&amp;`, which is undone first. Only a plain media id such as
+    `abc123xyz.jpeg` maps onto `i.redd.it` (the 140px crop thumbnails answer 403 to us, the full
+    image does not); any other URL is returned unescaped but otherwise as it is.
+    """
+    url = html.unescape(url)
+    match = _PREVIEW_ID_RE.match(url)
+    return f"https://i.redd.it/{match.group(1)}" if match else url
+
+
 def _entry_image(content_html: str) -> str | None:
     full = _FULL_IMAGE_RE.search(content_html)
     if full:
-        return full.group(1)
+        return html.unescape(full.group(1))
     preview = _PREVIEW_IMAGE_RE.search(content_html)
-    return preview.group(1) if preview else None
+    return full_image_url(preview.group(1)) if preview else None
 
 
 def _entry_post(entry: ET.Element, *, source: str) -> Post | None:

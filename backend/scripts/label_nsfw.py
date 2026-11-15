@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from memepedia import db, llm, store
-from memepedia.live import _download_image
+from memepedia.live import fetch_image
 from memepedia.models import MemeNode
 
 log = logging.getLogger("memepedia.label_nsfw")
@@ -36,12 +36,11 @@ class Outcome:
 
 def _label_image_url(image_url: str) -> bool | None:
     """Downloads one image and labels it nsfw; None if it could not be fetched or labelled."""
-    downloaded = _download_image(image_url)
-    if downloaded is None:
+    image = fetch_image(image_url).prepared
+    if image is None:
         return None
-    data, mime = downloaded
     try:
-        nsfw, _reason = llm.label_nsfw_only(data, mime)
+        nsfw, _reason = llm.label_nsfw_only(image.data, image.mime)
     except llm.LLMError:
         log.warning("nsfw labelling failed for %s", image_url, exc_info=True)
         return None

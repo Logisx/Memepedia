@@ -165,7 +165,9 @@ def _generate(
     for attempt in range(2):
         budget.charge("gemini", 1)
         try:
-            response = client.models.generate_content(model=model, contents=contents, config=config)
+            response = client.models.generate_content(
+                model=model, contents=cast(types.ContentListUnionDict, contents), config=config
+            )
         except errors.ServerError as exc:
             last_error = exc
         except errors.ClientError as exc:
@@ -211,7 +213,10 @@ short (few words) description of what in the image is unsafe when nsfw=true, els
 
 
 _VISION_PROMPT = """You label one meme image with structure, not prose, for a meme genealogy
-archive. Return is_meme=false for a plain photo, a screenshot of text, news, or non-meme art.
+archive. Every image comes from a meme community. Return is_meme=true for anything posted as
+humour: captioned images, comics, joke screenshots of text or code, edited photos, even when no
+known template is used. Return is_meme=false only for a plain photo or artwork with no joke, news,
+or an advert.
 template_guess is the single most widely used name of the meme template or character used in the
 image; return null when the image is not a recognisable, established format. When one of the
 known names below fits, you MUST return that exact name verbatim (do not paraphrase it).

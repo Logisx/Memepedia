@@ -72,6 +72,13 @@ export interface Sighting {
    * through. See README "NSFW policy".
    */
   nsfw: boolean | null;
+  /** false = the image could not be fetched or decoded; the post was never looked at. */
+  read: boolean;
+  /**
+   * Tree only: which template or family this post uses, when it is not the selected meme
+   * itself (e.g. "Drake Hotline Bling" on Jensen Huang's page). Null elsewhere and when unknown.
+   */
+  variant: string | null;
 }
 
 export interface HistoryItem {

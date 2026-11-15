@@ -11,7 +11,9 @@
       "node_id": "npc-wojak",
       "node_name": "NPC Wojak",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s002",
@@ -24,7 +26,9 @@
       "node_id": "pepe-the-frog",
       "node_name": "Pepe the Frog",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s003",
@@ -37,7 +41,9 @@
       "node_id": "brainlet",
       "node_name": "Brainlet",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s004",
@@ -50,7 +56,9 @@
       "node_id": "drake-hotline-bling",
       "node_name": "Drake Hotline Bling",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s005",
@@ -63,7 +71,9 @@
       "node_id": "virgin-vs-chad",
       "node_name": "Virgin vs. Chad",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s006",
@@ -76,7 +86,9 @@
       "node_id": "doomer-girl",
       "node_name": "Doomer Girl",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s007",
@@ -89,7 +101,9 @@
       "node_id": "thirty-year-old-boomer",
       "node_name": "Thirty-Year-Old Boomer",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s008",
@@ -102,7 +116,9 @@
       "node_id": "zoomer",
       "node_name": "Zoomer",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s009",
@@ -115,7 +131,9 @@
       "node_id": "soyjak",
       "node_name": "Soyjak",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s010",
@@ -128,7 +146,9 @@
       "node_id": "doge",
       "node_name": "Doge",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s011",
@@ -141,7 +161,9 @@
       "node_id": "pepe-the-frog",
       "node_name": "Pepe the Frog",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s012",
@@ -154,7 +176,9 @@
       "node_id": "bloomer",
       "node_name": "Bloomer",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s013",
@@ -167,7 +191,9 @@
       "node_id": "walter",
       "node_name": "Walter",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s014",
@@ -180,7 +206,9 @@
       "node_id": "apu-apustaja",
       "node_name": "Apu Apustaja",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s015",
@@ -193,7 +221,9 @@
       "node_id": "swole-doge-vs-cheems",
       "node_name": "Swole Doge vs. Cheems",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s016",
@@ -206,7 +236,9 @@
       "node_id": "distracted-boyfriend",
       "node_name": "Distracted Boyfriend",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s017",
@@ -219,7 +251,9 @@
       "node_id": "cheems",
       "node_name": "Cheems",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s018",
@@ -232,7 +266,9 @@
       "node_id": "trad-girl",
       "node_name": "Trad Girl",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s019",
@@ -245,7 +281,9 @@
       "node_id": "npc-wojak",
       "node_name": "NPC Wojak",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s020",
@@ -258,7 +296,9 @@
       "node_id": "doge",
       "node_name": "Doge",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s021",
@@ -271,7 +311,9 @@
       "node_id": "doomer-girl",
       "node_name": "Doomer Girl",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s022",
@@ -284,7 +326,9 @@
       "node_id": "apu-apustaja",
       "node_name": "Apu Apustaja",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s023",
@@ -297,7 +341,9 @@
       "node_id": "drake-hotline-bling",
       "node_name": "Drake Hotline Bling",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s024",
@@ -310,7 +356,9 @@
       "node_id": "doomer",
       "node_name": "Doomer",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s025",
@@ -323,7 +371,9 @@
       "node_id": "wojak",
       "node_name": "Wojak",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s026",
@@ -336,7 +386,9 @@
       "node_id": "bloomer",
       "node_name": "Bloomer",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s027",
@@ -349,7 +401,9 @@
       "node_id": "sad-frog",
       "node_name": "Sad Frog",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s028",
@@ -362,7 +416,9 @@
       "node_id": "yes-chad",
       "node_name": "Yes Chad",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s029",
@@ -375,7 +431,9 @@
       "node_id": null,
       "node_name": null,
       "state": "pending",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s030",
@@ -388,7 +446,9 @@
       "node_id": null,
       "node_name": null,
       "state": "pending",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s031",
@@ -401,7 +461,9 @@
       "node_id": null,
       "node_name": null,
       "state": "pending",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s032",
@@ -414,7 +476,9 @@
       "node_id": null,
       "node_name": null,
       "state": "pending",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s033",
@@ -427,7 +491,9 @@
       "node_id": null,
       "node_name": null,
       "state": "pending",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s034",
@@ -440,7 +506,9 @@
       "node_id": null,
       "node_name": null,
       "state": "pending",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s035",
@@ -453,7 +521,9 @@
       "node_id": null,
       "node_name": null,
       "state": "pending",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s036",
@@ -466,7 +536,9 @@
       "node_id": null,
       "node_name": null,
       "state": "pending",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s037",
@@ -479,7 +551,9 @@
       "node_id": null,
       "node_name": null,
       "state": "unclassified",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s038",
@@ -492,7 +566,9 @@
       "node_id": null,
       "node_name": null,
       "state": "unclassified",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s039",
@@ -505,7 +581,9 @@
       "node_id": null,
       "node_name": null,
       "state": "unclassified",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s040",
@@ -518,7 +596,9 @@
       "node_id": null,
       "node_name": null,
       "state": "unclassified",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     }
   ],
   "server_time": "2026-11-14T16:00:00Z",

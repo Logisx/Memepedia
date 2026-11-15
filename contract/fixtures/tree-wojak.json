@@ -363,7 +363,9 @@
       "node_id": "wojak",
       "node_name": "Wojak",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "extra-wojak-2",
@@ -376,7 +378,9 @@
       "node_id": "wojak",
       "node_name": "Wojak",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "extra-wojak-3",
@@ -389,7 +393,9 @@
       "node_id": "wojak",
       "node_name": "Wojak",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "extra-wojak-1",
@@ -402,7 +408,9 @@
       "node_id": "wojak",
       "node_name": "Wojak",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     },
     {
       "id": "s025",
@@ -415,7 +423,9 @@
       "node_id": "wojak",
       "node_name": "Wojak",
       "state": "resolved",
-      "nsfw": false
+      "nsfw": false,
+      "read": true,
+      "variant": null
     }
   ],
   "history": [

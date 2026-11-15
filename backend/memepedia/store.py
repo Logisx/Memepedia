@@ -92,6 +92,7 @@ def _row_to_sighting(row: db.Row) -> Sighting:
         node_name=row.get("node_name"),
         state=row["state"],
         nsfw=row["nsfw"],
+        read=row.get("vision") is not None,
     )
 
 
@@ -337,19 +338,26 @@ def insert_sighting(
     state: SightingState,
     seen_at: datetime | None = None,
     nsfw: bool | None = None,
+    *,
+    look_error: str | None = None,
+    fingerprint: str | None = None,
+    duplicate_of: str | None = None,
 ) -> str | None:
     """Insert a sighting if its post_url is new; returns the id, or None if it already existed.
 
     `seen_at` defaults to now; a backfill passes the post's own time so old posts
     do not arrive on the wall as if they were new. `nsfw` is used only when `vision`
     is None (e.g. loading mock fixtures that carry a pre-decided label of their own).
+    `look_error` says why the image was never read; `duplicate_of` marks a repost of another
+    sighting, which then stays off the wall.
     """
     sid = sighting_id(post.post_url)
     row = db.fetch_one(
         """
         INSERT INTO sightings (id, platform, source, post_url, image_url, title, author, posted_at,
-                                vision, node_id, state, seen_at, nsfw)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, COALESCE(%s, now()), %s)
+                                vision, node_id, state, seen_at, nsfw, look_error, fingerprint,
+                                duplicate_of)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, COALESCE(%s, now()), %s, %s, %s, %s)
         ON CONFLICT (post_url) DO NOTHING
         RETURNING id
         """,
@@ -367,6 +375,9 @@ def insert_sighting(
             state,
             seen_at,
             vision.nsfw if vision else nsfw,
+            look_error,
+            fingerprint,
+            duplicate_of,
         ),
     )
     return row["id"] if row else None
@@ -510,17 +521,28 @@ def pending_sightings(hours: int = 72) -> list[db.Row]:
     )
 
 
+# Unstamps the sightings of nodes about to be deleted: a meme goes back to pending, so it keeps an
+# "unidentified" stamp and can be matched again; anything else becomes unclassified.
+_DETACH_SQL = """
+    UPDATE sightings
+    SET node_id = NULL,
+        state = CASE WHEN (vision->>'is_meme') = 'true' THEN 'pending' ELSE 'unclassified' END
+    WHERE node_id = ANY(%s)
+"""
+
+
 def delete_nodes(ids: Sequence[str]) -> int:
     """Delete these nodes; their links and history go with them.
 
-    Sightings attached to them are kept but become unclassified, because a resolved sighting
-    may not lose its node. Returns the number of nodes removed.
+    Sightings attached to them are kept but lose their stamp, because a resolved sighting may
+    not lose its node: a meme goes back to pending (it can be re-matched), anything else becomes
+    unclassified. Returns the number of nodes removed.
     """
     if not ids:
         return 0
     with db.connection() as conn:
         conn.execute(
-            "UPDATE sightings SET node_id = NULL, state = 'unclassified' WHERE node_id = ANY(%s)",
+            _DETACH_SQL,
             (list(ids),),
         )
         return conn.execute("DELETE FROM nodes WHERE id = ANY(%s)", (list(ids),)).rowcount
@@ -669,7 +691,10 @@ def new_specimens(days: int = 7) -> list[MemeNode]:
 
 
 def expire_specimens(days: int = 7) -> list[str]:
-    """Delete specimens with no sighting in `days`; their sightings become unclassified."""
+    """Delete specimens with no sighting in `days`; their sightings lose the stamp.
+
+    As in `delete_nodes`, a meme goes back to pending and anything else becomes unclassified.
+    """
     stale = """
         SELECT n.id FROM nodes n
         WHERE n.status = 'specimen' AND n.created_at < now() - make_interval(days => %(days)s)
@@ -681,7 +706,7 @@ def expire_specimens(days: int = 7) -> list[str]:
     with db.connection() as conn:
         ids = [row["id"] for row in conn.execute(stale, {"days": days}).fetchall()]
         conn.execute(
-            "UPDATE sightings SET node_id = NULL, state = 'unclassified' WHERE node_id = ANY(%s)",
+            _DETACH_SQL,
             (ids,),
         )
         conn.execute("DELETE FROM nodes WHERE id = ANY(%s)", (ids,))
